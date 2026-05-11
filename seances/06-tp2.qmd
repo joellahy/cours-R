@@ -1,0 +1,316 @@
+---
+title: "TP 2 — Visualisation de données"
+---
+
+::: {.callout-tip}
+## Objectifs du TP
+À l'issue de ce TP, vous serez capable de :
+
+- Choisir le type de graphique adapté à vos données et à votre question
+- Construire des visualisations complètes et communicantes avec `ggplot2`
+- Annoter, personnaliser et exporter vos graphiques
+- Produire un mini-rapport visuel sur une thématique environnementale ou économique
+:::
+
+---
+
+## Contexte
+
+Dans ce TP, vous travaillez comme analyste de données pour une organisation régionale
+de l'Océan Indien. Votre directeur vous demande de produire plusieurs visualisations
+pour un rapport sur la biodiversité et le développement économique des îles de l'Océan Indien.
+
+Vous disposez de deux sources de données :
+
+1. **`gapminder`** — Indicateurs de développement (PIB, espérance de vie, population)
+2. **`penguins`** (`palmerpenguins`) — Données morphologiques de manchots (exemple de données écologiques)
+3. **`biodiversite_mascareignes.csv`** — Données de biodiversité pour les exercices avancés
+
+```{r}
+library(tidyverse)
+library(gapminder)
+library(palmerpenguins)
+
+# Chargement des données de biodiversité
+biodiv <- read_csv("../data/biodiversite_mascareignes.csv")
+```
+
+---
+
+## Partie 1 — Choisir le bon graphique
+
+Avant de créer un graphique, posez-vous toujours ces questions :
+
+| Question | Type de graphique adapté |
+|----------|--------------------------|
+| Distribution d'une variable continue ? | Histogramme, density plot, boxplot |
+| Relation entre deux variables continues ? | Nuage de points, line chart |
+| Comparaison de catégories ? | Barplot, boxplot, dot plot |
+| Évolution dans le temps ? | Line chart, area chart |
+| Composition (parties d'un tout) ? | Barplot empilé, treemap |
+| Distribution de plusieurs groupes ? | Boxplot, violin plot, ridge plot |
+
+### Exercice 1.1 — Le bon graphique pour la bonne question
+
+::: {.callout-note}
+## Consignes
+Pour chacune des questions suivantes, indiquez quel type de graphique vous choisiriez
+et justifiez brièvement votre choix :
+
+a. Quelle est la répartition du PIB/habitant des pays africains en 2007 ?
+b. Comment a évolué l'espérance de vie mondiale entre 1952 et 2007 ?
+c. Y a-t-il une relation entre la longueur du bec et la masse corporelle des manchots ?
+d. Quelle est la part de chaque continent dans la population mondiale en 2007 ?
+e. Comment se compare l'espérance de vie des pays selon leur niveau de revenu ?
+:::
+
+::: {.callout-caution collapse="true"}
+## Éléments de réponse
+
+a. **Histogramme ou density plot** — distribution d'une variable continue pour un groupe
+b. **Line chart** — évolution d'une variable quantitative dans le temps
+c. **Nuage de points (scatterplot)** — relation entre deux variables continues
+d. **Barplot ou camembert** — composition/proportions (le barplot est généralement préférable)
+e. **Boxplot ou violin plot** — comparaison de distributions entre groupes
+:::
+
+---
+
+## Partie 2 — Visualisations sur le développement mondial
+
+### Exercice 2.1 — Carte de chaleur temporelle
+
+::: {.callout-note}
+## Consignes
+Créez une **carte de chaleur** (heatmap) montrant l'espérance de vie de 10 pays
+africains sélectionnés entre 1952 et 2007.
+
+- Sélectionnez 10 pays africains de votre choix (ou ceux avec les données les plus
+  intéressantes à comparer).
+- Utilisez `geom_tile()`.
+- Encodez l'espérance de vie dans une palette de couleur allant du rouge (faible)
+  au vert (élevée).
+- Triez les pays par espérance de vie croissante en 2007.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 2.1
+
+```r
+pays_selec <- c("Kenya", "Ethiopia", "Tanzania", "Uganda", "Mozambique",
+                "Madagascar", "Mauritius", "South Africa", "Nigeria", "Ghana")
+
+gapminder |>
+  filter(country %in% pays_selec) |>
+  # Réordonner les pays par espérance de vie 2007
+  mutate(
+    country = fct_reorder(
+      country,
+      ifelse(year == 2007, lifeExp, NA),
+      .fun = function(x) mean(x, na.rm = TRUE)
+    )
+  ) |>
+  ggplot(aes(x = year, y = country, fill = lifeExp)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    low     = "#e74c3c",
+    mid     = "#f39c12",
+    high    = "#27ae60",
+    midpoint = 55
+  ) +
+  labs(
+    title   = "Espérance de vie en Afrique (1952–2007)",
+    x       = "Année",
+    y       = NULL,
+    fill    = "Espérance\nde vie",
+    caption = "Source : Gapminder Foundation"
+  ) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+```
+:::
+
+### Exercice 2.2 — Graphique en haltères (Dumbbell chart)
+
+::: {.callout-note}
+## Consignes
+Créez un **graphique en haltères** comparant l'espérance de vie en **1952** et en **2007**
+pour les pays d'Afrique de l'Est (Kenya, Tanzania, Ethiopia, Uganda, Mozambique, Madagascar).
+
+- Une ligne relie les deux points pour chaque pays.
+- Les points 1952 sont d'une couleur, ceux de 2007 d'une autre.
+- Triez les pays par espérance de vie 2007 décroissante.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 2.2
+
+```r
+pays_est <- c("Kenya", "Tanzania", "Ethiopia", "Uganda",
+              "Mozambique", "Madagascar")
+
+df_dumbbell <- gapminder |>
+  filter(country %in% pays_est, year %in% c(1952, 2007)) |>
+  mutate(annee = factor(year))
+
+# Ordre des pays par lifeExp 2007
+ordre <- df_dumbbell |>
+  filter(year == 2007) |>
+  arrange(lifeExp) |>
+  pull(country)
+
+df_dumbbell |>
+  mutate(country = factor(country, levels = ordre)) |>
+  ggplot(aes(x = lifeExp, y = country)) +
+  geom_line(aes(group = country), color = "grey60", linewidth = 1.5) +
+  geom_point(aes(color = annee), size = 4) +
+  scale_color_manual(values = c("1952" = "#e74c3c", "2007" = "#27ae60")) +
+  labs(
+    title   = "Progression de l'espérance de vie en Afrique de l'Est",
+    subtitle = "Comparaison 1952 – 2007",
+    x       = "Espérance de vie (années)",
+    y       = NULL,
+    color   = "Année",
+    caption = "Source : Gapminder Foundation"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+:::
+
+---
+
+## Partie 3 — Visualisations écologiques
+
+### Exercice 3.1 — Morphologie des manchots
+
+::: {.callout-note}
+## Consignes
+En utilisant `palmerpenguins::penguins` :
+
+1. Créez un nuage de points de la longueur des nageoires (`flipper_length_mm`)
+   en fonction de la masse corporelle (`body_mass_g`), avec :
+   - Une couleur par espèce
+   - Un symbole différent par île d'observation
+   - Une droite de régression par espèce (`geom_smooth`)
+   - Des facettes par sexe (en excluant les NA)
+
+2. Annotez le graphique avec un titre explicite, des axes nommés et la source.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 3.1
+
+```r
+penguins |>
+  filter(!is.na(sex)) |>
+  ggplot(aes(x = body_mass_g, y = flipper_length_mm,
+             color = species, shape = island)) +
+  geom_point(size = 2.5, alpha = 0.7) +
+  geom_smooth(aes(group = species), method = "lm", se = TRUE,
+              linewidth = 1, alpha = 0.2) +
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73")) +
+  facet_wrap(~ sex, labeller = labeller(sex = c(female = "Femelle", male = "Mâle"))) +
+  labs(
+    title    = "Relation masse–longueur des nageoires chez les manchots",
+    subtitle = "Par espèce, île d'observation et sexe",
+    x        = "Masse corporelle (g)",
+    y        = "Longueur des nageoires (mm)",
+    color    = "Espèce",
+    shape    = "Île",
+    caption  = "Source : Gorman et al. (2014) — Station Palmer, Antarctique"
+  ) +
+  theme_bw(base_size = 11) +
+  theme(legend.position = "right")
+```
+:::
+
+### Exercice 3.2 — Données de biodiversité des Mascareignes
+
+::: {.callout-note}
+## Consignes
+En utilisant `biodiversite_mascareignes.csv` :
+
+1. Explorez la structure du jeu de données.
+2. Créez un barplot comparant le nombre d'espèces endémiques par groupe taxonomique
+   et par île. Utilisez `geom_col()` avec `position = "dodge"`.
+3. Créez un graphique montrant la relation entre la superficie de l'île et
+   le nombre total d'espèces (toutes catégories confondues).
+   Annotez chaque point avec le nom de l'île.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 3.2
+
+```r
+# 1. Exploration
+glimpse(biodiv)
+summary(biodiv)
+
+# 2. Barplot espèces endémiques
+biodiv |>
+  filter(statut == "Endémique") |>
+  ggplot(aes(x = groupe, y = nb_especes, fill = ile)) +
+  geom_col(position = "dodge", color = "white") +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Espèces endémiques par groupe taxonomique et par île",
+    x = NULL, y = "Nombre d'espèces", fill = "Île",
+    caption = "Source : GBIF / UICN"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+# 3. Relation superficie – richesse spécifique
+biodiv |>
+  group_by(ile, superficie_km2) |>
+  summarise(total_especes = sum(nb_especes), .groups = "drop") |>
+  ggplot(aes(x = superficie_km2, y = total_especes, label = ile)) +
+  geom_point(size = 3, color = "#2980b9") +
+  geom_text(nudge_y = 5, size = 3.5, color = "grey30") +
+  scale_x_log10() +
+  geom_smooth(method = "lm", se = TRUE, color = "#e74c3c",
+              linetype = "dashed", linewidth = 0.8) +
+  labs(
+    title   = "Relation aire–richesse spécifique dans les Mascareignes",
+    subtitle = "Chaque point représente une île",
+    x       = "Superficie (km², échelle log)",
+    y       = "Nombre total d'espèces",
+    caption = "Source : GBIF / UICN"
+  ) +
+  theme_minimal()
+```
+:::
+
+---
+
+## Partie 4 — Mini-projet de visualisation
+
+::: {.callout-note}
+## Consignes — Mini-projet (travail individuel ou en binôme)
+
+**Durée estimée : 45 minutes**
+
+Choisissez l'une des deux thématiques suivantes et produisez **3 graphiques**
+qui racontent une histoire cohérente avec les données.
+
+### Thématique A — Économie de l'Océan Indien
+
+En utilisant `gapminder` (et éventuellement d'autres sources) :
+- L'évolution du PIB/habitant dans les pays de l'Océan Indien ou d'Afrique de l'Est
+- La relation entre développement économique et espérance de vie dans cette région
+- Une comparaison avec d'autres régions du monde
+
+### Thématique B — Biodiversité tropicale
+
+En utilisant `biodiversite_mascareignes.csv` et `palmerpenguins` :
+- La richesse spécifique des îles de l'Océan Indien
+- La proportion d'espèces menacées par groupe et par île
+- Des patterns morphologiques dans les données écologiques
+
+### Critères d'évaluation
+- Pertinence du choix de graphique pour les données
+- Lisibilité (titres, axes, légendes, source)
+- Cohérence de la palette de couleurs
+- Qualité du code R (usage du pipe, commentaires)
+:::

@@ -1,0 +1,349 @@
+---
+title: "Séance 8 — Améliorer sa productivité avec l'IA dans R"
+---
+
+::: {.callout-tip}
+## Objectifs de la séance
+À l'issue de cette séance, vous serez capable de :
+
+- Utiliser les assistants IA pour accélérer l'écriture de code R
+- Identifier les bonnes pratiques et les limites de l'IA en programmation
+- Déboguer du code avec l'aide de l'IA
+- Rédiger des prompts efficaces pour des tâches de data science
+:::
+
+::: {.callout-warning}
+## Avertissement académique
+L'IA est un **outil d'assistance**, pas un substitut à la compréhension.
+Dans le cadre académique, vous êtes responsable du code que vous soumettez.
+Utilisez l'IA pour apprendre et déboguer, pas pour contourner la réflexion.
+:::
+
+---
+
+## Les assistants IA disponibles dans RStudio
+
+### GitHub Copilot dans RStudio
+
+GitHub Copilot est un assistant IA intégré à RStudio (depuis la version 2023.09).
+Il suggère du code en temps réel pendant que vous tapez.
+
+**Activation :**
+`Tools > Global Options > Copilot > Enable GitHub Copilot`
+
+Vous avez besoin d'un compte GitHub avec accès à Copilot.
+Les étudiants peuvent obtenir l'accès gratuit via le
+[GitHub Education Pack](https://education.github.com/pack).
+
+### Autres outils
+
+| Outil | Accès | Usage recommandé |
+|-------|-------|-----------------|
+| **GitHub Copilot** | RStudio (intégré) | Complétion de code en temps réel |
+| **ChatGPT** | Web / API | Génération de code, explication, débogage |
+| **Claude (Anthropic)** | Web / API | Explication détaillée, refactoring |
+| **Gemini** | Web | Questions générales, documentation |
+| **Perplexity** | Web | Recherche avec sources citées |
+
+---
+
+## Bonnes pratiques d'usage de l'IA
+
+### Ce que l'IA fait bien
+
+- ✅ Générer du code boilerplate (structure de base)
+- ✅ Proposer des solutions alternatives
+- ✅ Expliquer du code que vous ne comprenez pas
+- ✅ Identifier des erreurs syntaxiques
+- ✅ Convertir du code d'un format à un autre (ex: base R → tidyverse)
+- ✅ Suggérer des noms de fonctions ou de packages
+- ✅ Aider à rédiger de la documentation
+
+### Ce que l'IA fait mal (ou mal parfois)
+
+- ❌ **Hallucinations** : inventer des fonctions qui n'existent pas
+- ❌ Connaître les packages récents (coupure de données d'entraînement)
+- ❌ Comprendre votre contexte métier spécifique sans description
+- ❌ Garantir l'exactitude statistique des analyses
+- ❌ Connaître vos données locales
+
+::: {.callout-warning}
+## Règle d'or
+**Vérifiez toujours** le code généré par l'IA avant de l'utiliser.
+Testez-le, comprenez-le, et adaptez-le si nécessaire.
+Ne soumettez jamais un code que vous ne comprenez pas.
+:::
+
+---
+
+## Rédiger des prompts efficaces
+
+### Structure d'un bon prompt
+
+Un bon prompt contient :
+
+1. **Le contexte** : quel type de données vous avez
+2. **La tâche précise** : ce que vous voulez accomplir
+3. **Les contraintes** : packages à utiliser, format de sortie
+4. **Un exemple si possible** : un extrait de vos données
+
+### Exemples de prompts
+
+**Prompt vague (mauvais) :**
+```
+Fais-moi un graphique de mes données
+```
+
+**Prompt précis (bon) :**
+```
+J'ai un data frame R appelé `gapminder` avec les colonnes :
+country (character), continent (factor), year (integer),
+lifeExp (numeric), pop (numeric), gdpPercap (numeric).
+
+Génère un graphique ggplot2 montrant l'évolution de l'espérance
+de vie médiane par continent entre 1952 et 2007.
+Utilise une couleur différente par continent, le thème minimal,
+et ajoute des titres et une légende en français.
+```
+
+---
+
+## Débogage avec l'IA
+
+Quand votre code renvoie une erreur, fournissez à l'IA :
+
+1. **Le code complet** (ou la partie concernée)
+2. **Le message d'erreur exact**
+3. **Ce que vous attendiez comme résultat**
+
+### Exemple de débogage
+
+**Votre code :**
+```r
+library(tidyverse)
+library(gapminder)
+
+gapminder |>
+  filter(continent = "Africa") |>
+  summarise(moy = mean(lifeExp))
+```
+
+**Message d'erreur :**
+```
+Error in `filter()`:
+! We detected a named input.
+ℹ This usually means that you've used `=` instead of `==`.
+```
+
+**Prompt de débogage :**
+```
+Ce code R génère l'erreur suivante :
+"Error in filter(): We detected a named input..."
+
+Code : [collez votre code]
+Erreur : [collez l'erreur]
+
+Qu'est-ce qui ne va pas et comment le corriger ?
+```
+
+**Solution :**
+```r
+# Correction : utiliser == (égalité) et non = (affectation)
+gapminder |>
+  filter(continent == "Africa") |>    # == et non =
+  summarise(moy = mean(lifeExp))
+```
+
+---
+
+## Exemples d'usage productif de l'IA
+
+### Cas 1 — Convertir du code base R en tidyverse
+
+**Prompt :**
+```
+Convertis ce code base R en tidyverse (dplyr/tidyr) :
+
+data_afr <- gapminder[gapminder$continent == "Africa" &
+                       gapminder$year == 2007, ]
+data_afr <- data_afr[order(data_afr$lifeExp, decreasing = TRUE), ]
+mean_pib <- mean(data_afr$gdpPercap)
+```
+
+**Résultat attendu de l'IA :**
+```r
+data_afr <- gapminder |>
+  filter(continent == "Africa", year == 2007) |>
+  arrange(desc(lifeExp))
+
+mean_pib <- data_afr |>
+  summarise(mean_pib = mean(gdpPercap)) |>
+  pull(mean_pib)
+```
+
+### Cas 2 — Comprendre une fonction inconnue
+
+**Prompt :**
+```
+Explique-moi ce que fait cette ligne R et dans quel contexte l'utiliser :
+
+gapminder |> group_by(continent) |> group_map(~ lm(lifeExp ~ year, data = .x))
+```
+
+### Cas 3 — Générer de la documentation
+
+**Prompt :**
+```
+Écris un commentaire de documentation en français pour cette fonction R :
+
+calculer_rendement <- function(production, surface) {
+  if (surface <= 0) stop("La surface doit être positive")
+  (production / surface) * 1000
+}
+```
+
+### Cas 4 — Identifier un package adapté
+
+**Prompt :**
+```
+Je veux créer des tableaux de résultats statistiques
+formatés en HTML ou PDF dans R.
+Quel(s) package(s) me recommandes-tu et pourquoi ?
+```
+
+---
+
+## Limites importantes
+
+### Les hallucinations
+
+L'IA peut inventer des fonctions :
+
+```r
+# Code hallucination : cette fonction n'existe PAS dans ggplot2
+ggplot(data, aes(x, y)) +
+  geom_scatter_density()   # ← INVENTÉ
+
+# La vraie fonction est :
+geom_point()
+# ou pour la densité :
+geom_density_2d()
+```
+
+**Toujours vérifier** dans la documentation officielle : `?nom_fonction` ou [tidyverse.org](https://www.tidyverse.org).
+
+### La confidentialité des données
+
+::: {.callout-warning}
+## Attention aux données sensibles
+Ne collez jamais de **données personnelles, confidentielles ou propriétaires**
+dans un prompt destiné à un service IA externe (ChatGPT, Claude, Gemini).
+Utilisez des données fictives ou anonymisées pour vos exemples.
+:::
+
+### La dépendance excessive
+
+L'IA ralentit votre apprentissage si vous l'utilisez pour toutes les tâches.
+Recommandation : essayez d'abord par vous-même, utilisez l'IA comme second recours.
+
+---
+
+## Workflow recommandé
+
+```
+1. Définir clairement la tâche
+       ↓
+2. Chercher dans la documentation (? ou RStudio)
+       ↓
+3. Essayer par vous-même
+       ↓
+4. Si bloqué > Stack Overflow / Forum Posit
+       ↓
+5. Si toujours bloqué > IA avec un prompt précis
+       ↓
+6. Lire, comprendre et tester le code suggéré
+       ↓
+7. Adapter à votre contexte
+```
+
+---
+
+## Exercice pratique
+
+::: {.callout-note}
+## Exercice
+
+**Partie 1 — Débogage guidé**
+
+Les codes suivants contiennent chacun une erreur. Identifiez-la, corrigez-la,
+et expliquez ce qui ne va pas.
+
+```r
+# Code 1
+library(tidyverse)
+gapminder |>
+  filter(year = 2007) |>
+  select(country, gdpPercap, lifeExp)
+
+# Code 2
+library(gapminder)
+gapminder |>
+  group_by(continent) |>
+  summarize(
+    moy_pib = mean(gdpPercap),
+    moy_vie = mean(lifeEXP)     # attention à la casse
+  )
+
+# Code 3
+ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(color = blue)      # oubli des guillemets
+```
+
+**Partie 2 — Prompt engineering**
+
+Rédigez un prompt précis pour demander à une IA de :
+
+- Créer une fonction R qui calcule l'indice de Gini à partir d'un vecteur de revenus
+- La fonction doit gérer les valeurs manquantes
+- Elle doit retourner un message d'erreur clair si tous les revenus sont zéro
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé
+
+**Partie 1 — Débogage**
+
+```r
+# Code 1 : = doit être ==
+gapminder |>
+  filter(year == 2007) |>
+  select(country, gdpPercap, lifeExp)
+
+# Code 2 : lifeEXP doit être lifeExp (R est sensible à la casse)
+gapminder |>
+  group_by(continent) |>
+  summarize(
+    moy_pib = mean(gdpPercap),
+    moy_vie = mean(lifeExp)
+  )
+
+# Code 3 : les couleurs textuelles doivent être entre guillemets
+ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(color = "blue")
+```
+
+**Partie 2 — Exemple de prompt**
+
+```
+Je travaille en R avec le tidyverse.
+Écris une fonction `calcul_gini(revenus)` qui :
+- Prend en entrée un vecteur numérique de revenus
+- Retourne l'indice de Gini (entre 0 et 1)
+- Ignore les valeurs NA avec un message d'avertissement
+- Génère une erreur avec stop() si le vecteur est vide ou si
+  tous les revenus non-NA sont nuls ou négatifs
+- Inclut un commentaire expliquant la formule utilisée
+
+Formule de référence : G = (2 * sum(rank(x) * x)) / (n * sum(x)) - (n + 1) / n
+```
+:::

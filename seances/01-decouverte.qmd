@@ -1,0 +1,403 @@
+---
+title: "Séance 1 — Découverte et prise en main"
+---
+
+::: {.callout-tip}
+## Objectifs de la séance
+À l'issue de cette séance, vous serez capable de :
+
+- Installer et configurer R et RStudio sur votre machine
+- Naviguer dans l'interface de RStudio
+- Créer et manipuler les objets fondamentaux de R (vecteurs, matrices, data frames, listes)
+- Identifier les principaux types de données
+- Écrire des scripts R propres et bien organisés
+:::
+
+## Installation de R et RStudio
+
+### Étape 1 — Installer R
+
+Rendez-vous sur [cran.r-project.org](https://cran.r-project.org) et téléchargez la version adaptée à votre système d'exploitation (Windows, macOS ou Linux).
+Choisissez toujours **la version la plus récente** (≥ 4.3).
+
+### Étape 2 — Installer RStudio
+
+RStudio est un **environnement de développement intégré (IDE)** qui facilite grandement le travail avec R.
+Téléchargez la version gratuite *RStudio Desktop* sur
+[posit.co/download/rstudio-desktop](https://posit.co/download/rstudio-desktop/).
+
+::: {.callout-note}
+## R ≠ RStudio
+R est le **moteur de calcul** (le langage). RStudio est l'**interface** qui permet de travailler
+avec R confortablement. On ne peut pas utiliser RStudio sans avoir installé R au préalable.
+:::
+
+---
+
+## L'interface de RStudio
+
+L'interface de RStudio est divisée en **quatre panneaux** :
+
+| Panneau | Rôle |
+|---------|------|
+| **Éditeur de scripts** (haut gauche) | Écrire et sauvegarder du code `.R` |
+| **Console** (bas gauche) | Exécuter du code et voir les résultats immédiats |
+| **Environnement / Historique** (haut droite) | Voir les objets en mémoire |
+| **Fichiers / Graphiques / Aide** (bas droite) | Naviguer dans les fichiers, voir les graphiques |
+
+### Raccourcis clavier essentiels
+
+| Action | Windows / Linux | macOS |
+|--------|-----------------|-------|
+| Exécuter la ligne courante | `Ctrl + Entrée` | `Cmd + Entrée` |
+| Insérer le pipe `|>` | `Ctrl + Shift + M` | `Cmd + Shift + M` |
+| Commenter une ligne | `Ctrl + Shift + C` | `Cmd + Shift + C` |
+| Indenter le code | `Tab` | `Tab` |
+| Autocomplétion | `Tab` | `Tab` |
+| Aide sur une fonction | `F1` | `F1` |
+
+---
+
+## Les projets RStudio
+
+Avant tout travail, créez un **projet RStudio** (`.Rproj`).
+Un projet fixe automatiquement le répertoire de travail et organise vos fichiers.
+
+Pour créer un projet :
+`File > New Project > New Directory > New Project`
+
+::: {.callout-warning}
+## Bonne pratique
+**Travaillez toujours dans un projet RStudio.**
+N'utilisez jamais `setwd()` pour changer votre répertoire de travail :
+cela rend votre code non-reproductible sur une autre machine.
+:::
+
+---
+
+## Les objets de base dans R
+
+Tout dans R est un **objet**. On crée un objet avec l'opérateur d'affectation `<-`.
+
+```r
+# Affectation
+x <- 42
+nom <- "La Réunion"
+```
+
+### Vecteurs
+
+Le **vecteur** est l'objet fondamental de R. Un vecteur ne peut contenir qu'un seul type de données.
+
+```{r}
+# Vecteur numérique : PIB par habitant (USD, 2023)
+# Source : Banque Mondiale
+pib_habitant <- c(8500, 15200, 3100, 6800, 22000, 1200, 4500)
+
+# Vecteur de chaînes : noms des pays
+pays <- c("Maurice", "Maldives", "Comores", "Seychelles",
+          "Nouvelle-Calédonie", "Madagascar", "Timor-Leste")
+
+# Vecteur logique
+est_insulaire <- c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
+
+# Longueur d'un vecteur
+length(pib_habitant)
+```
+
+```{r}
+# Accès aux éléments (l'indexation commence à 1 en R)
+pays[1]          # Premier élément
+pays[c(1, 3)]    # Premier et troisième éléments
+pib_habitant[pib_habitant > 5000]  # Filtrage conditionnel
+```
+
+### Opérations sur les vecteurs
+
+Les opérations s'appliquent **élément par élément** :
+
+```{r}
+# Conversion USD → EUR (taux approximatif : 1 USD = 0.92 EUR)
+pib_eur <- pib_habitant * 0.92
+pib_eur
+
+# Statistiques de base
+mean(pib_habitant)    # Moyenne
+median(pib_habitant)  # Médiane
+sum(pib_habitant)     # Somme
+min(pib_habitant)     # Minimum
+max(pib_habitant)     # Maximum
+range(pib_habitant)   # Étendue
+```
+
+### Matrices
+
+Une **matrice** est un tableau bidimensionnel avec des données du même type.
+
+```{r}
+# Matrice : températures mensuelles moyennes à Saint-Denis (°C)
+# Source : Météo-France
+temperatures <- matrix(
+  c(27, 27, 26, 24, 22, 20, 19, 20, 22, 24, 25, 26),
+  nrow = 1, ncol = 12,
+  dimnames = list(
+    "Saint-Denis",
+    c("Jan", "Fév", "Mar", "Avr", "Mai", "Jun",
+      "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc")
+  )
+)
+
+temperatures
+```
+
+### Data frames
+
+Le **data frame** est l'objet le plus utilisé en analyse de données : c'est un tableau où chaque
+colonne peut être d'un type différent.
+
+```{r}
+# Création d'un data frame
+iles_ocean_indien <- data.frame(
+  pays       = c("La Réunion", "Maurice", "Rodrigues",
+                 "Mayotte", "Comores", "Seychelles", "Madagascar"),
+  population = c(880000, 1265000, 42000, 321000, 870000, 99000, 28915000),
+  superficie = c(2512, 2040, 108, 374, 2235, 455, 587041),
+  pib_usd    = c(NA, 14085, NA, NA, 1429, 17432, 528),
+  stringsAsFactors = FALSE
+)
+
+iles_ocean_indien
+```
+
+```{r}
+# Accès aux colonnes
+iles_ocean_indien$pays
+iles_ocean_indien$population
+
+# Dimensions du data frame
+nrow(iles_ocean_indien)   # Nombre de lignes
+ncol(iles_ocean_indien)   # Nombre de colonnes
+dim(iles_ocean_indien)    # Dimensions
+```
+
+```{r}
+# Aperçu global
+str(iles_ocean_indien)
+summary(iles_ocean_indien)
+```
+
+### Listes
+
+Une **liste** peut contenir des objets de types et de structures différents.
+
+```{r}
+# Liste décrivant un pays
+reunion <- list(
+  nom        = "La Réunion",
+  statut     = "Région ultrapériphérique française",
+  population = 880000,
+  superficie = 2512,
+  langues    = c("français", "créole réunionnais"),
+  capitale   = "Saint-Denis"
+)
+
+# Accès aux éléments
+reunion$nom
+reunion[["langues"]]
+```
+
+---
+
+## Types de données
+
+| Type | Exemple | Fonction de test |
+|------|---------|-----------------|
+| `numeric` | `42.5`, `3.14` | `is.numeric()` |
+| `integer` | `42L` | `is.integer()` |
+| `character` | `"bonjour"` | `is.character()` |
+| `logical` | `TRUE`, `FALSE` | `is.logical()` |
+| `factor` | `factor("A")` | `is.factor()` |
+| `Date` | `as.Date("2024-01-01")` | `is.Date()` (via lubridate) |
+
+```{r}
+# Vérification et conversion de types
+x <- "123"
+class(x)         # "character"
+x_num <- as.numeric(x)
+class(x_num)     # "numeric"
+
+# Facteur : variable catégorielle
+region <- factor(c("Est", "Ouest", "Nord", "Sud", "Est", "Ouest", "Ouest"))
+levels(region)
+table(region)
+```
+
+---
+
+## Fonctions essentielles
+
+### Fonctions de base
+
+```{r}
+# Séquences
+seq(1, 10, by = 2)
+seq(0, 1, length.out = 5)
+1:10
+
+# Répétition
+rep("R", 3)
+rep(c(1, 2), times = 3)
+rep(c(1, 2), each = 3)
+
+# Tri
+x <- c(3, 1, 4, 1, 5, 9, 2, 6)
+sort(x)
+order(x)
+
+# Valeurs uniques
+unique(c("a", "b", "a", "c", "b"))
+
+# Gestion des valeurs manquantes
+y <- c(1, NA, 3, NA, 5)
+is.na(y)
+sum(is.na(y))           # Nombre de NA
+mean(y, na.rm = TRUE)   # Calcul en ignorant les NA
+```
+
+### Fonctions d'affichage et d'aide
+
+```{r}
+# Affichage
+print("Bonjour La Réunion")
+cat("La superficie est :", 2512, "km²\n")
+
+# Types et structure
+class(iles_ocean_indien)
+typeof(pib_habitant)
+str(reunion)
+```
+
+```r
+# Aide sur une fonction (à exécuter dans la console)
+?mean
+help(sum)
+example(plot)
+```
+
+---
+
+## Bonnes pratiques de programmation
+
+::: {.callout-warning}
+## Règles de style essentielles
+Adoptez ces conventions dès le début : votre code futur vous remerciera.
+:::
+
+### Nommage des objets
+
+```r
+# ✓ Bon : snake_case, noms explicites
+pib_par_habitant <- 15000
+temperature_moyenne <- 24.5
+donnees_fao_2023 <- read.csv("fao_2023.csv")
+
+# ✗ À éviter : noms peu explicites, camelCase, accents
+x <- 15000
+TempMoy <- 24.5
+données <- read.csv("fao_2023.csv")
+```
+
+### Organisation d'un script
+
+Un script R bien structuré suit ce modèle :
+
+```r
+# ============================================================
+# Titre : Analyse des températures à La Réunion
+# Auteur : Marius LAHY
+# Date   : 2025-01-01
+# ============================================================
+
+# 1. Chargement des packages --------------------------------
+library(tidyverse)
+
+# 2. Importation des données --------------------------------
+donnees <- read_csv("data/temperatures_reunion.csv")
+
+# 3. Exploration rapide ------------------------------------
+glimpse(donnees)
+
+# 4. Analyse -----------------------------------------------
+# ... votre code ici
+```
+
+### Commentaires
+
+```r
+# Un commentaire commence par #
+# Commentez le POURQUOI, pas le QUOI
+
+# ✓ Bon commentaire : explique une décision
+pib_par_habitant * 0.92  # Conversion USD → EUR (taux BCE, jan. 2024)
+
+# ✗ Commentaire inutile : décrit ce que le code fait déjà
+x <- x * 0.92  # Multiplie x par 0.92
+```
+
+### Utilisation des packages
+
+```r
+# Installer un package (une seule fois)
+install.packages("ggplot2")
+
+# Charger un package (à chaque session)
+library(ggplot2)
+
+# Bonne pratique : charger tous les packages en début de script
+```
+
+---
+
+## Exercice récapitulatif
+
+::: {.callout-note}
+## Exercice
+1. Créez un vecteur `especes` contenant les noms de cinq espèces endémiques de La Réunion
+   (exemple : "Pétrel de Barau", "Sterne fuligineuse"…).
+2. Créez un vecteur `nb_individus` avec le nombre estimé d'individus pour chacune.
+3. Calculez la somme totale et la moyenne du nombre d'individus.
+4. Affichez uniquement les espèces avec moins de 10 000 individus.
+5. Créez un data frame `faune_reunion` combinant ces deux vecteurs.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé
+
+```r
+especes <- c(
+  "Pétrel de Barau",
+  "Puffin tropical",
+  "Sterne fuligineuse",
+  "Papangue",
+  "Tuit-tuit"
+)
+
+nb_individus <- c(16000, 3000, 70000, 800, 200)
+
+# Statistiques
+sum(nb_individus)
+mean(nb_individus)
+
+# Filtrage
+especes[nb_individus < 10000]
+
+# Data frame
+faune_reunion <- data.frame(
+  espece      = especes,
+  population  = nb_individus,
+  stringsAsFactors = FALSE
+)
+
+faune_reunion
+```
+:::

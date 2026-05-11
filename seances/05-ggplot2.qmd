@@ -1,0 +1,436 @@
+---
+title: "Séance 5 — Visualisation avec ggplot2"
+---
+
+::: {.callout-tip}
+## Objectifs de la séance
+À l'issue de cette séance, vous serez capable de :
+
+- Comprendre la grammaire graphique de `ggplot2`
+- Construire progressivement un graphique couche par couche
+- Utiliser les géométries principales (points, lignes, barres, histogrammes, boxplots)
+- Personnaliser un graphique (titres, thèmes, couleurs, axes)
+- Créer des graphiques à facettes pour comparer des groupes
+:::
+
+```{r}
+library(tidyverse)
+library(gapminder)
+library(palmerpenguins)
+```
+
+---
+
+## La grammaire graphique
+
+`ggplot2` repose sur la **grammaire graphique** (*Grammar of Graphics*) de Leland Wilkinson.
+Un graphique est construit par **couches successives** :
+
+```
+ggplot(data = <DONNÉES>) +
+  aes(<ESTHÉTIQUES>) +
+  geom_<GÉOMÉTRIE>(<OPTIONS>) +
+  scale_<ÉCHELLE>() +
+  facet_<FACETTE>() +
+  labs(<ÉTIQUETTES>) +
+  theme_<THÈME>()
+```
+
+| Composant | Rôle |
+|-----------|------|
+| `data` | Le jeu de données |
+| `aes()` | Correspondance variables → propriétés visuelles |
+| `geom_*` | Type de représentation graphique |
+| `scale_*` | Contrôle des axes et des couleurs |
+| `facet_*` | Division en sous-graphiques |
+| `labs()` | Titres et étiquettes |
+| `theme_*` | Apparence générale |
+
+---
+
+## Construction progressive d'un graphique
+
+Construisons pas à pas un nuage de points de l'espérance de vie vs PIB/habitant.
+
+```{r}
+# Données 2007
+gm_2007 <- gapminder |> filter(year == 2007)
+
+# Étape 1 : Initialiser le graphique (canevas vide)
+ggplot(data = gm_2007)
+```
+
+```{r}
+# Étape 2 : Ajouter les esthétiques
+ggplot(data = gm_2007, aes(x = gdpPercap, y = lifeExp))
+```
+
+```{r}
+# Étape 3 : Ajouter une géométrie
+ggplot(data = gm_2007, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point()
+```
+
+```{r}
+# Étape 4 : Encoder d'autres variables dans des esthétiques
+ggplot(data = gm_2007, aes(x = gdpPercap, y = lifeExp,
+                            color = continent, size = pop)) +
+  geom_point(alpha = 0.7)
+```
+
+```{r}
+# Étape 5 : Transformer l'axe x en échelle logarithmique
+ggplot(data = gm_2007, aes(x = gdpPercap, y = lifeExp,
+                            color = continent, size = pop)) +
+  geom_point(alpha = 0.7) +
+  scale_x_log10()
+```
+
+```{r}
+# Étape 6 : Ajouter titres et étiquettes
+ggplot(data = gm_2007, aes(x = gdpPercap, y = lifeExp,
+                            color = continent, size = pop)) +
+  geom_point(alpha = 0.7) +
+  scale_x_log10(labels = scales::dollar) +
+  labs(
+    title    = "Espérance de vie vs PIB par habitant (2007)",
+    subtitle = "La taille des points est proportionnelle à la population",
+    x        = "PIB par habitant (USD, échelle log)",
+    y        = "Espérance de vie (années)",
+    color    = "Continent",
+    size     = "Population",
+    caption  = "Source : Gapminder Foundation"
+  ) +
+  theme_minimal()
+```
+
+---
+
+## Les géométries principales
+
+### `geom_point()` — Nuage de points
+
+```{r}
+# Morphologie des manchots (palmerpenguins)
+ggplot(penguins, aes(x = bill_length_mm, y = bill_depth_mm,
+                     color = species, shape = species)) +
+  geom_point(size = 2, alpha = 0.8, na.rm = TRUE) +
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73")) +
+  labs(
+    title = "Dimensions du bec selon l'espèce de manchot",
+    x = "Longueur du bec (mm)", y = "Hauteur du bec (mm)",
+    color = "Espèce", shape = "Espèce",
+    caption = "Source : Gorman et al. (2014) — Station Palmer, Antarctique"
+  ) +
+  theme_bw()
+```
+
+### `geom_line()` — Courbes et séries temporelles
+
+```{r}
+# Évolution de l'espérance de vie dans 4 pays représentatifs
+pays_selec <- c("France", "China", "Brazil", "Kenya")
+
+gapminder |>
+  filter(country %in% pays_selec) |>
+  ggplot(aes(x = year, y = lifeExp, color = country, group = country)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  scale_color_brewer(palette = "Set1") +
+  labs(
+    title    = "Évolution de l'espérance de vie (1952–2007)",
+    x        = "Année",
+    y        = "Espérance de vie (années)",
+    color    = "Pays",
+    caption  = "Source : Gapminder Foundation"
+  ) +
+  theme_minimal()
+```
+
+### `geom_col()` et `geom_bar()` — Diagrammes en barres
+
+```{r}
+# Production agricole 2022 (données du TP 1)
+# Simulation avec des données représentatives
+prod_canne <- tibble(
+  pays = c("Brésil", "Inde", "Chine", "Thaïlande", "Pakistan",
+           "Mexique", "Australie", "Maurice", "Réunion", "Madagascar"),
+  production_Mt = c(752, 331, 108, 86, 81, 55, 31, 3.7, 1.8, 2.1)
+)
+
+prod_canne |>
+  mutate(pays = fct_reorder(pays, production_Mt)) |>
+  ggplot(aes(x = production_Mt, y = pays,
+             fill = production_Mt > 10)) +
+  geom_col() +
+  scale_fill_manual(values = c("#aed6f1", "#2980b9"),
+                    labels = c("< 10 Mt", "≥ 10 Mt")) +
+  labs(
+    title   = "Production de canne à sucre (2022, estimation)",
+    x       = "Production (millions de tonnes)",
+    y       = NULL,
+    fill    = NULL,
+    caption = "Source : FAOSTAT"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+### `geom_histogram()` — Histogrammes
+
+```{r}
+# Distribution de l'espérance de vie en 2007
+gapminder |>
+  filter(year == 2007) |>
+  ggplot(aes(x = lifeExp, fill = continent)) +
+  geom_histogram(binwidth = 5, color = "white", alpha = 0.8) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title = "Distribution de l'espérance de vie par continent (2007)",
+    x     = "Espérance de vie (années)",
+    y     = "Nombre de pays",
+    fill  = "Continent"
+  ) +
+  theme_minimal()
+```
+
+### `geom_boxplot()` et `geom_violin()` — Boîtes à moustaches
+
+```{r}
+# Comparaison de l'espérance de vie par continent en 2007
+gapminder |>
+  filter(year == 2007) |>
+  mutate(continent = fct_reorder(continent, lifeExp, median)) |>
+  ggplot(aes(x = continent, y = lifeExp, fill = continent)) +
+  geom_violin(alpha = 0.5, trim = FALSE) +
+  geom_boxplot(width = 0.2, outlier.shape = NA, alpha = 0.8) +
+  geom_jitter(width = 0.1, alpha = 0.3, size = 1.5) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title   = "Distribution de l'espérance de vie par continent (2007)",
+    x       = NULL,
+    y       = "Espérance de vie (années)",
+    caption = "Source : Gapminder Foundation"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+### `geom_density()` — Courbe de densité
+
+```{r}
+# Densité du PIB/habitant en 2007 par continent
+gapminder |>
+  filter(year == 2007) |>
+  ggplot(aes(x = gdpPercap, fill = continent, color = continent)) +
+  geom_density(alpha = 0.3) +
+  scale_x_log10(labels = scales::dollar) +
+  scale_fill_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1") +
+  labs(
+    title = "Distribution du PIB/habitant par continent (2007, échelle log)",
+    x     = "PIB par habitant (USD)",
+    y     = "Densité",
+    fill  = "Continent",
+    color = "Continent"
+  ) +
+  theme_minimal()
+```
+
+---
+
+## Personnalisation avancée
+
+### Couleurs
+
+```{r}
+# Couleurs manuelles
+ggplot(gm_2007, aes(continent, fill = continent)) +
+  geom_bar() +
+  scale_fill_manual(values = c(
+    "Africa"   = "#e74c3c",
+    "Americas" = "#3498db",
+    "Asia"     = "#2ecc71",
+    "Europe"   = "#9b59b6",
+    "Oceania"  = "#f39c12"
+  )) +
+  labs(title = "Nombre de pays par continent (2007)",
+       x = NULL, y = "Nombre de pays") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r}
+# Palettes ColorBrewer (daltonisme-friendly)
+# RColorBrewer::display.brewer.all()  # Pour voir toutes les palettes
+
+# Palette divergente (pour données avec point neutre)
+gapminder |>
+  filter(year == 2007, continent == "Africa") |>
+  mutate(pays = fct_reorder(country, lifeExp),
+         sous_mediane = lifeExp < median(lifeExp)) |>
+  ggplot(aes(x = lifeExp, y = pays, fill = sous_mediane)) +
+  geom_col() +
+  scale_fill_manual(values = c("TRUE" = "#e74c3c", "FALSE" = "#2ecc71")) +
+  geom_vline(xintercept = median(gm_2007 |>
+               filter(continent == "Africa") |> pull(lifeExp)),
+             linetype = "dashed", color = "black") +
+  labs(title = "Espérance de vie en Afrique (2007)",
+       x = "Espérance de vie (années)", y = NULL, fill = "< médiane") +
+  theme_minimal(base_size = 9)
+```
+
+### Thèmes
+
+```{r}
+p_base <- gapminder |>
+  filter(year == 2007) |>
+  ggplot(aes(x = gdpPercap, y = lifeExp, color = continent)) +
+  geom_point(alpha = 0.7) +
+  scale_x_log10() +
+  labs(title = "Espérance de vie vs PIB/habitant (2007)")
+
+# Thèmes prédéfinis
+p_base + theme_minimal()
+```
+
+```{r}
+# Personnalisation du thème
+p_base +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title       = element_text(face = "bold", size = 14),
+    plot.subtitle    = element_text(color = "grey50"),
+    legend.position  = "bottom",
+    panel.grid.minor = element_blank(),
+    axis.title       = element_text(color = "grey30"),
+    plot.caption     = element_text(hjust = 0, color = "grey60", size = 9)
+  )
+```
+
+---
+
+## Facettes
+
+Les facettes permettent de diviser un graphique en **sous-graphiques** par une variable.
+
+```{r}
+# facet_wrap() : une variable de groupement
+gapminder |>
+  filter(year %in% c(1957, 1977, 1997, 2007)) |>
+  ggplot(aes(x = gdpPercap, y = lifeExp, color = continent, size = pop)) +
+  geom_point(alpha = 0.6) +
+  scale_x_log10(labels = scales::dollar_format(suffix = "")) +
+  scale_size(range = c(1, 8), guide = "none") +
+  facet_wrap(~ year) +
+  labs(
+    title   = "Développement mondial par décennie (1957–2007)",
+    x       = "PIB par habitant (USD, log)",
+    y       = "Espérance de vie (années)",
+    color   = "Continent",
+    caption = "Source : Gapminder Foundation"
+  ) +
+  theme_bw(base_size = 10) +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+# facet_grid() : deux variables de groupement
+gapminder |>
+  filter(continent %in% c("Africa", "Asia", "Europe"),
+         year %in% c(1967, 1987, 2007)) |>
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(aes(color = continent), alpha = 0.6, size = 1.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "black",
+              linewidth = 0.5) +
+  scale_x_log10() +
+  facet_grid(continent ~ year) +
+  labs(
+    title = "PIB vs Espérance de vie (Africa, Asia, Europe)",
+    x = "PIB/habitant (log)", y = "Espérance de vie"
+  ) +
+  theme_bw(base_size = 9) +
+  theme(legend.position = "none")
+```
+
+---
+
+## Sauvegarder un graphique
+
+```r
+# Sauvegarder le dernier graphique
+ggsave("figures/graphique.png", width = 8, height = 5, dpi = 300)
+
+# Sauvegarder un graphique spécifique
+mon_graphique <- ggplot(...) + ...
+ggsave("figures/graphique.pdf", plot = mon_graphique, width = 8, height = 5)
+```
+
+---
+
+## Exercice récapitulatif
+
+::: {.callout-note}
+## Exercice
+
+En utilisant `gapminder` et `palmerpenguins` :
+
+1. Reproduisez le graphique "Espérance de vie vs PIB" pour l'Afrique subsaharienne
+   uniquement, en utilisant la couleur pour distinguer si l'espérance de vie est
+   supérieure ou inférieure à 60 ans.
+
+2. Créez un graphique montrant l'évolution de la population totale de chaque continent
+   entre 1952 et 2007 (une ligne par continent).
+
+3. Avec `penguins`, créez un histogramme de la masse corporelle (`body_mass_g`)
+   avec une facette par espèce et une couleur différente pour les mâles et les femelles.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé
+
+```r
+library(tidyverse)
+library(gapminder)
+library(palmerpenguins)
+
+# 1. Afrique subsaharienne : PIB vs espérance de vie
+gapminder |>
+  filter(continent == "Africa", year == 2007) |>
+  mutate(esp_cat = if_else(lifeExp >= 60, "≥ 60 ans", "< 60 ans")) |>
+  ggplot(aes(x = gdpPercap, y = lifeExp, color = esp_cat)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_x_log10(labels = scales::dollar) +
+  scale_color_manual(values = c("< 60 ans" = "#e74c3c", "≥ 60 ans" = "#27ae60")) +
+  geom_hline(yintercept = 60, linetype = "dashed", color = "grey50") +
+  labs(title = "Espérance de vie vs PIB en Afrique (2007)",
+       x = "PIB/habitant (log)", y = "Espérance de vie",
+       color = NULL, caption = "Source : Gapminder") +
+  theme_minimal()
+
+# 2. Évolution de la population totale par continent
+gapminder |>
+  group_by(continent, year) |>
+  summarise(pop_total = sum(pop) / 1e9, .groups = "drop") |>
+  ggplot(aes(x = year, y = pop_total, color = continent, group = continent)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_color_brewer(palette = "Set1") +
+  labs(title = "Population totale par continent (1952–2007)",
+       x = "Année", y = "Population (milliards)",
+       color = "Continent", caption = "Source : Gapminder") +
+  theme_minimal()
+
+# 3. Manchots : masse corporelle par espèce et sexe
+penguins |>
+  filter(!is.na(sex)) |>
+  ggplot(aes(x = body_mass_g, fill = sex)) +
+  geom_histogram(binwidth = 200, alpha = 0.8, position = "identity") +
+  scale_fill_manual(values = c("female" = "#e91e63", "male" = "#1976d2")) +
+  facet_wrap(~ species, ncol = 1) +
+  labs(title = "Masse corporelle des manchots par espèce et sexe",
+       x = "Masse corporelle (g)", y = "Effectif",
+       fill = "Sexe", caption = "Source : Gorman et al. (2014)") +
+  theme_bw()
+```
+:::

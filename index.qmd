@@ -1,0 +1,130 @@
+---
+title: "Bienvenue"
+---
+
+# Introduction au langage R {.unnumbered}
+
+> *"In God we trust. All others must bring data."*
+> — W. Edwards Deming
+
+## Présentation du cours
+
+Ce site est la **ressource de référence** du cours *Introduction à R* dispensé en Master 1
+**Économie Appliquée (EA)** et **Ressources et Risques Naturels des Environnements Tropicaux (RNET)**
+à l'[Université de La Réunion](https://www.univ-reunion.fr).
+
+R est aujourd'hui un langage de référence dans le monde académique comme dans le monde professionnel
+pour l'analyse et la visualisation de données.
+En France, il est utilisé par l'ensemble des services statistiques ministériels,
+par l'[INSEE](https://www.insee.fr), et par de nombreuses agences de l'État
+(France Travail, ARS, etc.).
+Sa polyvalence, sa large communauté, son coût d'implémentation quasi nul et sa capacité
+à manipuler des ensembles de données volumineux en font un outil de choix dans un contexte
+où la donnée occupe une place croissante dans la prise de décision.
+
+## Objectif pédagogique
+
+À l'issue des **30 heures de formation**, l'étudiant sera capable d'**importer, manipuler,
+visualiser et communiquer** des données à l'aide du langage R et de l'environnement RStudio,
+en mobilisant les bonnes pratiques de programmation et les principaux packages de l'écosystème
+**tidyverse**.
+
+## Déroulé du cours
+
+| Séance | Thème | Type | Durée |
+|:------:|-------|:----:|:-----:|
+| 1 | Découverte et prise en main de R | Cours | 3h |
+| 2 | Introduction au tidyverse | Cours | 3h |
+| 3 | **TP 1** — Manipulation de données | TP | 3h |
+| 4 | Approfondissement du tidyverse | Cours | 3h |
+| 5 | Visualisation avec ggplot2 | Cours | 3h |
+| 6 | **TP 2** — Visualisation | TP | 3h |
+| 7 | Introduction à Rmarkdown / Quarto | Cours | 3h |
+| 8 | Améliorer sa productivité avec l'IA | Cours | 3h |
+| 9a | Statistiques descriptives *(RNET)* | Cours | 3h |
+| 9b | Tests statistiques et régression *(RNET)* | Cours | 3h |
+
+: Déroulé pédagogique — 8+2 séances de 3h {.striped .hover}
+
+## Comment utiliser ce site
+
+Ce site sert de **référence** : vous y trouverez l'ensemble des notions, des exemples de code
+et les énoncés des travaux pratiques.
+En cours, nous travaillons **directement en pratique** ; ce site vous permet de :
+
+- revoir une notion après la séance ;
+- accéder aux énoncés des TP ;
+- copier des exemples de code testés et vérifiés ;
+- approfondir via les ressources complémentaires.
+
+::: {.callout-tip}
+## Astuce
+Utilisez le **bouton de copie** (icône en haut à droite de chaque bloc de code)
+pour coller directement le code dans RStudio.
+:::
+
+## Logiciels requis
+
+Avant la première séance, assurez-vous d'avoir installé :
+
+1. **R** (version ≥ 4.3) — [cran.r-project.org](https://cran.r-project.org)
+2. **RStudio Desktop** (version ≥ 2024) — [posit.co/download/rstudio-desktop](https://posit.co/download/rstudio-desktop/)
+
+### Packages utilisés dans ce cours
+
+Installez l'ensemble des packages nécessaires avec la commande suivante (à exécuter une seule fois) :
+
+```r
+install.packages(c(
+  # Tidyverse (manipulation, visualisation)
+  "tidyverse",
+  # Données d'exemple
+  "gapminder",
+  "palmerpenguins",
+  # Statistiques
+  "broom",
+  "skimr",
+  # Tableaux
+  "gt",
+  "knitr",
+  # Communication
+  "rmarkdown",
+  "quarto"
+))
+```
+
+::: {.callout-note}
+## Note sur le tidyverse
+`install.packages("tidyverse")` installe automatiquement les packages
+`ggplot2`, `dplyr`, `tidyr`, `readr`, `stringr`, `forcats`, `lubridate` et `purrr`.
+Vous n'avez pas besoin de les installer séparément.
+:::
+
+## Données utilisées dans le cours
+
+Les exemples et TP de ce cours mobilisent des jeux de données issus de sources publiques
+et internationalement reconnues, choisis pour leur pertinence avec vos domaines d'études :
+
+| Jeu de données | Source | Pertinence |
+|----------------|--------|------------|
+| `gapminder` | [Gapminder Foundation](https://www.gapminder.org) | Économie du développement (PIB, espérance de vie, démographie) |
+| `palmerpenguins` | Gorman et al. (2014) — recherche en Antarctique | Écologie, morphologie animale |
+| Agriculture tropicale | [FAOSTAT](https://www.fao.org/faostat/) | Productions agricoles, sécurité alimentaire |
+| Biodiversité Mascareignes | [GBIF](https://www.gbif.org) | Biodiversité des îles de l'Océan Indien |
+| Indicateurs climatiques | [Météo-France](https://meteofrance.re) | Climatologie réunionnaise |
+
+: Principaux jeux de données du cours {.striped}
+
+## Ressources complémentaires
+
+Pour aller plus loin, voici les ressources de référence utilisées dans ce cours :
+
+- **[R for Data Science](https://r4ds.hadley.nz/)** — Hadley Wickham & Garrett Grolemund
+- **[Guide R](https://larmarange.github.io/guide-R/)** — Joseph Larmarange
+- **[utilitR](https://book.utilitr.org/)** — Documentation collaborative des agents INSEE
+- **[Introduction à R et au tidyverse](https://juba.github.io/tidyverse/)** — Julien Barnier
+- **[Modern Data Science with R](https://mdsr-book.github.io/mdsr3e/)** — Baumer, Kaplan & Horton
+
+---
+
+*Marius LAHY — Université de La Réunion — 2025-2026*

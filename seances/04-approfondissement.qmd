@@ -1,0 +1,444 @@
+---
+title: "Séance 4 — Approfondissement du tidyverse"
+---
+
+::: {.callout-tip}
+## Objectifs de la séance
+À l'issue de cette séance, vous serez capable de :
+
+- Manipuler des chaînes de caractères avec `stringr`
+- Gérer des variables catégorielles avec `forcats`
+- Travailler avec des dates et des heures avec `lubridate`
+- Appliquer des fonctions sur des listes ou des groupes avec `purrr`
+:::
+
+```{r}
+library(tidyverse)
+```
+
+---
+
+## Manipulation de chaînes de caractères avec `stringr`
+
+Toutes les fonctions de `stringr` commencent par `str_`.
+
+### Fonctions de base
+
+```{r}
+# Données exemple : noms d'espèces et sites d'observation
+especes <- c("Pétrel de Barau", "Puffin tropical", "Sterne fuligineuse",
+             "Papangue (Circus maillardi)", "Tuit-tuit (Coracina newtoni)")
+
+# Longueur des chaînes
+str_length(especes)
+
+# Majuscules / minuscules
+str_to_upper(especes)
+str_to_lower(especes)
+str_to_title("pétrel de barau")
+
+# Extraire une sous-chaîne (positions)
+str_sub(especes, 1, 6)
+```
+
+```{r}
+# Détecter un motif
+str_detect(especes, "tropical")
+str_detect(especes, "\\(")  # Contient une parenthèse
+
+# Compter les occurrences
+str_count(especes, "e")
+
+# Extraire les éléments qui matchent
+str_subset(especes, "tropical|Pétrel")
+```
+
+```{r}
+# Remplacement
+str_replace(especes, " \\(.*\\)", "")    # Supprimer le nom scientifique
+str_replace_all(especes, "é", "e")       # Normalisation (suppression des accents)
+
+# Découpage
+str_split("Canne à sucre, Vanille, Café", ", ")
+str_split_fixed("2024-03-15", "-", n = 3)
+```
+
+```{r}
+# Concaténation
+str_c("Île", "de", "La Réunion", sep = " ")
+str_glue("La population de {ville} est de {pop} habitants.",
+         ville = "Saint-Denis",
+         pop   = "150 000")
+
+# Complétion (padding)
+codes <- c("01", "2", "123", "45")
+str_pad(codes, width = 3, pad = "0", side = "left")
+```
+
+### Expressions régulières (regex)
+
+Les expressions régulières permettent des recherches et remplacements complexes.
+
+| Motif | Signification |
+|-------|--------------|
+| `.` | N'importe quel caractère |
+| `\\d` | Chiffre (0-9) |
+| `\\w` | Caractère alphanumérique |
+| `\\s` | Espace |
+| `^` | Début de chaîne |
+| `$` | Fin de chaîne |
+| `*` | 0 ou plusieurs fois |
+| `+` | 1 ou plusieurs fois |
+| `?` | 0 ou 1 fois |
+| `[abc]` | a, b ou c |
+| `(x\|y)` | x ou y |
+
+```{r}
+# Données : codes de station météo réunionnaises
+stations <- c("REU-NOR-001", "REU-SUD-042", "MAY-001",
+              "MDG-ANT-017", "MDG-TOL-003")
+
+# Extraire le code île
+str_extract(stations, "^[A-Z]{3}")
+
+# Garder seulement les stations réunionnaises
+str_subset(stations, "^REU")
+
+# Extraire le numéro de station
+str_extract(stations, "\\d+$")
+```
+
+---
+
+## Manipulation des facteurs avec `forcats`
+
+Un **facteur** est une variable catégorielle avec des niveaux (`levels`) ordonnés.
+
+```{r}
+library(gapminder)
+
+# Transformer en facteur
+gm_2007 <- gapminder |>
+  filter(year == 2007) |>
+  mutate(continent = as.factor(continent))
+
+levels(gm_2007$continent)
+nlevels(gm_2007$continent)
+```
+
+### Réordonner les niveaux
+
+```{r}
+# fct_infreq() : ordre décroissant d'effectif
+gm_2007 |>
+  mutate(continent = fct_infreq(continent)) |>
+  count(continent)
+```
+
+```{r}
+# fct_reorder() : ordre selon une autre variable (utile pour les graphiques)
+gm_2007 |>
+  mutate(
+    continent = fct_reorder(continent, lifeExp, .fun = median)
+  ) |>
+  group_by(continent) |>
+  summarise(esp_vie_med = median(lifeExp))
+```
+
+```{r}
+# fct_relevel() : ordre manuel
+niveaux_manuels <- c("Africa", "Americas", "Asia", "Europe", "Oceania")
+
+gm_2007 |>
+  mutate(continent = fct_relevel(continent, niveaux_manuels)) |>
+  count(continent)
+```
+
+### Regrouper des niveaux
+
+```{r}
+# fct_recode() : renommer des niveaux
+gm_2007 |>
+  mutate(continent_fr = fct_recode(continent,
+    "Afrique"   = "Africa",
+    "Amériques" = "Americas",
+    "Asie"      = "Asia",
+    "Europe"    = "Europe",
+    "Océanie"   = "Oceania"
+  )) |>
+  count(continent_fr)
+```
+
+```{r}
+# fct_collapse() : regrouper plusieurs niveaux
+gm_2007 |>
+  mutate(
+    zone = fct_collapse(continent,
+      "Global South" = c("Africa", "Americas", "Asia"),
+      "Global North" = c("Europe", "Oceania")
+    )
+  ) |>
+  count(zone)
+```
+
+```{r}
+# fct_lump_n() : regrouper les niveaux rares dans "Other"
+gapminder |>
+  filter(year == 2007) |>
+  mutate(region = fct_lump_n(country, n = 5, other_level = "Autres")) |>
+  count(region, sort = TRUE)
+```
+
+---
+
+## Manipulation des dates avec `lubridate`
+
+```{r}
+library(lubridate)
+```
+
+### Créer des dates
+
+```{r}
+# À partir de chaînes de caractères
+date1 <- ymd("2024-01-15")         # année-mois-jour
+date2 <- dmy("15/01/2024")         # jour/mois/année
+date3 <- mdy("January 15, 2024")   # mois jour, année
+
+class(date1)
+
+# Date et heure
+dt <- ymd_hms("2024-01-15 08:30:00", tz = "Indian/Reunion")
+dt
+```
+
+```{r}
+# Extraire des composantes
+year(date1)
+month(date1)
+month(date1, label = TRUE, abbr = FALSE)   # Nom du mois
+day(date1)
+wday(date1, label = TRUE)                  # Jour de la semaine
+yday(date1)                                # Jour de l'année (1-365)
+```
+
+### Arithmétique sur les dates
+
+```{r}
+# Différence entre deux dates
+debut_saison_pluies <- ymd("2024-11-01")
+fin_saison_pluies   <- ymd("2025-04-30")
+duree <- fin_saison_pluies - debut_saison_pluies
+duree                                      # En jours
+as.numeric(duree, units = "weeks")         # En semaines
+
+# Ajouter une durée
+debut_saison_pluies + months(3)
+debut_saison_pluies + years(1)
+```
+
+```{r}
+# Données exemple : passages de cyclones
+cyclones <- tibble(
+  nom     = c("Belal", "Chido", "Fabien", "Herold", "Batsirai"),
+  date    = ymd(c("2024-01-14", "2024-12-13", "2019-12-28",
+                   "2020-03-17", "2022-02-05")),
+  categorie = c(4L, 4L, 2L, 3L, 3L)
+)
+
+cyclones |>
+  mutate(
+    annee  = year(date),
+    mois   = month(date, label = TRUE),
+    saison = if_else(month(date) %in% c(11:12, 1:4),
+                     "Saison cyclonique", "Hors saison")
+  )
+```
+
+### Travailler avec des séries temporelles
+
+```{r}
+# Données climatiques mensuelles (simulées) de La Réunion
+set.seed(42)
+climat_reunion <- tibble(
+  date          = seq(ymd("2015-01-01"), ymd("2024-12-01"), by = "month"),
+  precipitations = round(rnorm(120, mean = 150, sd = 80) |> pmax(0), 1),
+  temperature    = round(25 - 4 * cos(2 * pi * (month(
+    seq(ymd("2015-01-01"), ymd("2024-12-01"), by = "month")) - 1) / 12) +
+    rnorm(120, 0, 0.5), 1)
+)
+
+# Résumé par mois (toutes années confondues)
+climat_reunion |>
+  mutate(mois = month(date, label = TRUE)) |>
+  group_by(mois) |>
+  summarise(
+    pluie_moy  = mean(precipitations),
+    temp_moy   = mean(temperature)
+  )
+```
+
+---
+
+## Programmation fonctionnelle avec `purrr`
+
+`purrr` permet d'appliquer une fonction à chaque élément d'une liste ou d'un vecteur,
+en remplacement des boucles `for`.
+
+### La famille `map()`
+
+| Fonction | Retourne |
+|----------|---------|
+| `map()` | Une liste |
+| `map_dbl()` | Un vecteur numérique (double) |
+| `map_int()` | Un vecteur entier |
+| `map_chr()` | Un vecteur de caractères |
+| `map_lgl()` | Un vecteur logique |
+| `map_dfr()` | Un data frame (en combinant par lignes) |
+
+```{r}
+# Calculer des statistiques sur plusieurs variables numériques
+gapminder |>
+  filter(year == 2007) |>
+  select(lifeExp, pop, gdpPercap) |>
+  map_dbl(mean)
+```
+
+```{r}
+# Appliquer une fonction à chaque continent
+gapminder |>
+  filter(year == 2007) |>
+  split(~continent) |>
+  map(~ summarise(.x,
+    nb_pays      = n(),
+    pib_med      = median(gdpPercap),
+    esp_vie_moy  = mean(lifeExp)
+  )) |>
+  list_rbind(names_to = "continent")
+```
+
+```{r}
+# Lire plusieurs fichiers CSV en une seule commande
+# (exemple avec des fichiers fictifs)
+# fichiers <- list.files("data/", pattern = "*.csv", full.names = TRUE)
+# donnees  <- map_dfr(fichiers, read_csv, .id = "fichier")
+
+# Simulation : résoudre un modèle pour plusieurs paramètres
+params <- list(
+  faible  = list(taux = 0.02, n0 = 100),
+  moyen   = list(taux = 0.05, n0 = 100),
+  fort    = list(taux = 0.10, n0 = 100)
+)
+
+# Croissance exponentielle : N(t) = N0 * e^(r*t)
+croissance <- params |>
+  map_dfr(function(p) {
+    tibble(
+      t = 0:20,
+      N = p$n0 * exp(p$taux * 0:20)
+    )
+  }, .id = "scenario")
+
+head(croissance, 10)
+```
+
+### `map2()` et `pmap()` — Plusieurs arguments
+
+```{r}
+# map2() : itérer sur deux vecteurs en parallèle
+noms   <- c("Madagascar", "La Réunion", "Maurice")
+pops   <- c(28.9, 0.88, 1.27)
+
+map2_chr(noms, pops,
+         ~ str_glue("{.x} : {.y} millions d'habitants"))
+```
+
+### Gestion des erreurs avec `safely()` et `possibly()`
+
+```{r}
+# safely() : retourne toujours une liste avec $result et $error
+safe_log <- safely(log)
+
+safe_log(10)     # Succès
+safe_log(-5)     # Erreur gérée proprement
+
+# possibly() : retourne une valeur par défaut en cas d'erreur
+safe_sqrt <- possibly(sqrt, otherwise = NA_real_)
+map_dbl(c(4, -1, 9, -4, 16), safe_sqrt)
+```
+
+---
+
+## Exercice récapitulatif
+
+::: {.callout-note}
+## Exercice
+
+En utilisant le jeu de données `gapminder` :
+
+1. **(stringr)** Créez une colonne `country_clean` qui remplace les espaces par des
+   underscores dans les noms de pays, et une colonne `first_letter` avec la première
+   lettre de chaque pays.
+
+2. **(forcats)** Pour l'année 2007, créez une colonne `income_group` en regroupant
+   les pays en 3 catégories de PIB/habitant (seuils à votre choix). Réordonnez les
+   niveaux du plus pauvre au plus riche.
+
+3. **(lubridate)** Le jeu de données a des années entières. Créez une colonne `date_ref`
+   correspondant au 1er janvier de chaque année (ex. `1952-01-01`), puis calculez
+   le nombre de jours écoulés depuis le 1er janvier 1900 pour chaque observation.
+
+4. **(purrr)** Pour chaque continent, ajustez un modèle linéaire simple `lifeExp ~ year`
+   (uniquement les données de 2007 et antérieures) et extrayez le coefficient de `year`
+   (la tendance). Quel continent connaît la progression la plus rapide de l'espérance de vie ?
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé
+
+```r
+library(tidyverse)
+library(gapminder)
+library(lubridate)
+
+# 1. stringr
+gapminder |>
+  mutate(
+    country_clean = str_replace_all(country, " ", "_"),
+    first_letter  = str_sub(country, 1, 1)
+  ) |>
+  select(country, country_clean, first_letter) |>
+  distinct() |>
+  head(10)
+
+# 2. forcats
+gapminder |>
+  filter(year == 2007) |>
+  mutate(
+    income_group = cut(gdpPercap,
+      breaks = c(0, 2000, 10000, Inf),
+      labels = c("Faible", "Intermédiaire", "Élevé")
+    ),
+    income_group = fct_relevel(income_group, "Faible", "Intermédiaire", "Élevé")
+  ) |>
+  count(income_group)
+
+# 3. lubridate
+gapminder |>
+  mutate(
+    date_ref    = ymd(paste0(year, "-01-01")),
+    jours_since = as.numeric(date_ref - ymd("1900-01-01"))
+  ) |>
+  select(country, year, date_ref, jours_since) |>
+  head(10)
+
+# 4. purrr — modèles linéaires par continent
+gapminder |>
+  group_by(continent) |>
+  group_map(~ lm(lifeExp ~ year, data = .x)) |>
+  set_names(levels(factor(gapminder$continent))) |>
+  map_dfr(~ tibble(coef_year = coef(.x)["year"]),
+          .id = "continent") |>
+  arrange(desc(coef_year))
+```
+:::

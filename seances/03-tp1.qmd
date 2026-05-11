@@ -1,0 +1,337 @@
+---
+title: "TP 1 — Manipulation de données"
+---
+
+::: {.callout-tip}
+## Objectifs du TP
+À l'issue de ce TP, vous serez capable de :
+
+- Importer un fichier CSV et explorer sa structure
+- Nettoyer et transformer un jeu de données avec le tidyverse
+- Filtrer, sélectionner, créer de nouvelles variables et agréger des données
+- Exporter les résultats dans un nouveau fichier
+:::
+
+---
+
+## Contexte
+
+Dans ce TP, vous analysez des données de production agricole tropicale issues de
+[FAOSTAT](https://www.fao.org/faostat/),
+la base de données statistiques de l'Organisation des Nations Unies pour l'alimentation et l'agriculture (FAO).
+
+Le jeu de données contient des informations sur la production de cultures tropicales
+(canne à sucre, vanille, girofle, ylang-ylang, café, etc.) pour plusieurs pays
+de la zone Océan Indien et Afrique subsaharienne entre 2000 et 2022.
+
+---
+
+## Données
+
+Le fichier `agriculture_tropicale.csv` est disponible dans le répertoire `data/` du cours.
+
+```{r}
+library(tidyverse)
+
+# Importation du jeu de données
+agri <- read_csv("../data/agriculture_tropicale.csv")
+```
+
+### Description des variables
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `pays` | character | Nom du pays |
+| `zone` | character | Zone géographique |
+| `annee` | integer | Année |
+| `culture` | character | Type de culture |
+| `production_tonnes` | numeric | Production en tonnes |
+| `surface_ha` | numeric | Surface cultivée en hectares |
+| `rendement_kg_ha` | numeric | Rendement (kg/ha) |
+| `valeur_production_kUSD` | numeric | Valeur de la production (milliers de USD) |
+
+---
+
+## Partie 1 — Exploration initiale
+
+### Exercice 1.1 — Premier contact avec les données
+
+::: {.callout-note}
+## Consignes
+1. Affichez les 6 premières lignes du jeu de données.
+2. Examinez la structure (types de variables, dimensions).
+3. Obtenez un résumé statistique global.
+4. Identifiez les valeurs manquantes : combien y en a-t-il par colonne ?
+5. Listez les pays et les cultures présents dans le jeu de données.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 1.1
+
+```r
+# 1. Premières lignes
+head(agri)
+
+# 2. Structure
+glimpse(agri)
+
+# 3. Résumé statistique
+summary(agri)
+
+# 4. Valeurs manquantes par colonne
+agri |>
+  summarise(across(everything(), ~ sum(is.na(.)))) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "nb_na") |>
+  filter(nb_na > 0)
+
+# 5. Pays et cultures présents
+unique(agri$pays)
+unique(agri$culture)
+
+# Ou de façon plus lisible avec count()
+agri |> count(pays, sort = TRUE)
+agri |> count(culture, sort = TRUE)
+```
+:::
+
+---
+
+## Partie 2 — Nettoyage et transformation
+
+### Exercice 2.1 — Gestion des valeurs manquantes
+
+::: {.callout-note}
+## Consignes
+1. Combien de lignes ont au moins une valeur manquante ?
+2. Supprimez les lignes où `production_tonnes` est manquante et sauvegardez
+   le résultat dans un objet `agri_propre`.
+3. Vérifiez que l'objet `agri_propre` ne contient plus de valeurs manquantes
+   dans cette colonne.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 2.1
+
+```r
+# 1. Lignes avec au moins un NA
+sum(!complete.cases(agri))
+
+# 2. Suppression des lignes avec production manquante
+agri_propre <- agri |>
+  filter(!is.na(production_tonnes))
+
+# 3. Vérification
+sum(is.na(agri_propre$production_tonnes))  # Doit être 0
+nrow(agri) - nrow(agri_propre)             # Nombre de lignes supprimées
+```
+:::
+
+### Exercice 2.2 — Création de nouvelles variables
+
+::: {.callout-note}
+## Consignes
+
+En utilisant `agri_propre` :
+
+1. Créez une variable `production_ktonnes` = production en milliers de tonnes.
+2. Créez une variable `decennie` qui regroupe les années par décennie
+   (ex : 2000, 2010, 2020).
+3. Créez une variable `prix_unitaire_USD_tonne` = valeur de production (en USD)
+   divisée par la production en tonnes.
+   *(Attention : `valeur_production_kUSD` est en milliers de USD — convertissez d'abord.)*
+4. Sauvegardez le résultat dans `agri_enrichi`.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 2.2
+
+```r
+agri_enrichi <- agri_propre |>
+  mutate(
+    production_ktonnes    = production_tonnes / 1000,
+    decennie              = floor(annee / 10) * 10,
+    prix_unitaire_USD_t   = (valeur_production_kUSD * 1000) / production_tonnes
+  )
+
+glimpse(agri_enrichi)
+```
+:::
+
+---
+
+## Partie 3 — Filtrage et sélection
+
+### Exercice 3.1 — Requêtes ciblées
+
+::: {.callout-note}
+## Consignes
+
+1. Sélectionnez uniquement les données de canne à sucre (`"Canne à sucre"`).
+2. Parmi ces données, filtrez les pays dont la production dépasse **500 000 tonnes** en 2022.
+3. Affichez le résultat trié par production décroissante.
+4. Combien de pays ont produit de la vanille à un rendement supérieur
+   à **500 kg/ha** ?
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 3.1
+
+```r
+# 1 et 2 : Canne à sucre > 500 000 t en 2022
+agri_enrichi |>
+  filter(culture == "Canne à sucre", annee == 2022,
+         production_tonnes > 500000) |>
+  arrange(desc(production_tonnes))
+
+# 4 : Pays producteurs de vanille avec rendement > 500 kg/ha
+agri_enrichi |>
+  filter(culture == "Vanille", rendement_kg_ha > 500) |>
+  distinct(pays) |>
+  nrow()
+```
+:::
+
+---
+
+## Partie 4 — Agrégation et résumés
+
+### Exercice 4.1 — Statistiques par groupe
+
+::: {.callout-note}
+## Consignes
+
+1. Calculez la production totale (en tonnes) par pays, toutes cultures confondues,
+   pour l'année 2022. Triez par production décroissante.
+2. Pour chaque culture, calculez la production moyenne annuelle sur toute la période
+   et le rendement médian.
+3. Calculez l'évolution de la production totale de canne à sucre par décennie
+   (utilisez la variable `decennie`).
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 4.1
+
+```r
+# 1. Production totale 2022 par pays
+agri_enrichi |>
+  filter(annee == 2022) |>
+  group_by(pays) |>
+  summarise(production_totale = sum(production_tonnes, na.rm = TRUE)) |>
+  arrange(desc(production_totale))
+
+# 2. Production moyenne et rendement médian par culture
+agri_enrichi |>
+  group_by(culture) |>
+  summarise(
+    prod_moyenne_t      = mean(production_tonnes, na.rm = TRUE),
+    rendement_median_kg = median(rendement_kg_ha, na.rm = TRUE),
+    nb_observations     = n()
+  ) |>
+  arrange(desc(prod_moyenne_t))
+
+# 3. Production canne à sucre par décennie
+agri_enrichi |>
+  filter(culture == "Canne à sucre") |>
+  group_by(decennie) |>
+  summarise(
+    production_totale_Mt = sum(production_tonnes, na.rm = TRUE) / 1e6
+  )
+```
+:::
+
+---
+
+## Partie 5 — Restructuration
+
+### Exercice 5.1 — Pivot
+
+::: {.callout-note}
+## Consignes
+
+1. Créez un tableau récapitulatif de la production (en tonnes) par pays et par culture
+   pour l'année 2022 (une ligne par pays, une colonne par culture).
+   Utilisez `pivot_wider()`.
+2. À partir de ce tableau large, repassez au format long avec `pivot_longer()`.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 5.1
+
+```r
+# 1. Tableau large : production 2022 par pays × culture
+tableau_large <- agri_enrichi |>
+  filter(annee == 2022) |>
+  group_by(pays, culture) |>
+  summarise(production = sum(production_tonnes, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(
+    names_from  = culture,
+    values_from = production,
+    values_fill = 0
+  )
+
+tableau_large
+
+# 2. Retour au format long
+tableau_large |>
+  pivot_longer(
+    cols      = -pays,
+    names_to  = "culture",
+    values_to = "production_tonnes"
+  ) |>
+  filter(production_tonnes > 0)
+```
+:::
+
+---
+
+## Partie 6 — Défi final
+
+### Exercice 6.1 — Analyse complète
+
+::: {.callout-note}
+## Consignes
+
+Réalisez une analyse complète en une seule chaîne de pipes qui :
+
+1. Part de `agri` (données brutes).
+2. Supprime les lignes où `production_tonnes` ou `rendement_kg_ha` est manquant.
+3. Calcule le PIB agricole par pays et par culture en 2022 (valeur totale en millions USD).
+4. Identifie, pour chaque pays, la culture dont la valeur de production est la plus élevée.
+5. Affiche le résultat trié par valeur décroissante.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé 6.1
+
+```r
+agri |>
+  # 2. Suppression des NA
+  filter(!is.na(production_tonnes), !is.na(rendement_kg_ha)) |>
+  # 3. Filtre 2022 + calcul valeur en millions USD
+  filter(annee == 2022) |>
+  mutate(valeur_mUSD = valeur_production_kUSD / 1000) |>
+  # 4. Culture avec valeur maximale par pays
+  group_by(pays) |>
+  slice_max(valeur_mUSD, n = 1, with_ties = FALSE) |>
+  ungroup() |>
+  # 5. Tri
+  select(pays, culture_principale = culture, valeur_mUSD) |>
+  arrange(desc(valeur_mUSD))
+```
+:::
+
+---
+
+## Export des résultats
+
+Une fois votre analyse terminée, exportez vos résultats :
+
+```r
+# Exporter en CSV
+write_csv(agri_enrichi, "data/agriculture_tropicale_enrichi.csv")
+
+# Exporter en Excel (package writexl)
+# install.packages("writexl")
+library(writexl)
+write_xlsx(agri_enrichi, "data/agriculture_tropicale_enrichi.xlsx")
+```

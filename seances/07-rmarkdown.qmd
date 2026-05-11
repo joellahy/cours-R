@@ -1,0 +1,491 @@
+---
+title: "Séance 7 — Introduction à Rmarkdown et Quarto"
+---
+
+::: {.callout-tip}
+## Objectifs de la séance
+À l'issue de cette séance, vous serez capable de :
+
+- Comprendre la philosophie de la recherche reproductible
+- Créer un document Rmarkdown ou Quarto intégrant code, résultats et texte
+- Maîtriser la syntaxe Markdown de base
+- Configurer un document via l'en-tête YAML
+- Exporter un rapport en HTML et en PDF
+:::
+
+---
+
+## Pourquoi des documents reproductibles ?
+
+Dans un rapport classique, on copie-colle les résultats de R dans Word.
+Ce workflow présente de nombreux problèmes :
+
+- Si les données changent, il faut tout refaire manuellement.
+- Les erreurs de copie-colle sont fréquentes.
+- Impossible de vérifier comment les résultats ont été obtenus.
+
+**Rmarkdown** et **Quarto** permettent d'écrire du texte et du code R dans le **même fichier**.
+À chaque compilation, le code est exécuté et les résultats sont intégrés automatiquement.
+
+> *"An article about computational science in a scientific publication is not the scholarship itself,
+> it is merely advertising of the scholarship. The actual scholarship is the complete software
+> development environment and the complete set of instructions which generated the figures."*
+> — Buckheit & Donoho (1995)
+
+---
+
+## Rmarkdown vs Quarto
+
+| Caractéristique | Rmarkdown | Quarto |
+|-----------------|-----------|--------|
+| Fichier | `.Rmd` | `.qmd` |
+| Moteur | knitr | knitr ou Jupyter |
+| Langages | R (principalement) | R, Python, Julia, Observable |
+| Formats de sortie | HTML, PDF, Word | HTML, PDF, Word, RevealJS, sites web, livres… |
+| Maintenance | Stable | Actif (successeur de Rmarkdown) |
+
+::: {.callout-note}
+## Recommandation
+Pour tout nouveau projet, préférez **Quarto** (`.qmd`). La syntaxe est très proche de Rmarkdown,
+et il offre plus de flexibilité. Ce cours utilise Quarto.
+:::
+
+---
+
+## Créer un nouveau document Quarto
+
+Dans RStudio : `File > New File > Quarto Document`
+
+Choisissez :
+- **Title** : le titre de votre document
+- **Format** : HTML (recommandé pour commencer)
+
+RStudio génère un fichier `.qmd` avec un exemple de base.
+
+---
+
+## L'en-tête YAML
+
+Chaque document commence par un en-tête YAML délimité par `---`.
+
+```yaml
+---
+title: "Analyse des productions agricoles tropicales"
+author: "Marius LAHY"
+date: "2024-12-01"
+date-format: "DD MMMM YYYY"
+lang: fr
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    theme: cosmo
+    code-copy: true
+    df-print: paged
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+```
+
+### Options YAML courantes
+
+| Clé | Description |
+|-----|-------------|
+| `title` | Titre du document |
+| `author` | Auteur(s) |
+| `date` | Date |
+| `lang` | Langue (`fr`, `en`, etc.) |
+| `format: html` | Sortie HTML |
+| `format: pdf` | Sortie PDF (nécessite LaTeX) |
+| `toc: true` | Table des matières |
+| `toc-depth` | Profondeur de la TOC |
+| `number-sections` | Numérotation des sections |
+| `execute: echo` | Afficher le code ? |
+| `execute: warning` | Afficher les avertissements ? |
+| `execute: cache` | Mettre en cache les calculs ? |
+
+---
+
+## La syntaxe Markdown
+
+### Titres
+
+```markdown
+# Titre de niveau 1
+## Titre de niveau 2
+### Titre de niveau 3
+#### Titre de niveau 4
+```
+
+### Formatage du texte
+
+```markdown
+**Gras** ou __Gras__
+*Italique* ou _Italique_
+~~Barré~~
+`code en ligne`
+> Citation ou note
+```
+
+**Gras**, *Italique*, ~~Barré~~, `code en ligne`
+
+> Exemple de citation
+
+### Listes
+
+```markdown
+- Élément 1
+- Élément 2
+  - Sous-élément 2a
+  - Sous-élément 2b
+
+1. Premier
+2. Deuxième
+3. Troisième
+```
+
+### Liens et images
+
+```markdown
+[Texte du lien](https://www.exemple.com)
+![Texte alternatif](chemin/vers/image.png)
+![](chemin/vers/image.png){width=50%}
+```
+
+### Tableaux
+
+```markdown
+| Colonne 1 | Colonne 2 | Colonne 3 |
+|-----------|:---------:|----------:|
+| Gauche    | Centre    | Droite    |
+| Valeur    | Valeur    | Valeur    |
+```
+
+### Équations mathématiques
+
+```markdown
+Formule en ligne : $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i$
+
+Formule en bloc :
+$$
+\sigma^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2
+$$
+```
+
+Formule en ligne : $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i$
+
+$$
+\sigma^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2
+$$
+
+---
+
+## Les blocs de code (chunks)
+
+Un **chunk** est un bloc de code R inséré dans le document.
+
+````markdown
+```{{r}}
+#| label: mon-graphique
+#| fig-cap: "Distribution du PIB par habitant"
+#| fig-width: 7
+#| fig-height: 4
+#| echo: true
+#| warning: false
+
+library(ggplot2)
+library(gapminder)
+
+gapminder |>
+  dplyr::filter(year == 2007) |>
+  ggplot(aes(x = gdpPercap)) +
+  geom_histogram(bins = 30, fill = "#3498db") +
+  scale_x_log10() +
+  theme_minimal()
+```
+````
+
+### Options de chunks
+
+| Option | Description | Valeurs |
+|--------|-------------|---------|
+| `echo` | Afficher le code | `true` / `false` |
+| `eval` | Exécuter le code | `true` / `false` |
+| `output` | Afficher la sortie | `true` / `false` |
+| `warning` | Afficher les warnings | `true` / `false` |
+| `message` | Afficher les messages | `true` / `false` |
+| `fig-width` | Largeur de la figure | numérique (en pouces) |
+| `fig-height` | Hauteur de la figure | numérique (en pouces) |
+| `fig-cap` | Légende de la figure | chaîne |
+| `cache` | Mise en cache | `true` / `false` |
+| `label` | Nom du chunk (unique) | chaîne sans espaces |
+
+### Code inline
+
+Le code peut aussi s'insérer directement dans le texte :
+
+```markdown
+La population mondiale en 2007 était de
+`r round(sum(gapminder::gapminder[gapminder::gapminder$year == 2007, "pop"]) / 1e9, 1)`
+milliards d'habitants.
+```
+
+---
+
+## Callouts (encadrés)
+
+Quarto offre des encadrés prédéfinis :
+
+```markdown
+::: {.callout-note}
+## Note
+Contenu de la note.
+:::
+
+::: {.callout-tip}
+## Conseil
+Astuce pratique.
+:::
+
+::: {.callout-warning}
+## Attention
+Mise en garde.
+:::
+
+::: {.callout-important}
+## Important
+Information cruciale.
+:::
+
+::: {.callout-caution collapse="true"}
+## Détails (cliquable)
+Contenu masqué par défaut.
+:::
+```
+
+---
+
+## Tableaux dans les rapports
+
+### Avec `knitr::kable()`
+
+```r
+library(knitr)
+library(gapminder)
+library(tidyverse)
+
+gapminder |>
+  filter(year == 2007, continent == "Africa") |>
+  arrange(desc(lifeExp)) |>
+  head(10) |>
+  select(Pays = country,
+         `Esp. de vie` = lifeExp,
+         `PIB/hab.` = gdpPercap) |>
+  kable(
+    caption = "Top 10 des pays africains par espérance de vie (2007)",
+    digits  = 1,
+    format.args = list(big.mark = " ")
+  )
+```
+
+### Avec le package `gt`
+
+```r
+library(gt)
+
+gapminder |>
+  filter(year == 2007, continent == "Africa") |>
+  arrange(desc(lifeExp)) |>
+  head(10) |>
+  select(country, lifeExp, gdpPercap, pop) |>
+  gt() |>
+  tab_header(
+    title    = "Top 10 des pays africains",
+    subtitle = "Par espérance de vie, 2007"
+  ) |>
+  fmt_number(columns = gdpPercap, decimals = 0, sep_mark = " ") |>
+  fmt_number(columns = pop, decimals = 0, sep_mark = " ") |>
+  cols_label(
+    country   = "Pays",
+    lifeExp   = "Esp. de vie",
+    gdpPercap = "PIB/hab. (USD)",
+    pop       = "Population"
+  ) |>
+  tab_source_note("Source : Gapminder Foundation")
+```
+
+---
+
+## Compiler un document
+
+Dans RStudio : **bouton Render** (ou `Ctrl + Shift + K`)
+
+Depuis la console :
+
+```r
+# Compiler en HTML
+quarto::quarto_render("mon_rapport.qmd", output_format = "html")
+
+# Compiler en PDF
+quarto::quarto_render("mon_rapport.qmd", output_format = "pdf")
+```
+
+Pour la sortie PDF, il faut une distribution LaTeX installée :
+
+```r
+# Installer TinyTeX (distribution LaTeX légère)
+install.packages("tinytex")
+tinytex::install_tinytex()
+```
+
+---
+
+## Structure recommandée d'un rapport
+
+Voici la structure type d'un rapport d'analyse de données :
+
+```markdown
+---
+title: "Analyse des productions agricoles tropicales"
+author: "Prénom NOM"
+date: today
+lang: fr
+format:
+  html:
+    toc: true
+    code-fold: true
+execute:
+  warning: false
+  message: false
+---
+
+## Introduction
+
+Contexte, objectifs, données utilisées.
+
+## Importation et nettoyage des données
+
+```{{r}}
+#| label: setup
+library(tidyverse)
+donnees <- read_csv("data/agriculture_tropicale.csv")
+glimpse(donnees)
+```
+
+## Résultats
+
+### Analyse descriptive
+
+```{{r}}
+#| label: stats-desc
+summary(donnees)
+```
+
+### Visualisations
+
+```{{r}}
+#| label: graphique-principal
+#| fig-cap: "Production agricole par pays (2022)"
+ggplot(...)
+```
+
+## Conclusion
+
+Synthèse des principaux résultats.
+
+## Références
+```
+
+---
+
+## Exercice récapitulatif
+
+::: {.callout-note}
+## Exercice — Créer votre premier rapport reproductible
+
+Créez un fichier `rapport_seance7.qmd` qui produit un rapport HTML sur
+**l'analyse du développement économique en Afrique subsaharienne** avec :
+
+1. Un en-tête YAML complet (titre, auteur, date, format HTML avec TOC).
+2. Une section "Introduction" décrivant les données utilisées.
+3. Un chunk chargeant les packages et les données `gapminder`.
+4. Un tableau des 10 pays africains avec l'espérance de vie la plus élevée en 2007.
+5. Un graphique de l'évolution de l'espérance de vie dans 5 pays de votre choix.
+6. Un calcul **inline** de la moyenne de l'espérance de vie africaine en 2007.
+7. Une section "Conclusion" avec vos observations.
+
+Compilez le document en HTML avec le bouton **Render**.
+:::
+
+::: {.callout-caution collapse="true"}
+## Structure du corrigé
+
+````markdown
+---
+title: "Développement économique en Afrique subsaharienne"
+author: "Votre Nom"
+date: today
+lang: fr
+format:
+  html:
+    toc: true
+    theme: cosmo
+execute:
+  echo: false
+  warning: false
+---
+
+## Introduction
+
+Ce rapport analyse l'évolution du développement humain en Afrique subsaharienne
+à partir des données Gapminder (142 pays, 1952–2007).
+
+```{{r}}
+#| label: setup
+library(tidyverse)
+library(gapminder)
+library(knitr)
+
+afrique_2007 <- gapminder |>
+  filter(continent == "Africa", year == 2007)
+```
+
+## Résultats
+
+### Pays avec la meilleure espérance de vie en 2007
+
+```{{r}}
+#| label: tableau-top10
+afrique_2007 |>
+  arrange(desc(lifeExp)) |>
+  head(10) |>
+  select(Pays = country, `Esp. vie (ans)` = lifeExp,
+         `PIB/hab. (USD)` = gdpPercap) |>
+  kable(digits = 1)
+```
+
+### Évolution de l'espérance de vie (5 pays sélectionnés)
+
+```{{r}}
+#| label: graphique-evolution
+#| fig-cap: "Évolution de l'espérance de vie (1952–2007)"
+pays <- c("Kenya", "Nigeria", "Ethiopia", "South Africa", "Mauritius")
+
+gapminder |>
+  filter(country %in% pays) |>
+  ggplot(aes(x = year, y = lifeExp, color = country)) +
+  geom_line(linewidth = 1) +
+  geom_point() +
+  labs(x = "Année", y = "Espérance de vie (ans)",
+       color = "Pays", caption = "Source : Gapminder") +
+  theme_minimal()
+```
+
+## Conclusion
+
+En 2007, l'espérance de vie moyenne en Afrique était de
+`r round(mean(afrique_2007$lifeExp), 1)` ans.
+````
+:::

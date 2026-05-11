@@ -1,0 +1,136 @@
+---
+title: "Ressources et références"
+---
+
+## Documentation officielle
+
+### R et RStudio
+
+- **Documentation officielle de R** : [r-project.org](https://www.r-project.org)
+- **CRAN — The Comprehensive R Archive Network** : [cran.r-project.org](https://cran.r-project.org)
+- **Documentation RStudio / Posit** : [docs.posit.co](https://docs.posit.co)
+- **Posit Cheatsheets** (aide-mémoires officiels) : [posit.co/resources/cheatsheets](https://posit.co/resources/cheatsheets/)
+
+### Tidyverse
+
+- **Site officiel du tidyverse** : [tidyverse.org](https://www.tidyverse.org)
+- `dplyr` : [dplyr.tidyverse.org](https://dplyr.tidyverse.org)
+- `ggplot2` : [ggplot2.tidyverse.org](https://ggplot2.tidyverse.org)
+- `tidyr` : [tidyr.tidyverse.org](https://tidyr.tidyverse.org)
+- `readr` : [readr.tidyverse.org](https://readr.tidyverse.org)
+- `stringr` : [stringr.tidyverse.org](https://stringr.tidyverse.org)
+- `forcats` : [forcats.tidyverse.org](https://forcats.tidyverse.org)
+- `lubridate` : [lubridate.tidyverse.org](https://lubridate.tidyverse.org)
+- `purrr` : [purrr.tidyverse.org](https://purrr.tidyverse.org)
+
+---
+
+## Livres de référence
+
+### En anglais
+
+| Titre | Auteur(s) | Lien |
+|-------|-----------|------|
+| *R for Data Science* (2e éd.) | Wickham, Çetinkaya-Rundel & Grolemund | [r4ds.hadley.nz](https://r4ds.hadley.nz/) |
+| *ggplot2: Elegant Graphics for Data Analysis* | Hadley Wickham | [ggplot2-book.org](https://ggplot2-book.org/) |
+| *Modern Data Science with R* (3e éd.) | Baumer, Kaplan & Horton | [mdsr-book.github.io/mdsr3e](https://mdsr-book.github.io/mdsr3e/) |
+| *Advanced R* | Hadley Wickham | [adv-r.hadley.nz](https://adv-r.hadley.nz/) |
+| *R Packages* | Wickham & Bryan | [r-pkgs.org](https://r-pkgs.org/) |
+
+### En français
+
+| Titre | Auteur(s) | Lien |
+|-------|-----------|------|
+| *Guide R* | Joseph Larmarange | [larmarange.github.io/guide-R](https://larmarange.github.io/guide-R/) |
+| *Documentation utilitR* | Agents INSEE | [book.utilitr.org](https://book.utilitr.org/) |
+| *Introduction à R et au tidyverse* | Julien Barnier | [juba.github.io/tidyverse](https://juba.github.io/tidyverse/) |
+| *Analyse statistique avec R* | Yvonnick Noël | [egallic.fr/Enseignement/R](https://egallic.fr/Enseignement/R/Book/avant-propos.html) |
+
+---
+
+## Données publiques
+
+### Données économiques et sociales
+
+- **Gapminder** — Indicateurs de développement mondiau (PIB, santé, population) :
+  [gapminder.org/data](https://www.gapminder.org/data/)
+- **Banque Mondiale — World Development Indicators** :
+  [databank.worldbank.org](https://databank.worldbank.org/source/world-development-indicators)
+  *(accessible via le package R `WDI`)*
+- **INSEE La Réunion** — Données économiques et démographiques :
+  [insee.fr/fr/statistiques/zones/2011101](https://www.insee.fr/fr/statistiques/zones/2011101)
+- **IEDOM — Bilan économique** de La Réunion :
+  [iedom.fr](https://www.iedom.fr/reunion)
+
+### Données environnementales et biologiques
+
+- **FAOSTAT** — Données agricoles mondiales (FAO) :
+  [fao.org/faostat](https://www.fao.org/faostat/)
+- **GBIF** — Global Biodiversity Information Facility :
+  [gbif.org](https://www.gbif.org)
+  *(accessible via le package R `rgbif`)*
+- **Copernicus Climate Data Store** — Données climatiques européennes :
+  [cds.climate.copernicus.eu](https://cds.climate.copernicus.eu)
+- **Météo-France La Réunion** — Données climatologiques locales :
+  [meteofrance.re](https://www.meteofrance.re)
+- **DEAL Réunion** — Données environnementales régionales :
+  [reunion.developpement-durable.gouv.fr](https://www.reunion.developpement-durable.gouv.fr)
+
+### Portails de données ouvertes
+
+- **data.gouv.fr** — Portail national des données publiques françaises :
+  [data.gouv.fr](https://www.data.gouv.fr)
+- **Open Data Réunion** :
+  [data.regionreunion.com](https://data.regionreunion.com)
+- **Awesome Public Datasets** — Répertoire de jeux de données libres :
+  [github.com/awesomedata/awesome-public-datasets](https://github.com/awesomedata/awesome-public-datasets)
+
+---
+
+## Aide-mémoires (cheatsheets)
+
+Les aide-mémoires officiels de Posit sont une ressource indispensable :
+
+| Package | Télécharger |
+|---------|-------------|
+| Base R | [PDF](https://iqss.github.io/dss-workshops/R/Rintro/base-r-cheat-sheet.pdf) |
+| RStudio IDE | [PDF](https://posit.co/wp-content/uploads/2022/10/rstudio-ide-1.pdf) |
+| `dplyr` | [PDF](https://posit.co/wp-content/uploads/2022/10/data-transformation-1.pdf) |
+| `tidyr` | [PDF](https://posit.co/wp-content/uploads/2022/10/tidyr.pdf) |
+| `ggplot2` | [PDF](https://posit.co/wp-content/uploads/2022/10/data-visualization-2.1.pdf) |
+| `stringr` | [PDF](https://posit.co/wp-content/uploads/2022/10/strings-1.pdf) |
+| `lubridate` | [PDF](https://posit.co/wp-content/uploads/2022/10/lubridate-2.1.pdf) |
+| `purrr` | [PDF](https://posit.co/wp-content/uploads/2022/10/purrr.pdf) |
+| Rmarkdown | [PDF](https://posit.co/wp-content/uploads/2022/10/rmarkdown-1.pdf) |
+
+---
+
+## Communauté et aide
+
+- **Stack Overflow — tag [r]** : [stackoverflow.com/questions/tagged/r](https://stackoverflow.com/questions/tagged/r)
+- **Posit Community Forum** : [forum.posit.co](https://forum.posit.co)
+- **R-bloggers** — Actualité R : [r-bloggers.com](https://www.r-bloggers.com)
+- **R Weekly** — Newsletter hebdomadaire : [rweekly.org](https://rweekly.org)
+
+---
+
+## Citation de R
+
+Si vous utilisez R dans vos travaux académiques, citez-le ainsi :
+
+```r
+citation()
+```
+
+```
+R Core Team (2024). R: A Language and Environment for Statistical Computing.
+R Foundation for Statistical Computing, Vienna, Austria.
+URL https://www.R-project.org/.
+```
+
+Pour citer un package spécifique :
+
+```r
+citation("ggplot2")
+citation("tidyverse")
+```

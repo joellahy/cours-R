@@ -1,0 +1,420 @@
+---
+title: "Séance 2 — Introduction au tidyverse"
+---
+
+::: {.callout-tip}
+## Objectifs de la séance
+À l'issue de cette séance, vous serez capable de :
+
+- Comprendre la philosophie du tidyverse et les données « tidy »
+- Utiliser le pipe `|>` pour enchaîner des opérations
+- Importer des données tabulaires avec `readr`
+- Manipuler un tableau avec les verbes de `dplyr`
+- Restructurer un tableau avec `tidyr`
+:::
+
+## L'écosystème tidyverse
+
+Le **tidyverse** est une collection de packages R conçus pour fonctionner ensemble
+selon une philosophie cohérente de traitement des données.
+
+```{r}
+library(tidyverse)
+```
+
+Les packages clés du tidyverse :
+
+| Package | Rôle principal |
+|---------|---------------|
+| `readr` | Importer des données (CSV, TSV…) |
+| `dplyr` | Manipuler des tableaux (filtrer, sélectionner, agréger…) |
+| `tidyr` | Restructurer des tableaux (pivot, séparation…) |
+| `ggplot2` | Visualiser les données |
+| `stringr` | Manipuler des chaînes de caractères |
+| `forcats` | Manipuler des facteurs |
+| `lubridate` | Manipuler des dates |
+| `purrr` | Programmation fonctionnelle |
+
+### Le concept de « tidy data »
+
+Des données sont dites **tidy** (rangées) lorsque :
+
+1. Chaque **variable** est dans une colonne.
+2. Chaque **observation** est dans une ligne.
+3. Chaque **valeur** occupe une cellule.
+
+```r
+# Données NON tidy (format large — "wide")
+#   pays        | 2020  | 2021  | 2022
+#   La Réunion  | 8100  | 8300  | 8600
+#   Maurice     | 8900  | 9200  | 10500
+
+# Données TIDY (format long)
+#   pays        | annee | pib
+#   La Réunion  | 2020  | 8100
+#   La Réunion  | 2021  | 8300
+#   ...
+```
+
+---
+
+## Le pipe `|>`
+
+Le **pipe** permet d'enchaîner des opérations en lisant le code de gauche à droite.
+Il transmet automatiquement le résultat de gauche comme **premier argument** de la fonction de droite.
+
+```{r}
+# Sans pipe : difficile à lire
+mean(sqrt(abs(c(-4, 9, -16, 25))))
+
+# Avec le pipe natif de R (|>)
+c(-4, 9, -16, 25) |> abs() |> sqrt() |> mean()
+```
+
+::: {.callout-note}
+## Deux pipes coexistent
+- `|>` : pipe **natif** de R (disponible depuis R 4.1) — recommandé
+- `%>%` : pipe du package `magrittr` (chargé avec le tidyverse) — toujours très répandu
+
+Dans ce cours, nous utilisons `|>`.
+:::
+
+---
+
+## Importation de données avec `readr`
+
+### Importer un fichier CSV
+
+```r
+# Importer un fichier CSV local
+donnees <- read_csv("data/mon_fichier.csv")
+
+# Importer un fichier depuis le web
+url_fao <- "https://exemple.fao.org/données.csv"
+donnees_fao <- read_csv(url_fao)
+```
+
+Les fonctions de `readr` :
+
+| Fonction | Format |
+|----------|--------|
+| `read_csv()` | CSV (séparateur `,`) |
+| `read_csv2()` | CSV (séparateur `;`, standard européen) |
+| `read_tsv()` | TSV (séparateur tabulation) |
+| `read_delim()` | Délimiteur personnalisé |
+
+### Exemple avec les données Gapminder
+
+Le package `gapminder` contient des données mondiales de développement
+(PIB/habitant, espérance de vie, population) pour 142 pays entre 1952 et 2007.
+
+```{r}
+library(gapminder)
+
+# Aperçu des données
+gapminder
+```
+
+```{r}
+# Structure
+glimpse(gapminder)
+```
+
+---
+
+## Manipulation de données avec `dplyr`
+
+Les **six verbes fondamentaux** de `dplyr` :
+
+| Verbe | Action |
+|-------|--------|
+| `filter()` | Sélectionner des lignes selon une condition |
+| `select()` | Sélectionner des colonnes |
+| `mutate()` | Créer ou modifier des colonnes |
+| `arrange()` | Trier les lignes |
+| `summarise()` | Calculer des résumés |
+| `group_by()` | Regrouper avant de résumer |
+
+### `filter()` — Filtrer des lignes
+
+```{r}
+# Données de l'Afrique subsaharienne pour 2007
+gapminder |>
+  filter(continent == "Africa", year == 2007)
+```
+
+```{r}
+# Pays avec une espérance de vie > 70 ans en Asie
+gapminder |>
+  filter(continent == "Asia", lifeExp > 70, year == 2007)
+```
+
+**Opérateurs utiles dans `filter()`** :
+
+| Opérateur | Signification |
+|-----------|---------------|
+| `==` | Égal à |
+| `!=` | Différent de |
+| `>`, `>=` | Supérieur (ou égal) à |
+| `<`, `<=` | Inférieur (ou égal) à |
+| `&` ou `,` | ET logique |
+| `\|` | OU logique |
+| `%in%` | Appartient à un ensemble |
+| `is.na()` | Est manquant |
+| `!is.na()` | N'est pas manquant |
+
+```{r}
+# Pays de l'Océan Indien et Afrique de l'Est en 2007
+pays_tropicaux <- c("Madagascar", "Mozambique", "Tanzania",
+                    "Kenya", "Comoros", "Mauritius")
+
+gapminder |>
+  filter(country %in% pays_tropicaux, year == 2007)
+```
+
+### `select()` — Sélectionner des colonnes
+
+```{r}
+# Conserver seulement certaines colonnes
+gapminder |>
+  select(country, year, lifeExp, gdpPercap)
+```
+
+```{r}
+# Supprimer une colonne
+gapminder |>
+  select(-continent)
+
+# Renommer en sélectionnant
+gapminder |>
+  select(pays = country, annee = year, esperance_vie = lifeExp)
+```
+
+**Fonctions d'aide pour `select()`** :
+
+| Fonction | Usage |
+|----------|-------|
+| `starts_with("x")` | Colonnes commençant par "x" |
+| `ends_with("x")` | Colonnes finissant par "x" |
+| `contains("x")` | Colonnes contenant "x" |
+| `everything()` | Toutes les autres colonnes |
+
+### `mutate()` — Créer ou modifier des colonnes
+
+```{r}
+# Calculer le PIB total (PIB/habitant × population)
+gapminder |>
+  mutate(pib_total = gdpPercap * pop) |>
+  select(country, year, pib_total) |>
+  filter(year == 2007) |>
+  arrange(desc(pib_total))
+```
+
+```{r}
+# Créer une catégorie de revenu
+gapminder |>
+  filter(year == 2007) |>
+  mutate(
+    categorie_revenu = case_when(
+      gdpPercap < 1000              ~ "Faible",
+      gdpPercap >= 1000 & gdpPercap < 5000  ~ "Intermédiaire bas",
+      gdpPercap >= 5000 & gdpPercap < 15000 ~ "Intermédiaire haut",
+      gdpPercap >= 15000            ~ "Élevé"
+    )
+  ) |>
+  count(categorie_revenu)
+```
+
+### `arrange()` — Trier les lignes
+
+```{r}
+# Top 10 des pays africains par espérance de vie en 2007
+gapminder |>
+  filter(continent == "Africa", year == 2007) |>
+  arrange(desc(lifeExp)) |>
+  head(10)
+```
+
+### `summarise()` et `group_by()` — Agréger par groupe
+
+```{r}
+# Statistiques par continent en 2007
+gapminder |>
+  filter(year == 2007) |>
+  group_by(continent) |>
+  summarise(
+    nb_pays          = n(),
+    pib_median       = median(gdpPercap),
+    esp_vie_moyenne  = mean(lifeExp),
+    population_tot   = sum(pop)
+  ) |>
+  arrange(desc(pib_median))
+```
+
+```{r}
+# Évolution du PIB médian mondial par décennie
+gapminder |>
+  mutate(decennie = (year %/% 10) * 10) |>
+  group_by(decennie) |>
+  summarise(
+    pib_median = median(gdpPercap),
+    esp_vie_mediane = median(lifeExp)
+  )
+```
+
+### `rename()` — Renommer des colonnes
+
+```{r}
+gapminder |>
+  rename(
+    pays          = country,
+    annee         = year,
+    esperance_vie = lifeExp,
+    population    = pop,
+    pib_habitant  = gdpPercap
+  ) |>
+  glimpse()
+```
+
+### Jointures entre tableaux
+
+```{r}
+# Données des pays de l'Océan Indien (table supplémentaire fictive)
+info_geo <- tibble(
+  country = c("Madagascar", "Mozambique", "Tanzania", "Kenya",
+              "Comoros", "Mauritius", "Reunion"),
+  ocean   = "Indien",
+  climat  = c("Tropical", "Tropical", "Tropical", "Tropical",
+              "Tropical", "Tropical humide", "Tropical humide"),
+  facade_maritime = TRUE
+)
+
+# Jointure (left_join : on garde tous les pays de gapminder)
+gapminder |>
+  filter(year == 2007) |>
+  left_join(info_geo, by = "country") |>
+  filter(!is.na(ocean)) |>
+  select(country, lifeExp, gdpPercap, climat)
+```
+
+---
+
+## Restructuration avec `tidyr`
+
+### `pivot_longer()` — Du format large au format long
+
+```{r}
+# Données larges (format original non-tidy)
+temperatures_larges <- tibble(
+  station  = c("Saint-Denis", "Saint-Pierre", "Le Tampon"),
+  T_jan    = c(27.2, 27.8, 21.5),
+  T_avr    = c(24.5, 25.1, 19.2),
+  T_juil   = c(19.8, 20.5, 14.9),
+  T_oct    = c(23.1, 23.9, 17.8)
+)
+
+temperatures_larges
+```
+
+```{r}
+# Conversion en format long (tidy)
+temperatures_longues <- temperatures_larges |>
+  pivot_longer(
+    cols      = starts_with("T_"),
+    names_to  = "mois",
+    values_to = "temperature"
+  ) |>
+  mutate(mois = str_remove(mois, "T_"))
+
+temperatures_longues
+```
+
+### `pivot_wider()` — Du format long au format large
+
+```{r}
+# L'opération inverse
+temperatures_longues |>
+  pivot_wider(
+    names_from  = mois,
+    values_from = temperature
+  )
+```
+
+### `separate()` et `unite()`
+
+```{r}
+# Séparer une colonne en plusieurs
+df <- tibble(date_station = c("2024-01_Saint-Denis",
+                               "2024-02_Saint-Pierre",
+                               "2024-03_Le Tampon"))
+
+df |>
+  separate(date_station, into = c("date", "station"), sep = "_", extra = "merge")
+```
+
+---
+
+## Exemple complet : analyse de l'Afrique subsaharienne
+
+```{r}
+# Analyse complète enchaînée avec le pipe
+resultat <- gapminder |>
+  # Filtrer l'Afrique subsaharienne
+  filter(continent == "Africa") |>
+  # Calculer le PIB total
+  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) |>
+  # Garder seulement les colonnes utiles
+  select(country, year, lifeExp, pib_total_mrd) |>
+  # Regrouper par décennie
+  mutate(decennie = paste0(floor(year / 10) * 10, "s")) |>
+  group_by(decennie) |>
+  summarise(
+    esp_vie_moy    = round(mean(lifeExp), 1),
+    pib_tot_median = round(median(pib_total_mrd), 2)
+  )
+
+resultat
+```
+
+---
+
+## Exercice récapitulatif
+
+::: {.callout-note}
+## Exercice
+En utilisant le jeu de données `gapminder` :
+
+1. Filtrez les données pour l'année 2007 et le continent africain.
+2. Créez une nouvelle colonne `pib_total_mrd` = PIB total en milliards de dollars.
+3. Sélectionnez uniquement `country`, `lifeExp`, `gdpPercap`, `pib_total_mrd`.
+4. Triez par espérance de vie décroissante.
+5. Affichez les 5 premiers pays.
+6. Calculez l'espérance de vie médiane et le PIB/habitant médian pour ce sous-ensemble.
+:::
+
+::: {.callout-caution collapse="true"}
+## Corrigé
+
+```r
+library(gapminder)
+library(tidyverse)
+
+# Étapes 1 à 5
+top5 <- gapminder |>
+  filter(year == 2007, continent == "Africa") |>
+  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) |>
+  select(country, lifeExp, gdpPercap, pib_total_mrd) |>
+  arrange(desc(lifeExp)) |>
+  head(5)
+
+top5
+
+# Étape 6 : Statistiques sur l'ensemble du sous-ensemble africain 2007
+gapminder |>
+  filter(year == 2007, continent == "Africa") |>
+  summarise(
+    esp_vie_mediane  = median(lifeExp),
+    pib_habitant_med = median(gdpPercap)
+  )
+```
+:::
