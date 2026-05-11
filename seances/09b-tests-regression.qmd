@@ -8,10 +8,10 @@ subtitle: "<span class='badge-rnet'>RNET</span>"
 À l'issue de cette séance, vous serez capable de :
 
 - Comprendre la logique des tests statistiques (hypothèses, p-valeur, risque α)
-- Réaliser les tests usuels : t de Student, Mann-Whitney, Khi², corrélation
+- Savoir choisir le bon test selon le type de variables et les hypothèses
+- Réaliser et interpréter un test t, un test de Wilcoxon, un test du Khi² et une corrélation
 - Construire et interpréter un modèle de régression linéaire simple et multiple
-- Vérifier les hypothèses d'un modèle linéaire
-- Présenter les résultats d'une régression de manière lisible
+- Vérifier les hypothèses du modèle linéaire et en présenter les résultats
 :::
 
 ```{r}
@@ -22,161 +22,285 @@ library(broom)
 
 ---
 
-## Logique des tests statistiques
+## La logique des tests statistiques
 
-Un **test statistique** permet de décider si une observation dans les données
-est compatible avec une hypothèse théorique, en tenant compte de la variabilité aléatoire.
+### Le problème fondamental
 
-### Les hypothèses
+Quand on observe une différence ou une relation dans nos données, deux explications sont possibles :
 
-- **H₀ (hypothèse nulle)** : l'effet observé est dû au hasard (pas de différence, pas de relation)
-- **H₁ (hypothèse alternative)** : il y a un effet réel
+1. La différence est **réelle** (il existe un vrai effet dans la population)
+2. La différence est due au **hasard** de l'échantillonnage (fluctuations aléatoires)
+
+Un **test statistique** permet de **quantifier la probabilité** que nos données soient
+compatibles avec l'hypothèse « c'est le hasard ».
+
+### Les hypothèses statistiques
+
+Tout test statistique repose sur deux hypothèses opposées :
+
+- **H₀ — Hypothèse nulle** : « Il n'y a pas d'effet / pas de différence / pas de relation ».
+  C'est l'hypothèse du *statu quo*, celle qu'on cherche à réfuter.
+- **H₁ — Hypothèse alternative** : « Il y a un effet réel ». C'est ce qu'on cherche à démontrer.
+
+```
+Exemple : Les manchots mâles pèsent-ils plus que les femelles ?
+
+H₀ : masse_males = masse_femelles    (pas de différence)
+H₁ : masse_males ≠ masse_femelles    (il y a une différence)
+```
 
 ### La p-valeur
 
-La **p-valeur** est la probabilité d'observer un résultat au moins aussi extrême que celui observé,
-**si H₀ était vraie**.
+La **p-valeur** (*p-value*) est la probabilité d'observer des données au moins aussi
+extrêmes que celles qu'on a, **si H₀ était vraie**.
 
-| p-valeur | Interprétation |
-|----------|----------------|
-| p < 0,001 | Très fortement significatif |
-| p < 0,01 | Fortement significatif |
-| p < 0,05 | Significatif (seuil conventionnel) |
-| p ≥ 0,05 | Non significatif (on ne rejette pas H₀) |
+- **p faible** → nos données sont très improbables sous H₀ → on rejette H₀
+- **p élevée** → nos données sont compatibles avec H₀ → on ne peut pas rejeter H₀
+
+Le seuil conventionnel est **α = 0,05** (5%).
+
+| p-valeur | Interprétation usuelle |
+|----------|----------------------|
+| p < 0,001 | Très fortement significatif (***) |
+| 0,001 ≤ p < 0,01 | Fortement significatif (**) |
+| 0,01 ≤ p < 0,05 | Significatif (*) |
+| 0,05 ≤ p < 0,10 | Tendance (parfois ·) |
+| p ≥ 0,10 | Non significatif (ns) |
 
 ::: {.callout-warning}
-## Attention aux faux amis
-- **p < 0,05 ≠ "effet important"** : un p faible dit que l'effet est **détectable**, pas qu'il est grand.
-- **p ≥ 0,05 ≠ "pas d'effet"** : cela signifie seulement que les données ne permettent pas de conclure.
-- Toujours accompagner le p par une **taille d'effet** (Cohen's d, R², etc.)
+## Pièges fréquents autour de la p-valeur
+
+❌ **"p < 0,05 signifie que l'effet est important"** : FAUX.
+Une p-valeur faible indique que l'effet est *détectable*, pas qu'il est *grand*.
+Avec un très grand échantillon, on peut détecter des effets statistiquement significatifs
+mais biologiquement ou économiquement négligeables.
+
+❌ **"p ≥ 0,05 signifie qu'il n'y a pas d'effet"** : FAUX.
+Cela signifie seulement qu'on n'a pas assez de données pour le détecter.
+
+✅ **Toujours accompagner la p-valeur d'une taille d'effet** : Cohen's d, R², eta² …
 :::
+
+### Les types d'erreurs
+
+| | H₀ vraie | H₀ fausse |
+|--|:--------:|:---------:|
+| **On rejette H₀** | Erreur de type I (faux positif) — probabilité = α | Bonne décision (puissance = 1−β) |
+| **On ne rejette pas H₀** | Bonne décision | Erreur de type II (faux négatif) — probabilité = β |
+
+### Choisir le bon test
+
+```
+Comparer des groupes
+│
+├── Variable dépendante QUANTITATIVE
+│   ├── 2 groupes
+│   │   ├── Distribution normale → t-test de Welch
+│   │   └── Non normale ou petits effectifs → Wilcoxon-Mann-Whitney
+│   └── > 2 groupes → ANOVA (hors programme)
+│
+└── Variable dépendante QUALITATIVE
+    └── Relation entre deux variables qualitatives → Test du Khi²
+
+Mesurer une relation entre deux variables quantitatives
+└── Corrélation (Pearson ou Spearman)
+
+Modéliser une relation → Régression linéaire
+```
 
 ---
 
-## Test de comparaison de moyennes
+## Le test t de Student
 
-### Test de Student (t-test)
+Le **test t** (ou test de Student) compare la **moyenne** de deux groupes indépendants.
 
-Le **test t** compare la moyenne de deux groupes.
+### Conditions d'application
+- Variable quantitative continue
+- Deux groupes indépendants
+- Distribution approximativement normale **dans chaque groupe** OU n > 30 (théorème central limite)
+- Pas nécessairement l'égalité des variances (test de Welch)
 
-**Hypothèses :**
-- H₀ : les moyennes des deux groupes sont égales
-- H₁ : les moyennes sont différentes
-
-**Conditions d'application :**
-- Données quantitatives continues
-- Distribution approximativement normale dans chaque groupe (ou n > 30)
-- Variances homogènes (vérifier avec le test de Levene)
+### Exemple : masse corporelle mâle vs femelle
 
 ```{r}
-# Comparer la masse corporelle des manchots mâles et femelles
+# Préparer les données
 penguins_mf <- penguins |>
-  filter(!is.na(sex), !is.na(body_mass_g))
+  drop_na(sex, body_mass_g)
 
-# Résumé par sexe
+# Résumé par sexe (pour visualiser la différence avant de tester)
 penguins_mf |>
   group_by(sex) |>
   summarise(
     n       = n(),
-    moyenne = mean(body_mass_g),
-    ecart_t = sd(body_mass_g)
+    moy     = round(mean(body_mass_g), 0),
+    med     = median(body_mass_g),
+    sd      = round(sd(body_mass_g), 0),
+    .groups = "drop"
   )
 ```
 
 ```{r}
-# t-test bilatéral (Welch par défaut — ne suppose pas l'égalité des variances)
-t_test_masse <- t.test(
+# Visualiser avant de tester !
+penguins_mf |>
+  mutate(sex_fr = recode(sex, "male" = "Mâle", "female" = "Femelle")) |>
+  ggplot(aes(x = sex_fr, y = body_mass_g, fill = sex_fr)) +
+  geom_violin(alpha = 0.4, trim = FALSE) +
+  geom_boxplot(width = 0.25, alpha = 0.8) +
+  scale_fill_manual(values = c("Femelle" = "#e91e63", "Mâle" = "#1976d2")) +
+  labs(title = "Masse corporelle selon le sexe",
+       x = NULL, y = "Masse corporelle (g)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r}
+# Réaliser le test t de Welch (ne suppose pas l'égalité des variances)
+resultat_t <- t.test(
   body_mass_g ~ sex,
-  data    = penguins_mf,
-  var.equal = FALSE   # Test de Welch (recommandé)
+  data      = penguins_mf,
+  var.equal = FALSE,    # Test de Welch (recommandé en général)
+  alternative = "two.sided"   # Test bilatéral : on ne suppose pas la direction
 )
 
-t_test_masse
+resultat_t
 ```
 
 ```{r}
-# Présentation avec broom::tidy()
-tidy(t_test_masse)
+# Présentation synthétique avec broom
+tidy(resultat_t)
 ```
 
-**Interprétation :**
-La différence de masse corporelle entre mâles et femelles est statistiquement significative
-(t = `r round(t_test_masse$statistic, 2)`, p < 0,001).
-Les mâles pèsent en moyenne `r round(abs(diff(t_test_masse$estimate)))` g de plus que les femelles.
+**Comment interpréter :**
 
-### Test de Wilcoxon-Mann-Whitney (non paramétrique)
-
-Lorsque les conditions du t-test ne sont pas respectées (non-normalité, petits échantillons),
-utilisez le test de Wilcoxon :
+- `statistic` = valeur de t calculée
+- `p.value` = probabilité d'observer cette différence par hasard si H₀ est vraie
+- `estimate` = différences des moyennes (femelle − mâle)
+- `conf.low`, `conf.high` = intervalle de confiance à 95% de la différence
 
 ```{r}
-wilcox.test(body_mass_g ~ sex, data = penguins_mf)
+# Calcul de la taille d'effet (Cohen's d)
+# |d| < 0.2 : négligeable, 0.2-0.5 : petit, 0.5-0.8 : moyen, > 0.8 : grand
+moy_f  <- mean(penguins_mf$body_mass_g[penguins_mf$sex == "female"])
+moy_m  <- mean(penguins_mf$body_mass_g[penguins_mf$sex == "male"])
+sd_pool <- sd(penguins_mf$body_mass_g)
+d_cohen <- (moy_m - moy_f) / sd_pool
+round(d_cohen, 2)   # > 0.8 → effet de grande taille
 ```
+
+**Rédaction d'un résultat :**
+
+> Les manchots mâles (`r round(moy_m, 0)` g en moyenne) sont significativement plus lourds
+> que les femelles (`r round(moy_f, 0)` g), avec une différence de `r round(moy_m - moy_f, 0)` g
+> (t = `r round(resultat_t$statistic, 2)`, ddl = `r round(resultat_t$parameter, 0)`,
+> p < 0,001, d de Cohen = `r round(d_cohen, 2)` — effet de grande taille).
 
 ---
 
-## Test de Khi² — Indépendance entre variables qualitatives
+## Le test de Wilcoxon-Mann-Whitney
 
-Le **test du Khi²** vérifie si deux variables catégorielles sont indépendantes.
-
-**Hypothèses :**
-- H₀ : les deux variables sont indépendantes
-- H₁ : il existe une association entre les deux variables
+Quand les conditions du test t ne sont **pas remplies** (distribution très asymétrique,
+petits effectifs < 30, valeurs aberrantes), utilisez le test **non paramétrique** de Wilcoxon.
+Il compare les **médianes** (ou plus précisément les rangs).
 
 ```{r}
-# Y a-t-il une association entre l'espèce et l'île d'observation ?
-tableau_contingence <- table(penguins$species, penguins$island)
-tableau_contingence
+# Test de Wilcoxon-Mann-Whitney
+wilcox.test(body_mass_g ~ sex, data = penguins_mf)
+```
+
+Le test de Wilcoxon confirme ici la conclusion du test t (p < 0,001).
+Les deux tests sont souvent concordants, mais le test t est plus puissant quand
+ses hypothèses sont satisfaites.
+
+---
+
+## Le test du Khi² d'indépendance
+
+Le **test du Khi²** (ou χ²) teste si deux variables **qualitatives** sont indépendantes.
+
+**H₀** : les deux variables sont indépendantes (pas d'association)
+**H₁** : les deux variables sont associées
+
+### Conditions d'application
+- Deux variables qualitatives
+- Effectifs théoriques ≥ 5 dans chaque cellule du tableau croisé
+- Observations indépendantes
+
+```{r}
+# Question : l'espèce de manchot est-elle associée à l'île d'observation ?
+# (On s'attend à oui, car certaines espèces sont endémiques d'une île)
+
+tableau <- table(penguins$species, penguins$island)
+tableau
 ```
 
 ```{r}
 # Test du Khi²
-chi2_test <- chisq.test(tableau_contingence)
-chi2_test
+chi2 <- chisq.test(tableau)
+chi2
 ```
 
 ```{r}
-# Résidus standardisés : cellules qui contribuent le plus au Khi²
-chi2_test$residuals
+# Résidus standardisés : voir quelles cellules contribuent le plus au Khi²
+# Valeur > 2 ou < -2 : contribution significative
+round(chi2$residuals, 2)
 ```
 
-**Interprétation :**
-L'association entre l'espèce et l'île est très fortement significative
-(χ² = `r round(chi2_test$statistic, 1)`, p < 0,001).
-Les résidus montrent que Chinstrap est sur-représentée à Dream et Gentoo à Biscoe.
+**Interprétation des résidus :**
+- Un résidu positif élevé → espèce sur-représentée sur cette île
+- Un résidu négatif élevé → espèce sous-représentée (ou absente)
+
+```{r}
+# Visualisation du tableau croisé
+penguins |>
+  count(species, island) |>
+  ggplot(aes(x = island, y = species, fill = n)) +
+  geom_tile(color = "white", linewidth = 0.5) +
+  geom_text(aes(label = n), size = 5, fontface = "bold") +
+  scale_fill_gradient(low = "#eaf4ff", high = "#003b7a") +
+  labs(title = "Effectifs par espèce et par île",
+       x = "Île", y = "Espèce", fill = "Effectif") +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+```
 
 ---
 
 ## Corrélations
 
-La **corrélation** mesure l'intensité et la direction de la **relation linéaire** entre deux
-variables quantitatives.
+La **corrélation** mesure l'intensité et la direction de la **relation linéaire**
+entre deux variables quantitatives.
 
-Le **coefficient de Pearson** r varie entre -1 et +1 :
+### Le coefficient de Pearson (r)
 
-| r | Interprétation |
-|---|---------------|
-| r = 1 | Corrélation positive parfaite |
-| 0,5 < r < 1 | Corrélation positive forte |
-| 0 < r < 0,5 | Corrélation positive faible |
-| r ≈ 0 | Pas de corrélation linéaire |
-| -0,5 < r < 0 | Corrélation négative faible |
-| r < -0,5 | Corrélation négative forte |
+$$r = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum(x_i-\bar{x})^2 \cdot \sum(y_i-\bar{y})^2}}$$
+
+$r$ varie entre −1 et +1 :
+
+| Valeur de r | Interprétation |
+|:-----------:|---------------|
+| r = +1 | Corrélation positive parfaite |
+| 0,7 < r < 1 | Corrélation positive forte |
+| 0,3 < r < 0,7 | Corrélation positive modérée |
+| −0,3 < r < 0,3 | Pas de corrélation linéaire |
+| −0,7 < r < −0,3 | Corrélation négative modérée |
+| r < −0,7 | Corrélation négative forte |
+| r = −1 | Corrélation négative parfaite |
 
 ```{r}
-# Corrélation entre longueur des nageoires et masse corporelle
+# Corrélation longueur des nageoires ~ masse corporelle
 cor_test <- cor.test(
   penguins$flipper_length_mm,
   penguins$body_mass_g,
   method = "pearson",
   use    = "complete.obs"
 )
-
 cor_test
+tidy(cor_test)
 ```
 
 ```{r}
-# Corrélation de Spearman (non paramétrique)
+# Corrélation de Spearman (non paramétrique — sur les rangs)
+# À utiliser si la relation n'est pas linéaire ou si distribution très asymétrique
 cor.test(
   penguins$flipper_length_mm,
   penguins$body_mass_g,
@@ -185,143 +309,185 @@ cor.test(
 )
 ```
 
-```{r}
-# Matrice de corrélations
-penguins |>
-  select(bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g) |>
-  drop_na() |>
-  cor()
-```
+::: {.callout-important}
+## Corrélation ≠ Causalité
+Une corrélation, même forte, ne prouve pas qu'une variable **cause** l'autre.
+
+Exemple : la taille et la pointure des chaussures sont corrélées,
+mais avoir de grands pieds n'entraîne pas une grande taille !
+
+Pour établir une causalité, il faut des arguments théoriques solides
+et idéalement une expérimentation contrôlée.
+:::
 
 ---
 
 ## Régression linéaire simple
 
 La **régression linéaire** modélise la relation entre une variable **dépendante** (Y)
-et une ou plusieurs variables **indépendantes** (X) :
+et une variable **indépendante** (X) par une droite :
 
 $$Y = \beta_0 + \beta_1 X + \varepsilon$$
 
-où ε est le terme d'erreur.
+- **$\beta_0$** (intercept) : valeur de Y quand X = 0
+- **$\beta_1$** (pente) : augmentation de Y pour chaque augmentation d'une unité de X
+- **$\varepsilon$** : terme d'erreur (résidu — ce que le modèle ne capture pas)
 
-### Ajuster un modèle
+### Ajuster un modèle avec `lm()`
 
 ```{r}
 # Modèle : masse ~ longueur des nageoires
-modele1 <- lm(body_mass_g ~ flipper_length_mm, data = penguins)
+modele1 <- lm(
+  body_mass_g ~ flipper_length_mm,    # formule : Y ~ X
+  data = penguins
+)
 
-# Résumé du modèle
+# Résumé complet du modèle
 summary(modele1)
 ```
 
-### Lire les résultats
+### Lire la sortie de `summary(lm())`
+
+La sortie est dense — décortiquons-la :
+
+```
+Call: lm(formula = body_mass_g ~ flipper_length_mm, data = penguins)
+
+Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)
+(Intercept)       -5780.83     305.81   -18.9   <2e-16 ***   ← intercept (β₀)
+flipper_length_mm    49.69       1.52    32.7   <2e-16 ***   ← pente (β₁)
+
+Residual standard error: 394.1                               ← écart-type des résidus
+Multiple R-squared:  0.759                                   ← R² : % de variance expliquée
+Adjusted R-squared:  0.758
+F-statistic: 1070 on 1 and 340 DF,  p-value: < 2.2e-16
+```
+
+- **Estimate (β₁ = 49.69)** : pour chaque millimètre de nageoire supplémentaire,
+  la masse augmente d'environ 49.7 grammes en moyenne.
+- **R² = 0.759** : 75.9% de la variabilité de la masse est expliquée par la longueur des nageoires.
+  Le R² varie entre 0 (modèle nul) et 1 (modèle parfait).
+- **p-value < 2.2e-16** : la relation est extrêmement significative.
 
 ```{r}
-# Coefficients proprement avec broom
-tidy(modele1, conf.int = TRUE)
+# Présentation propre avec broom
+tidy(modele1, conf.int = TRUE) |>
+  mutate(across(where(is.numeric), ~ round(.x, 3)))
 ```
 
 ```{r}
-# Performance du modèle
+# Performance globale du modèle
 glance(modele1)
 ```
 
-**Interprétation :**
-- **Intercept** (β₀ = `r round(coef(modele1)[1], 0)`) : masse estimée si les nageoires mesuraient 0 mm (valeur sans sens physique ici).
-- **Pente** (β₁ = `r round(coef(modele1)[2], 1)`) : chaque mm supplémentaire de nageoire est associé à `r round(coef(modele1)[2], 1)` g de masse en plus.
-- **R²** = `r round(summary(modele1)$r.squared, 3)` : `r round(summary(modele1)$r.squared * 100, 1)`% de la variance de la masse est expliquée par la longueur des nageoires.
-
-### Visualiser le modèle
-
 ```{r}
+# Visualiser le modèle
 penguins |>
-  filter(!is.na(flipper_length_mm), !is.na(body_mass_g)) |>
+  drop_na(flipper_length_mm, body_mass_g) |>
   ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
-  geom_point(aes(color = species), alpha = 0.6, size = 2) +
+  geom_point(aes(color = species), alpha = 0.6, size = 2.5) +
   geom_smooth(method = "lm", color = "black", se = TRUE,
               linewidth = 1.2) +
   scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73")) +
+  annotate("text", x = 175, y = 6000,
+           label = paste0("R² = ", round(summary(modele1)$r.squared, 3),
+                          "\nβ₁ = ", round(coef(modele1)[2], 1), " g/mm"),
+           hjust = 0, size = 4, color = "grey20") +
   labs(
-    title    = "Régression : masse corporelle ~ longueur des nageoires",
-    subtitle = paste0("R² = ", round(summary(modele1)$r.squared, 3),
-                      " | pente = ", round(coef(modele1)[2], 1), " g/mm"),
+    title    = "Régression linéaire : masse ~ longueur des nageoires",
+    subtitle = "La bande grise représente l'intervalle de confiance à 95%",
     x        = "Longueur des nageoires (mm)",
     y        = "Masse corporelle (g)",
     color    = "Espèce",
     caption  = "Source : Gorman et al. (2014)"
   ) +
-  theme_minimal()
+  theme_minimal(base_size = 12)
 ```
 
 ---
 
 ## Régression linéaire multiple
 
+La régression multiple ajoute **plusieurs variables explicatives** :
+
+$$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_p X_p + \varepsilon$$
+
 ```{r}
-# Modèle multiple : masse ~ nageoires + longueur bec + espèce
+# Modèle 2 : masse ~ nageoires + longueur bec + espèce
 modele2 <- lm(
   body_mass_g ~ flipper_length_mm + bill_length_mm + species,
   data = penguins
 )
 
-summary(modele2)
-```
-
-```{r}
 tidy(modele2, conf.int = TRUE)
 ```
+
+**Interpréter les coefficients en présence d'une variable catégorielle :**
+
+Quand on inclut `species`, R crée des **variables indicatrices** (dummy variables).
+L'espèce de référence est `Adelie` (la première par ordre alphabétique).
+Les coefficients de `speciesChinstrap` et `speciesGentoo` mesurent la différence
+**par rapport à Adelie**, à longueur de nageoires et de bec égales.
 
 ```{r}
 # Comparaison des deux modèles
 bind_rows(
-  glance(modele1) |> mutate(modele = "Modèle 1 (nageoires seulement)"),
-  glance(modele2) |> mutate(modele = "Modèle 2 (nageoires + bec + espèce)")
+  glance(modele1) |> mutate(modele = "Modèle 1 : nageoires seulement"),
+  glance(modele2) |> mutate(modele = "Modèle 2 : nageoires + bec + espèce")
 ) |>
-  select(modele, r.squared, adj.r.squared, AIC, BIC)
+  select(modele, r.squared, adj.r.squared, AIC, sigma) |>
+  mutate(across(where(is.numeric), ~ round(.x, 3)))
 ```
+
+Le modèle 2 a un R² ajusté plus élevé et un AIC plus faible → il est meilleur.
 
 ---
 
-## Vérification des hypothèses du modèle linéaire
+## Vérifier les hypothèses du modèle linéaire
 
-Un modèle linéaire suppose :
+Un modèle linéaire suppose que les **résidus** (erreurs du modèle) respectent :
 
-1. **Linéarité** : la relation Y ~ X est linéaire
-2. **Indépendance** des résidus
-3. **Homoscédasticité** : variance constante des résidus
-4. **Normalité** des résidus
+1. **Linéarité** : la relation entre Y et les X est bien linéaire
+2. **Homoscédasticité** : la variance des résidus est constante
+3. **Normalité** des résidus
+4. **Indépendance** des résidus
 
 ```{r}
-# Graphiques de diagnostic (4 graphiques automatiques)
-par(mfrow = c(2, 2))
+# Graphiques de diagnostic automatiques (4 graphiques)
+par(mfrow = c(2, 2))   # Diviser la fenêtre en 2×2
 plot(modele1)
 ```
 
+**Lire les graphiques de diagnostic :**
+
+| Graphique | Ce qu'on cherche |
+|-----------|-----------------|
+| Residuals vs Fitted | Points répartis aléatoirement autour de 0 (ligne rouge ≈ horizontale) |
+| Normal Q-Q | Points suivant la diagonale (normalité des résidus) |
+| Scale-Location | Ligne rouge horizontale (homoscédasticité) |
+| Residuals vs Leverage | Pas de points au-delà des lignes pointillées (pas de valeurs influentes) |
+
 ```{r}
-# Avec ggplot : résidus vs valeurs ajustées
+# QQ-plot avec ggplot2
 augment(modele1) |>
-  ggplot(aes(x = .fitted, y = .resid)) +
-  geom_point(alpha = 0.4) +
-  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, color = "blue",
-              linewidth = 0.8) +
+  ggplot(aes(sample = .resid)) +
+  stat_qq(alpha = 0.5) +
+  stat_qq_line(color = "red", linewidth = 1) +
   labs(
-    title = "Résidus vs Valeurs ajustées",
-    x     = "Valeurs ajustées (g)",
-    y     = "Résidus (g)"
+    title    = "QQ-plot des résidus — Modèle 1",
+    subtitle = "Les points doivent suivre la diagonale pour valider la normalité",
+    x        = "Quantiles théoriques (loi normale)",
+    y        = "Quantiles observés (résidus)"
   ) +
   theme_minimal()
 ```
 
 ```{r}
-# QQ-plot pour vérifier la normalité des résidus
-augment(modele1) |>
-  ggplot(aes(sample = .resid)) +
-  stat_qq(alpha = 0.4) +
-  stat_qq_line(color = "red") +
-  labs(title = "QQ-plot des résidus",
-       x = "Quantiles théoriques", y = "Quantiles observés") +
-  theme_minimal()
+# Test formel de normalité des résidus (Shapiro-Wilk)
+# H₀ : les résidus suivent une loi normale
+shapiro.test(residuals(modele1))
+# p > 0.05 → on ne rejette pas la normalité
 ```
 
 ---
@@ -331,23 +497,33 @@ augment(modele1) |>
 ::: {.callout-note}
 ## Exercice
 
-En utilisant les données `penguins` et `biodiversite_mascareignes.csv` :
-
 **Partie 1 — Tests**
 
-1. Testez si la longueur du bec (`bill_length_mm`) diffère significativement
-   entre les espèces *Adelie* et *Chinstrap* (t-test).
-2. Y a-t-il une association entre le sexe et l'espèce des manchots ? (Test du Khi²)
-3. Calculez la corrélation de Pearson entre la longueur et la hauteur du bec,
-   puis interprétez le signe et l'intensité.
+En utilisant `palmerpenguins::penguins` :
+
+1. Testez si la longueur du bec (`bill_length_mm`) diffère significativement entre
+   *Adelie* et *Chinstrap*. Formulez H₀ et H₁, réalisez le test t approprié,
+   et rédigez une interprétation complète avec la taille d'effet.
+
+2. Y a-t-il une association entre le sexe et l'espèce ?
+   Réalisez un test du Khi² et examinez les résidus standardisés.
+
+3. La corrélation entre `bill_length_mm` et `bill_depth_mm` est-elle significative ?
+   Quelle est son intensité ? Expliquez le paradoxe que vous observez en calculant
+   cette corrélation séparément pour chaque espèce.
 
 **Partie 2 — Régression**
 
-4. Modélisez la longueur des nageoires (`flipper_length_mm`) en fonction de la
-   masse corporelle (`body_mass_g`) seule.
-5. Ajoutez l'espèce comme variable explicative. Le R² s'améliore-t-il ?
-6. Interprétez les coefficients du modèle multiple.
-7. Vérifiez la normalité des résidus du modèle multiple.
+4. Construisez un modèle linéaire simple : `flipper_length_mm ~ body_mass_g`.
+   Interprétez l'intercept, la pente et le R².
+
+5. Ajoutez l'espèce et le sexe comme variables explicatives (modèle 2).
+   Le modèle s'améliore-t-il (AIC, R² ajusté) ?
+
+6. Vérifiez les hypothèses du modèle 2 à l'aide des graphiques de diagnostic.
+
+7. **Bonus** : rédigez un court paragraphe de résultats (style article scientifique)
+   pour les exercices 4 et 5.
 :::
 
 ::: {.callout-caution collapse="true"}
@@ -358,45 +534,72 @@ library(tidyverse)
 library(palmerpenguins)
 library(broom)
 
-# 1. T-test : longueur du bec Adelie vs Chinstrap
-t.test(
-  bill_length_mm ~ species,
-  data   = penguins |> filter(species %in% c("Adelie", "Chinstrap")),
-  var.equal = FALSE
-)
-# → Différence significative : Chinstrap a un bec plus long
+# 1. Test t : bill_length_mm entre Adelie et Chinstrap
+# H₀ : longueur du bec identique dans les deux espèces
+# H₁ : longueur du bec différente
+adelie_chinstrap <- penguins |>
+  filter(species %in% c("Adelie", "Chinstrap")) |>
+  drop_na(bill_length_mm)
+
+t_bec <- t.test(bill_length_mm ~ species, data = adelie_chinstrap)
+t_bec
+
+# Taille d'effet (Cohen's d)
+moy_A <- mean(adelie_chinstrap$bill_length_mm[adelie_chinstrap$species == "Adelie"])
+moy_C <- mean(adelie_chinstrap$bill_length_mm[adelie_chinstrap$species == "Chinstrap"])
+d <- (moy_C - moy_A) / sd(adelie_chinstrap$bill_length_mm)
+round(d, 2)
+
+# → Chinstrap a un bec significativement plus long que Adelie
+# (t = ..., p < 0.001, d ≈ 1.8 — effet très large)
 
 # 2. Khi² : sexe × espèce
-table(penguins$sex, penguins$species) |> chisq.test()
-# → Pas d'association significative (répartition équilibrée des sexes par espèce)
+tab_sex_esp <- table(penguins$sex, penguins$species)
+chi2_sex <- chisq.test(tab_sex_esp)
+chi2_sex
+chi2_sex$residuals
+# → p >> 0.05 : pas d'association significative → les sexes sont
+# équitablement répartis entre les espèces
 
-# 3. Corrélation longueur/hauteur du bec
-cor.test(penguins$bill_length_mm, penguins$bill_depth_mm, use = "complete.obs")
-# → r négatif : quand le bec est long, il est moins profond
-# (à l'échelle globale — mais positif à l'intérieur de chaque espèce : paradoxe de Simpson)
+# 3. Corrélation bec : globale et par espèce
+# Globale (paradoxe de Simpson !)
+cor.test(~ bill_length_mm + bill_depth_mm, data = penguins, use = "complete.obs")
+# → r négatif ! (bec long = moins profond globalement)
+
+# Par espèce (la vraie relation)
+penguins |>
+  drop_na(bill_length_mm, bill_depth_mm) |>
+  group_by(species) |>
+  summarise(r = cor(bill_length_mm, bill_depth_mm), .groups = "drop")
+# → r positif dans chaque espèce : paradoxe de Simpson !
 
 # 4. Régression simple
 mod1 <- lm(flipper_length_mm ~ body_mass_g, data = penguins)
-tidy(mod1)
+tidy(mod1, conf.int = TRUE)
 glance(mod1)
+# Pente : pour chaque gramme de masse en plus, les nageoires sont plus longues de ~0.015 mm
+# R² ≈ 0.76 → la masse explique 76% de la variabilité de la longueur des nageoires
 
-# 5. Régression multiple avec espèce
-mod2 <- lm(flipper_length_mm ~ body_mass_g + species, data = penguins)
-glance(mod2)
-# → R² augmente significativement avec l'espèce
+# 5. Modèle multiple
+mod2 <- lm(flipper_length_mm ~ body_mass_g + species + sex, data = penguins)
+tidy(mod2)
+bind_rows(glance(mod1), glance(mod2)) |>
+  select(adj.r.squared, AIC) |>
+  mutate(modele = c("M1", "M2"))
+# R² ajusté plus élevé et AIC plus faible pour M2 → meilleur
 
-# 6. Coefficients du modèle multiple
-tidy(mod2, conf.int = TRUE)
-# → Chinstrap : nageoires plus longues à masse égale que Adelie (référence)
-# → Gentoo : nageoires encore plus longues
-
-# 7. Normalité des résidus
-augment(mod2) |>
-  ggplot(aes(sample = .resid)) +
-  stat_qq() + stat_qq_line(color = "red") +
-  labs(title = "QQ-plot — Modèle 2") +
-  theme_minimal()
-# Test de Shapiro-Wilk sur les résidus
+# 6. Diagnostic
+par(mfrow = c(2,2)); plot(mod2)
 shapiro.test(residuals(mod2))
+
+# 7. Rédaction (exemple)
+cat("
+La longueur des nageoires est significativement associée à la masse
+corporelle (β₁ =", round(coef(mod1)[2], 4), "mm/g,",
+"R² =", round(summary(mod1)$r.squared, 3), ", p < 0.001).
+L'ajout de l'espèce et du sexe améliore le modèle (R² ajusté =",
+round(summary(mod2)$adj.r.squared, 3), "), suggérant que ces facteurs
+expliquent une partie de la variabilité morphologique résiduelle.
+")
 ```
 :::

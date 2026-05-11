@@ -238,7 +238,7 @@ milliards d'habitants.
 
 Quarto offre des encadrés prédéfinis :
 
-```markdown
+````markdown
 ::: {.callout-note}
 ## Note
 Contenu de la note.
@@ -263,7 +263,7 @@ Information cruciale.
 ## Détails (cliquable)
 Contenu masqué par défaut.
 :::
-```
+````
 
 ---
 

@@ -7,10 +7,11 @@ subtitle: "<span class='badge-rnet'>RNET</span>"
 ## Objectifs de la séance
 À l'issue de cette séance, vous serez capable de :
 
-- Calculer les mesures de tendance centrale et de dispersion
-- Produire des tableaux de résumés statistiques
+- Distinguer les types de variables statistiques et choisir le bon résumé
+- Calculer et interpréter les mesures de tendance centrale (moyenne, médiane, mode)
+- Calculer et interpréter les mesures de dispersion (écart-type, IQR, CV)
+- Produire des tableaux de résumés statistiques professionnels
 - Choisir et créer des représentations graphiques adaptées à chaque type de variable
-- Interpréter des statistiques descriptives dans un contexte environnemental
 :::
 
 ```{r}
@@ -21,93 +22,180 @@ library(skimr)
 
 ---
 
-## Introduction aux statistiques descriptives
+## Introduction : pourquoi les statistiques descriptives ?
 
-Les statistiques descriptives ont pour objectif de **résumer et décrire** un jeu de données
-sans en tirer des conclusions générales (c'est le rôle des statistiques inférentielles).
+Avant toute analyse statistique avancée, il est indispensable de **connaître et comprendre ses données**.
+Les statistiques descriptives permettent de :
 
-| Type de variable | Exemples | Résumés adaptés |
-|-----------------|---------|-----------------|
-| **Quantitative continue** | Poids, température, pluviométrie | Moyenne, médiane, écart-type, histogramme |
-| **Quantitative discrète** | Nb d'espèces, effectif | Médiane, étendue, histogramme |
-| **Qualitative nominale** | Espèce, île, habitat | Fréquences, diagramme en barres |
-| **Qualitative ordinale** | Catégorie de menace (LC, NT, VU, EN, CR) | Fréquences ordonnées, barres ordonnées |
+- Résumer un grand nombre d'observations en quelques chiffres clés
+- Détecter les erreurs de saisie et les valeurs aberrantes
+- Comprendre la distribution des variables
+- Formuler des hypothèses pour l'analyse inférentielle
+
+::: {.callout-note}
+## Statistiques descriptives ≠ Statistiques inférentielles
+
+| | Statistiques **descriptives** | Statistiques **inférentielles** |
+|--|-------------------------------|----------------------------------|
+| **Objectif** | Décrire ce qu'on observe | Généraliser à une population |
+| **Population** | L'échantillon disponible | Une population plus large |
+| **Exemples** | Moyenne, médiane, graphiques | Tests t, corrélations, régression |
+| **Certitude** | Certaine (on décrit) | Probabiliste (on infère) |
+:::
 
 ---
 
-## Exploration initiale d'un jeu de données
+## Types de variables statistiques
+
+Le **type de variable** détermine les outils statistiques et graphiques à utiliser.
+
+```
+Variables statistiques
+│
+├── Quantitatives (mesures numériques)
+│   ├── Continues : infiniment divisibles (taille, température, poids)
+│   └── Discrètes : valeurs entières (nb d'espèces, nb d'individus)
+│
+└── Qualitatives (catégories)
+    ├── Nominales : sans ordre (espèce, île, habitat)
+    └── Ordinales : avec ordre (LC < NT < VU < EN < CR)
+```
+
+**Exemples dans notre domaine :**
+
+| Variable | Type | Résumés adaptés | Graphiques |
+|----------|------|-----------------|------------|
+| Masse corporelle (g) | Quantitative continue | Moyenne, médiane, σ | Histogramme, boxplot |
+| Nb d'espèces observées | Quantitative discrète | Médiane, IQR | Histogramme, boxplot |
+| Espèce de manchot | Qualitative nominale | Fréquences, % | Barplot |
+| Statut UICN (LC→CR) | Qualitative ordinale | Fréquences ordonnées | Barplot ordonné |
+
+---
+
+## Explorer les données avec `skim()`
+
+Avant tout calcul, commencez toujours par une exploration globale :
 
 ```{r}
-# Les données palmerpenguins contiennent des mesures morphologiques
-# sur 344 manchots de 3 espèces observés dans l'archipel Palmer (Antarctique)
+# Les données palmerpenguins : 344 manchots de 3 espèces
+# observés sur 3 îles de l'archipel Palmer (Antarctique)
 data(penguins)
+
+# Vue d'ensemble complète avec skimr
+skim(penguins)
+```
+
+`skim()` vous donne d'un coup :
+- le **nombre de valeurs manquantes** par colonne
+- pour les variables numériques : moyenne, écart-type, percentiles et un mini-histogramme
+- pour les variables catégorielles : nombre de niveaux et fréquence du plus courant
+
+```{r}
+# Vue rapide avec glimpse
 glimpse(penguins)
 ```
 
 ```{r}
-# Résumé rapide avec summary()
+# Résumé de base
 summary(penguins)
-```
-
-```{r}
-# Résumé enrichi avec skimr
-skim(penguins)
 ```
 
 ---
 
 ## Mesures de tendance centrale
 
-La tendance centrale décrit la valeur "typique" d'une distribution.
+La **tendance centrale** décrit la valeur « typique » ou « centrale » d'une distribution.
+Trois mesures existent, chacune avec ses avantages et ses limites.
 
-### Moyenne
+### La moyenne arithmétique ($\bar{x}$)
 
-La **moyenne arithmétique** est la somme des valeurs divisée par leur nombre :
+La moyenne est la somme de toutes les valeurs divisée par leur nombre :
 
 $$\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i$$
 
 ```{r}
-# Masse corporelle moyenne des manchots
+# Masse corporelle moyenne de tous les manchots
 mean(penguins$body_mass_g, na.rm = TRUE)
-
-# Moyenne par espèce
-penguins |>
-  group_by(species) |>
-  summarise(masse_moy = mean(body_mass_g, na.rm = TRUE))
 ```
 
-### Médiane
+::: {.callout-warning}
+## La moyenne est sensible aux valeurs extrêmes
 
-La **médiane** est la valeur qui divise les données en deux moitiés égales.
-Elle est **robuste aux valeurs extrêmes** (contrairement à la moyenne).
+Imaginons les revenus (en euros) de 5 personnes dans un village :
+```r
+revenus <- c(1200, 1500, 1800, 1400, 50000)
+mean(revenus)    # → 11 180 € ← très influencé par le milliardaire !
+median(revenus)  # → 1 500 € ← représente mieux la situation typique
+```
+Dans ce cas, la médiane est bien plus représentative de la « vie quotidienne ».
+:::
 
 ```{r}
-median(penguins$body_mass_g, na.rm = TRUE)
-
-# Comparaison moyenne / médiane (indice d'asymétrie)
+# Comparaison des moyennes par espèce
 penguins |>
   group_by(species) |>
   summarise(
-    masse_moy = mean(body_mass_g, na.rm = TRUE),
-    masse_med = median(body_mass_g, na.rm = TRUE),
-    asymetrie = masse_moy - masse_med   # >0 : asymétrie droite
+    n             = sum(!is.na(body_mass_g)),
+    masse_moyenne = round(mean(body_mass_g, na.rm = TRUE), 0),
+    .groups = "drop"
   )
 ```
 
-### Mode
+### La médiane
 
-Le **mode** est la valeur la plus fréquente.
-R n'a pas de fonction `mode()` pour les statistiques (c'est un usage différent) :
+La **médiane** est la valeur qui divise l'échantillon en **deux moitiés égales**
+(50% des valeurs sont en dessous, 50% au-dessus).
+
+Pour la calculer à la main :
+1. Triez les valeurs par ordre croissant
+2. Si n est impair : la médiane est la valeur centrale
+3. Si n est pair : la médiane est la moyenne des deux valeurs centrales
 
 ```{r}
-# Calculer le mode manuellement
+# Exemple avec un petit vecteur
+x <- c(3, 7, 2, 9, 4, 1, 6)
+sort(x)           # 1 2 3 4 6 7 9
+median(x)         # → 4 (valeur centrale)
+
+# Sur les données réelles
+median(penguins$body_mass_g, na.rm = TRUE)
+```
+
+```{r}
+# Comparaison moyenne vs médiane par espèce
+# Si moyenne > médiane → distribution asymétrique à droite (queue à droite)
+# Si moyenne < médiane → distribution asymétrique à gauche (queue à gauche)
+# Si moyenne ≈ médiane → distribution approximativement symétrique
+penguins |>
+  group_by(species) |>
+  summarise(
+    masse_moy = round(mean(body_mass_g, na.rm = TRUE), 0),
+    masse_med = round(median(body_mass_g, na.rm = TRUE), 0),
+    asymetrie = round(mean(body_mass_g, na.rm = TRUE) -
+                      median(body_mass_g, na.rm = TRUE), 0),
+    .groups = "drop"
+  )
+```
+
+### Le mode
+
+Le **mode** est la valeur (ou modalité) la **plus fréquente**.
+Il est particulièrement utile pour les variables qualitatives.
+
+```{r}
+# Mode pour une variable qualitative
+table(penguins$species)    # Adelie est le mode (la plus fréquente)
+table(penguins$island)
+```
+
+```{r}
+# Fonction pour calculer le mode d'une variable quantitative
 mode_stat <- function(x, na.rm = TRUE) {
   if (na.rm) x <- x[!is.na(x)]
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
 }
 
-mode_stat(penguins$island)
 mode_stat(penguins$species)
 ```
 
@@ -115,172 +203,266 @@ mode_stat(penguins$species)
 
 ## Mesures de dispersion
 
-La dispersion quantifie l'**étendue et la variabilité** des données.
+La **dispersion** décrit comment les valeurs sont **étalées** autour de la tendance centrale.
+Deux distributions peuvent avoir la même moyenne mais des dispersions très différentes.
 
-### Variance et écart-type
+### L'étendue
 
-La **variance** mesure la dispersion moyenne au carré autour de la moyenne :
+L'étendue (*range*) est simplement la différence entre la valeur maximale et minimale :
+
+```{r}
+min(penguins$body_mass_g, na.rm = TRUE)
+max(penguins$body_mass_g, na.rm = TRUE)
+range(penguins$body_mass_g, na.rm = TRUE)
+
+# Étendue totale
+diff(range(penguins$body_mass_g, na.rm = TRUE))
+```
+
+::: {.callout-warning}
+## Limite de l'étendue
+L'étendue est très sensible aux valeurs aberrantes : une seule observation extrême
+suffit à gonfler artificiellement la mesure. Préférez l'IQR pour une mesure robuste.
+:::
+
+### La variance et l'écart-type
+
+La **variance** ($s^2$) mesure la dispersion moyenne au carré autour de la moyenne :
 
 $$s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2$$
 
-L'**écart-type** est la racine carrée de la variance (même unité que la variable) :
+L'**écart-type** ($s$) est la racine carrée de la variance — il est dans la **même unité** que la variable :
+
+$$s = \sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2}$$
+
+**Interprétation :** en moyenne, les observations s'écartent de $\bar{x}$ de $s$ unités.
 
 ```{r}
-var(penguins$body_mass_g, na.rm = TRUE)   # Variance
-sd(penguins$body_mass_g, na.rm = TRUE)    # Écart-type
+var(penguins$body_mass_g, na.rm = TRUE)   # Variance (en g²)
+sd(penguins$body_mass_g, na.rm = TRUE)    # Écart-type (en g)
+```
 
-# Comparaison de la variabilité par espèce
+```{r}
+# Comparaison de la dispersion par espèce
 penguins |>
   group_by(species) |>
   summarise(
     masse_moy = round(mean(body_mass_g, na.rm = TRUE), 0),
     masse_sd  = round(sd(body_mass_g, na.rm = TRUE), 0),
-    cv        = round(sd(body_mass_g, na.rm = TRUE) /
-                      mean(body_mass_g, na.rm = TRUE) * 100, 1)
+    .groups = "drop"
   )
 ```
 
-### Quantiles et étendue interquartile (IQR)
+### Les quantiles et l'IQR (étendue interquartile)
+
+Les **quantiles** découpent la distribution en parts égales :
+
+| Quantile | Appellation | Signification |
+|----------|------------|---------------|
+| Q0 (0%) | Minimum | Plus petite valeur |
+| Q1 (25%) | Premier quartile | 25% des valeurs en dessous |
+| Q2 (50%) | Médiane | 50% en dessous |
+| Q3 (75%) | Troisième quartile | 75% en dessous |
+| Q4 (100%) | Maximum | Plus grande valeur |
+
+L'**IQR** (Interquartile Range) = Q3 − Q1 = étendue de la moitié centrale des données.
+Il est **robuste aux valeurs aberrantes**, contrairement à la variance.
 
 ```{r}
 # Quartiles
 quantile(penguins$body_mass_g, na.rm = TRUE)
 
-# Quantiles personnalisés
+# Quantiles personnalisés (percentiles 5%, 10%, 90%, 95%)
 quantile(penguins$body_mass_g,
-         probs = c(0.05, 0.25, 0.50, 0.75, 0.95),
+         probs = c(0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95),
          na.rm = TRUE)
 
-# Étendue interquartile
+# IQR
 IQR(penguins$body_mass_g, na.rm = TRUE)
 ```
 
-```{r}
-# Tableau de résumé complet par espèce
-penguins |>
-  group_by(species) |>
-  summarise(
-    n      = sum(!is.na(body_mass_g)),
-    min    = min(body_mass_g, na.rm = TRUE),
-    Q1     = quantile(body_mass_g, 0.25, na.rm = TRUE),
-    median = median(body_mass_g, na.rm = TRUE),
-    mean   = round(mean(body_mass_g, na.rm = TRUE), 0),
-    Q3     = quantile(body_mass_g, 0.75, na.rm = TRUE),
-    max    = max(body_mass_g, na.rm = TRUE),
-    sd     = round(sd(body_mass_g, na.rm = TRUE), 0),
-    IQR    = IQR(body_mass_g, na.rm = TRUE)
-  )
-```
+### Le coefficient de variation (CV)
 
-### Coefficient de variation (CV)
-
-Le **coefficient de variation** permet de comparer la dispersion de variables d'unités différentes :
+Le **coefficient de variation** permet de comparer la dispersion de variables
+**d'unités différentes** (ex. : comparer la variabilité de la masse et de la longueur du bec) :
 
 $$CV = \frac{s}{\bar{x}} \times 100\%$$
 
+Un CV élevé indique une grande variabilité **relative**.
+
 ```{r}
+# Comparaison de la variabilité relative des variables morphologiques
+penguins |>
+  select(where(is.numeric)) |>
+  summarise(across(
+    everything(),
+    list(
+      moy = ~ mean(.x, na.rm = TRUE),
+      sd  = ~ sd(.x, na.rm = TRUE),
+      cv  = ~ round(sd(.x, na.rm = TRUE) / mean(.x, na.rm = TRUE) * 100, 1)
+    ),
+    .names = "{.col}_{.fn}"
+  )) |>
+  pivot_longer(everything(),
+               names_to  = c("variable", "stat"),
+               names_sep = "_(?=[^_]+$)") |>
+  pivot_wider(names_from = stat, values_from = value) |>
+  arrange(desc(cv))
+```
+
+### Tableau de résumé complet
+
+```{r}
+# Résumé complet par espèce
 penguins |>
   group_by(species) |>
-  summarise(across(
-    c(bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g),
-    ~ round(sd(.x, na.rm = TRUE) / mean(.x, na.rm = TRUE) * 100, 1),
-    .names = "CV_{.col}"
-  ))
+  summarise(
+    n       = sum(!is.na(body_mass_g)),
+    min     = min(body_mass_g, na.rm = TRUE),
+    Q1      = quantile(body_mass_g, 0.25, na.rm = TRUE),
+    med     = median(body_mass_g, na.rm = TRUE),
+    moy     = round(mean(body_mass_g, na.rm = TRUE), 0),
+    Q3      = quantile(body_mass_g, 0.75, na.rm = TRUE),
+    max     = max(body_mass_g, na.rm = TRUE),
+    sd      = round(sd(body_mass_g, na.rm = TRUE), 0),
+    IQR     = IQR(body_mass_g, na.rm = TRUE),
+    CV_pct  = round(sd(body_mass_g, na.rm = TRUE) /
+                    mean(body_mass_g, na.rm = TRUE) * 100, 1),
+    .groups = "drop"
+  )
 ```
 
 ---
 
 ## Tableaux de fréquences
 
-### Variables qualitatives
+Pour les **variables qualitatives**, l'outil principal est le tableau de fréquences.
 
 ```{r}
 # Fréquences absolues
 table(penguins$species)
 
-# Fréquences relatives (%)
-prop.table(table(penguins$species)) * 100
+# Fréquences relatives (proportions)
+prop.table(table(penguins$species))
 
-# Tableau croisé
+# En pourcentages
+round(prop.table(table(penguins$species)) * 100, 1)
+```
+
+```{r}
+# Tableau croisé (deux variables qualitatives)
 table(penguins$species, penguins$island)
 ```
 
 ```{r}
-# Avec dplyr et des pourcentages formatés
+# Version tidyverse plus lisible
 penguins |>
   count(species, island) |>
-  mutate(
-    pct = round(n / sum(n) * 100, 1)
-  ) |>
-  arrange(species, island)
+  mutate(pct = round(n / sum(n) * 100, 1)) |>
+  arrange(desc(n))
 ```
 
 ---
 
 ## Représentations graphiques adaptées
 
-### Distribution d'une variable continue — Histogramme
+### Distribution d'une variable continue : histogramme
 
 ```{r}
 penguins |>
-  filter(!is.na(body_mass_g)) |>
+  drop_na(body_mass_g) |>
   ggplot(aes(x = body_mass_g, fill = species)) +
-  geom_histogram(binwidth = 200, color = "white", alpha = 0.8) +
-  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73")) +
-  facet_wrap(~ species, ncol = 1) +
-  labs(
-    title   = "Distribution de la masse corporelle par espèce",
-    x       = "Masse corporelle (g)",
-    y       = "Effectif",
-    fill    = "Espèce",
-    caption = "Source : Gorman et al. (2014)"
+  geom_histogram(
+    binwidth = 250,
+    color    = "white",
+    alpha    = 0.85
   ) +
-  theme_bw() +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73")) +
+  facet_wrap(~ species, ncol = 1, scales = "free_y") +
+  labs(
+    title   = "Distribution de la masse corporelle par espèce de manchot",
+    subtitle = "Chaque barre représente un intervalle de 250 g",
+    x       = "Masse corporelle (g)",
+    y       = "Nombre d'individus",
+    fill    = "Espèce",
+    caption = "Source : Gorman et al. (2014) — Station Palmer, Antarctique"
+  ) +
+  theme_bw(base_size = 11) +
   theme(legend.position = "none")
 ```
 
-### Comparaison de groupes — Boxplot
+### Comparaison de groupes : boxplot
 
 ```{r}
 penguins |>
-  filter(!is.na(sex)) |>
-  mutate(species = fct_reorder(species, body_mass_g, median)) |>
-  ggplot(aes(x = species, y = body_mass_g, fill = sex)) +
-  geom_boxplot(outlier.shape = 21, outlier.size = 2, alpha = 0.8) +
-  scale_fill_manual(values = c("female" = "#e91e63", "male" = "#1976d2")) +
+  drop_na(sex, body_mass_g) |>
+  mutate(
+    species = fct_reorder(species, body_mass_g, .fun = median),
+    sex_fr  = recode(sex, "male" = "Mâle", "female" = "Femelle")
+  ) |>
+  ggplot(aes(x = species, y = body_mass_g, fill = sex_fr)) +
+  geom_boxplot(
+    outlier.shape  = 21,
+    outlier.size   = 2,
+    outlier.fill   = "white",
+    alpha          = 0.8,
+    position       = position_dodge(width = 0.75)
+  ) +
+  scale_fill_manual(values = c("Femelle" = "#e91e63", "Mâle" = "#1976d2")) +
   labs(
     title   = "Masse corporelle par espèce et par sexe",
+    subtitle = "Les espèces sont ordonnées par médiane croissante",
     x       = NULL,
     y       = "Masse corporelle (g)",
     fill    = "Sexe",
     caption = "Source : Gorman et al. (2014)"
   ) +
-  theme_minimal()
+  theme_minimal(base_size = 12)
 ```
 
-### Variable qualitative — Diagramme en barres
+**Lire une boîte à moustaches :**
+
+```
+           ┌─────┬─────┐
+    ────────│     │     │────────────  ●
+    Min     Q1  Médiane  Q3    Max   (valeur aberrante)
+           └─────┴─────┘
+           ←——IQR——→
+```
+
+- La **ligne centrale** = médiane
+- Les **bords de la boîte** = Q1 et Q3
+- Les **moustaches** s'étendent jusqu'à 1.5 × IQR au-delà de la boîte
+- Les **points** au-delà des moustaches = valeurs potentiellement aberrantes
+
+### Variables qualitatives : diagramme en barres
 
 ```{r}
 penguins |>
   count(species, island) |>
   ggplot(aes(x = island, y = n, fill = species)) +
-  geom_col(position = "fill", color = "white") +
+  geom_col(position = "fill", color = "white", width = 0.7) +
   scale_y_continuous(labels = scales::percent) +
   scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73")) +
   labs(
-    title = "Composition spécifique par île",
-    x     = "Île",
-    y     = "Proportion",
-    fill  = "Espèce"
+    title   = "Composition spécifique par île",
+    subtitle = "Proportion de chaque espèce sur chaque île",
+    x       = "Île",
+    y       = "Proportion",
+    fill    = "Espèce",
+    caption = "Source : Gorman et al. (2014)"
   ) +
-  theme_minimal()
+  theme_minimal(base_size = 12)
 ```
 
-### Matrice de corrélation graphique
+### Matrice de corrélation
+
+La **corrélation** entre deux variables numériques indique si elles tendent à varier ensemble :
+- $r > 0$ : corrélation positive (quand l'une augmente, l'autre aussi)
+- $r < 0$ : corrélation négative (quand l'une augmente, l'autre diminue)
+- $r \approx 0$ : pas de relation linéaire détectable
 
 ```{r}
-#| message: false
-# Corrélations entre variables numériques
 penguins |>
   select(bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g) |>
   drop_na() |>
@@ -289,18 +471,37 @@ penguins |>
   rownames_to_column("var1") |>
   pivot_longer(-var1, names_to = "var2", values_to = "r") |>
   ggplot(aes(x = var1, y = var2, fill = r)) +
-  geom_tile(color = "white") +
-  geom_text(aes(label = round(r, 2)), size = 3.5) +
-  scale_fill_gradient2(low = "#e74c3c", mid = "white", high = "#27ae60",
-                       midpoint = 0, limits = c(-1, 1)) +
+  geom_tile(color = "white", linewidth = 0.5) +
+  geom_text(aes(label = round(r, 2)), size = 4, fontface = "bold") +
+  scale_fill_gradient2(
+    low      = "#e74c3c",
+    mid      = "white",
+    high     = "#27ae60",
+    midpoint = 0,
+    limits   = c(-1, 1),
+    name     = "r de Pearson"
+  ) +
   labs(
-    title = "Matrice de corrélation — Mesures morphologiques des manchots",
-    x = NULL, y = NULL, fill = "r",
+    title   = "Matrice de corrélation des mesures morphologiques",
+    subtitle = "Manchots de l'archipel Palmer — toutes espèces confondues",
+    x       = NULL, y = NULL,
     caption = "Source : Gorman et al. (2014)"
   ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  theme_minimal(base_size = 11) +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1),
+    panel.grid  = element_blank()
+  )
 ```
+
+::: {.callout-note}
+## Paradoxe de Simpson
+Notez que la corrélation `bill_length_mm` vs `bill_depth_mm` est **négative** à l'échelle globale,
+mais elle est **positive** à l'intérieur de chaque espèce.
+C'est le **paradoxe de Simpson** : une tendance observée à l'échelle d'un groupe peut
+s'inverser quand on examine les sous-groupes.
+Ce paradoxe est très fréquent en sciences de l'environnement et en économie.
+:::
 
 ---
 
@@ -309,15 +510,26 @@ penguins |>
 ::: {.callout-note}
 ## Exercice
 
-En utilisant le jeu de données `biodiversite_mascareignes.csv` :
+En utilisant le jeu de données `biodiversite_mascareignes.csv` (dans `data/`) :
 
-1. Calculez les statistiques descriptives (min, Q1, médiane, moyenne, Q3, max, écart-type)
-   du nombre d'espèces par groupe taxonomique et par statut de conservation.
-2. Construisez un histogramme de la richesse spécifique totale par île.
-3. Produisez un boxplot comparant le nombre d'espèces endémiques selon le statut
-   de conservation (LC, NT, VU, EN, CR).
-4. Calculez le coefficient de variation du nombre d'espèces par île :
-   quelle île présente la plus grande variabilité taxonomique ?
+1. **Exploration** : Importez les données, examinez leur structure et listez
+   les variables disponibles. Combien de valeurs manquantes y a-t-il ?
+
+2. **Tendance centrale** : Pour chaque île, calculez le nombre d'espèces
+   total (toutes catégories confondues), la médiane et la moyenne.
+   Commentez la différence éventuelle entre les deux mesures.
+
+3. **Dispersion** : Pour chaque groupe taxonomique (oiseaux, plantes, reptiles, etc.),
+   calculez l'écart-type et le coefficient de variation du nombre d'espèces.
+   Quel groupe est le plus variable ?
+
+4. **Fréquences** : Créez un tableau de fréquences croisé montrant,
+   pour chaque île, le nombre d'espèces par statut UICN (LC, NT, VU, EN, CR).
+
+5. **Graphiques** :
+   - Un histogramme du nombre d'espèces (toutes catégories) par île
+   - Un boxplot comparant le nombre d'espèces endémiques par groupe taxonomique
+   - Un barplot empilé (format proportions) montrant la répartition des statuts UICN par île
 :::
 
 ::: {.callout-caution collapse="true"}
@@ -329,53 +541,74 @@ library(skimr)
 
 biodiv <- read_csv("data/biodiversite_mascareignes.csv")
 
-# 1. Statistiques descriptives
+# 1. Exploration
+glimpse(biodiv)
+skim(biodiv)
+sum(is.na(biodiv))
+
+# 2. Tendance centrale par île
 biodiv |>
-  group_by(groupe, statut) |>
+  group_by(ile) |>
   summarise(
-    n      = n(),
-    min    = min(nb_especes),
-    Q1     = quantile(nb_especes, 0.25),
-    median = median(nb_especes),
-    mean   = round(mean(nb_especes), 1),
-    Q3     = quantile(nb_especes, 0.75),
-    max    = max(nb_especes),
-    sd     = round(sd(nb_especes), 1),
+    total   = sum(nb_especes),
+    mediane = median(nb_especes),
+    moyenne = round(mean(nb_especes), 1),
     .groups = "drop"
-  )
+  ) |>
+  arrange(desc(total))
 
-# 2. Histogramme richesse spécifique par île
+# 3. Dispersion par groupe taxonomique
 biodiv |>
-  group_by(ile) |>
-  summarise(richesse_totale = sum(nb_especes)) |>
-  ggplot(aes(x = ile, y = richesse_totale, fill = ile)) +
-  geom_col() +
-  scale_fill_brewer(palette = "Set2") +
-  labs(title = "Richesse spécifique totale par île",
-       x = NULL, y = "Nombre d'espèces", fill = "Île") +
-  theme_minimal() +
-  theme(legend.position = "none")
-
-# 3. Boxplot espèces endémiques par statut
-biodiv |>
-  filter(statut != "Non menacé") |>
-  mutate(statut = fct_relevel(statut, "NT", "VU", "EN", "CR")) |>
-  ggplot(aes(x = statut, y = nb_especes, fill = statut)) +
-  geom_boxplot(alpha = 0.7) +
-  scale_fill_brewer(palette = "YlOrRd") +
-  labs(title = "Espèces endémiques par statut de conservation",
-       x = "Statut UICN", y = "Nombre d'espèces") +
-  theme_minimal() +
-  theme(legend.position = "none")
-
-# 4. Coefficient de variation par île
-biodiv |>
-  group_by(ile) |>
+  group_by(groupe) |>
   summarise(
-    moy = mean(nb_especes),
-    sd  = sd(nb_especes),
-    cv  = sd / moy * 100
+    sd    = round(sd(nb_especes), 1),
+    cv    = round(sd(nb_especes) / mean(nb_especes) * 100, 1),
+    .groups = "drop"
   ) |>
   arrange(desc(cv))
+
+# 4. Tableau croisé île × statut
+biodiv |>
+  group_by(ile, statut) |>
+  summarise(total = sum(nb_especes), .groups = "drop") |>
+  pivot_wider(names_from = statut, values_from = total, values_fill = 0)
+
+# 5a. Histogramme
+biodiv |>
+  group_by(ile) |>
+  summarise(total = sum(nb_especes)) |>
+  ggplot(aes(x = reorder(ile, total), y = total, fill = ile)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  labs(title = "Richesse spécifique totale par île",
+       x = NULL, y = "Nombre d'espèces") +
+  theme_minimal()
+
+# 5b. Boxplot par groupe
+biodiv |>
+  mutate(groupe = fct_reorder(groupe, nb_especes, .fun = median)) |>
+  ggplot(aes(x = groupe, y = nb_especes, fill = groupe)) +
+  geom_boxplot(show.legend = FALSE, alpha = 0.8) +
+  coord_flip() +
+  labs(title = "Nombre d'espèces par groupe taxonomique",
+       x = NULL, y = "Nombre d'espèces") +
+  theme_minimal()
+
+# 5c. Barplot statuts UICN
+biodiv |>
+  group_by(ile, statut) |>
+  summarise(total = sum(nb_especes), .groups = "drop") |>
+  mutate(statut = factor(statut, levels = c("Non menacé", "NT", "VU", "EN", "CR"))) |>
+  ggplot(aes(x = ile, y = total, fill = statut)) +
+  geom_col(position = "fill", color = "white") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_manual(
+    values = c("Non menacé" = "#27ae60", "NT" = "#f39c12",
+               "VU" = "#e67e22", "EN" = "#e74c3c", "CR" = "#8e44ad")
+  ) +
+  labs(title = "Répartition des statuts UICN par île",
+       x = NULL, y = "Proportion", fill = "Statut") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 :::

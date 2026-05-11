@@ -6,236 +6,449 @@ title: "Séance 2 — Introduction au tidyverse"
 ## Objectifs de la séance
 À l'issue de cette séance, vous serez capable de :
 
-- Comprendre la philosophie du tidyverse et les données « tidy »
-- Utiliser le pipe `|>` pour enchaîner des opérations
-- Importer des données tabulaires avec `readr`
-- Manipuler un tableau avec les verbes de `dplyr`
-- Restructurer un tableau avec `tidyr`
+- Expliquer ce qu'est le tidyverse et la philosophie des données « tidy »
+- Utiliser le pipe `|>` pour enchaîner des opérations lisiblement
+- Importer des fichiers CSV avec `readr`
+- Filtrer, sélectionner, transformer, trier et résumer un tableau avec `dplyr`
+- Restructurer un tableau entre format large et long avec `tidyr`
 :::
 
-## L'écosystème tidyverse
+---
 
-Le **tidyverse** est une collection de packages R conçus pour fonctionner ensemble
-selon une philosophie cohérente de traitement des données.
+## Le tidyverse : une philosophie cohérente
+
+Le **tidyverse** est une collection de packages R qui partagent la même philosophie,
+la même syntaxe et les mêmes structures de données. Il a été développé principalement
+par [Hadley Wickham](https://hadley.nz/) et son équipe chez Posit.
 
 ```{r}
 library(tidyverse)
 ```
 
-Les packages clés du tidyverse :
+Quand vous lancez `library(tidyverse)`, R charge automatiquement **8 packages** :
 
-| Package | Rôle principal |
-|---------|---------------|
-| `readr` | Importer des données (CSV, TSV…) |
-| `dplyr` | Manipuler des tableaux (filtrer, sélectionner, agréger…) |
-| `tidyr` | Restructurer des tableaux (pivot, séparation…) |
-| `ggplot2` | Visualiser les données |
-| `stringr` | Manipuler des chaînes de caractères |
-| `forcats` | Manipuler des facteurs |
-| `lubridate` | Manipuler des dates |
-| `purrr` | Programmation fonctionnelle |
-
-### Le concept de « tidy data »
-
-Des données sont dites **tidy** (rangées) lorsque :
-
-1. Chaque **variable** est dans une colonne.
-2. Chaque **observation** est dans une ligne.
-3. Chaque **valeur** occupe une cellule.
-
-```r
-# Données NON tidy (format large — "wide")
-#   pays        | 2020  | 2021  | 2022
-#   La Réunion  | 8100  | 8300  | 8600
-#   Maurice     | 8900  | 9200  | 10500
-
-# Données TIDY (format long)
-#   pays        | annee | pib
-#   La Réunion  | 2020  | 8100
-#   La Réunion  | 2021  | 8300
-#   ...
+```{r}
+#| echo: false
+#| fig-cap: "Les 8 packages du cœur du tidyverse"
+knitr::include_graphics("../images/tidyverse.png")
 ```
+
+| Package | Rôle | Séance |
+|---------|------|--------|
+| ![](../images/readr.png){.hex-logo} `readr` | Importer des données (CSV, TSV…) | S2 |
+| ![](../images/dplyr.png){.hex-logo} `dplyr` | Manipuler les tableaux | S2 |
+| ![](../images/tidyr.png){.hex-logo} `tidyr` | Restructurer les tableaux | S2 |
+| ![](../images/ggplot2.png){.hex-logo} `ggplot2` | Visualiser les données | S5 |
+| ![](../images/stringr.png){.hex-logo} `stringr` | Manipuler le texte | S4 |
+| ![](../images/forcats.png){.hex-logo} `forcats` | Gérer les facteurs | S4 |
+| ![](../images/lubridate.png){.hex-logo} `lubridate` | Travailler avec les dates | S4 |
+| ![](../images/purrr.png){.hex-logo} `purrr` | Programmation fonctionnelle | S4 |
 
 ---
 
-## Le pipe `|>`
+## La philosophie : les données « tidy »
 
-Le **pipe** permet d'enchaîner des opérations en lisant le code de gauche à droite.
-Il transmet automatiquement le résultat de gauche comme **premier argument** de la fonction de droite.
+Hadley Wickham a formalisé le concept de **tidy data** (données rangées) dans son article
+de 2014 (*Journal of Statistical Software*). Les données sont dites *tidy* quand elles
+respectent trois règles :
+
+1. **Chaque variable** est dans **une colonne**.
+2. **Chaque observation** est dans **une ligne**.
+3. **Chaque valeur** occupe **une seule cellule**.
 
 ```{r}
-# Sans pipe : difficile à lire
-mean(sqrt(abs(c(-4, 9, -16, 25))))
+#| echo: false
+#| fig-cap: "Structure des données tidy. Source : R for Data Science, Wickham et al."
+knitr::include_graphics("../images/tidy_data.png")
+```
 
-# Avec le pipe natif de R (|>)
-c(-4, 9, -16, 25) |> abs() |> sqrt() |> mean()
+### Exemple concret
+
+**Données NON tidy** (format « large », fréquent dans les exports Excel) :
+
+| Pays | Production 2020 | Production 2021 | Production 2022 |
+|------|----------------:|----------------:|----------------:|
+| Madagascar | 2 600 | 2 750 | 2 900 |
+| Comores | 7 500 | 7 800 | 8 000 |
+
+**Données TIDY** (format « long », ce que le tidyverse attend) :
+
+| pays | annee | production |
+|------|------:|-----------:|
+| Madagascar | 2020 | 2 600 |
+| Madagascar | 2021 | 2 750 |
+| Madagascar | 2022 | 2 900 |
+| Comores | 2020 | 7 500 |
+| … | … | … |
+
+::: {.callout-note}
+## Pourquoi le format long ?
+Le format long est plus flexible : on peut facilement filtrer par année,
+calculer des statistiques par pays, ou créer des graphiques avec `ggplot2`.
+Le format large est pratique pour la saisie humaine, mais difficile à analyser par programme.
+:::
+
+---
+
+## Le pipe `|>` — enchaîner des opérations lisiblement
+
+Le **pipe** est l'une des innovations les plus importantes du tidyverse.
+Il se lit comme « *puis* » et permet d'écrire du code **de gauche à droite**,
+dans l'ordre naturel des opérations.
+
+**Principe :** `x |> f()` est équivalent à `f(x)`
+
+```{r}
+# Sans pipe : lecture de droite à gauche, difficile à suivre
+round(mean(sqrt(c(4, 9, 16, 25, 36))), digits = 2)
+
+# Avec le pipe : lecture de gauche à droite, naturelle
+c(4, 9, 16, 25, 36) |>
+  sqrt() |>
+  mean() |>
+  round(digits = 2)
+```
+
+L'avantage devient encore plus clair avec des opérations complexes :
+
+```{r}
+#| eval: false
+# Sans pipe (difficile à lire)
+arrange(
+  summarise(
+    group_by(
+      filter(gapminder, continent == "Africa"),
+      country
+    ),
+    pib_moy = mean(gdpPercap)
+  ),
+  desc(pib_moy)
+)
+
+# Avec le pipe (lisible comme une recette)
+gapminder |>
+  filter(continent == "Africa") |>
+  group_by(country) |>
+  summarise(pib_moy = mean(gdpPercap)) |>
+  arrange(desc(pib_moy))
 ```
 
 ::: {.callout-note}
-## Deux pipes coexistent
-- `|>` : pipe **natif** de R (disponible depuis R 4.1) — recommandé
-- `%>%` : pipe du package `magrittr` (chargé avec le tidyverse) — toujours très répandu
+## Deux pipes en R
 
+- `|>` : le pipe **natif** de R, disponible depuis R 4.1 (2021). Recommandé.
+- `%>%` : le pipe du package `magrittr`, chargé avec le tidyverse. Très répandu dans les codes existants.
+
+Les deux fonctionnent de la même façon dans 95% des cas.
 Dans ce cours, nous utilisons `|>`.
+Raccourci RStudio : `Ctrl + Shift + M` (ou `Cmd + Shift + M` sur Mac).
 :::
 
 ---
 
 ## Importation de données avec `readr`
 
-### Importer un fichier CSV
+### Lire un fichier CSV
 
 ```r
 # Importer un fichier CSV local
 donnees <- read_csv("data/mon_fichier.csv")
 
-# Importer un fichier depuis le web
-url_fao <- "https://exemple.fao.org/données.csv"
-donnees_fao <- read_csv(url_fao)
+# Avec des options
+donnees <- read_csv(
+  "data/mon_fichier.csv",
+  col_types = cols(
+    annee = col_integer(),
+    pays  = col_character(),
+    pib   = col_double()
+  ),
+  locale = locale(decimal_mark = ",")   # Pour les fichiers français (virgule décimale)
+)
 ```
 
-Les fonctions de `readr` :
+**Différence `read_csv()` vs `read.csv()` :**
 
-| Fonction | Format |
-|----------|--------|
-| `read_csv()` | CSV (séparateur `,`) |
-| `read_csv2()` | CSV (séparateur `;`, standard européen) |
-| `read_tsv()` | TSV (séparateur tabulation) |
-| `read_delim()` | Délimiteur personnalisé |
+| Fonction | Package | Type retourné | Rapidité |
+|----------|---------|---------------|----------|
+| `read.csv()` | Base R | `data.frame` | Plus lent |
+| `read_csv()` | readr | **`tibble`** | Bien plus rapide |
 
-### Exemple avec les données Gapminder
+### Le tibble : version améliorée du data frame
 
-Le package `gapminder` contient des données mondiales de développement
-(PIB/habitant, espérance de vie, population) pour 142 pays entre 1952 et 2007.
+Un **tibble** est le format de tableau du tidyverse.
+Il est identique à un data frame, mais avec un affichage plus lisible :
 
 ```{r}
 library(gapminder)
 
-# Aperçu des données
+# gapminder est déjà un tibble
 gapminder
 ```
 
+Remarquez :
+- Le **type de chaque colonne** est affiché sous le nom (`<fct>`, `<int>`, `<dbl>`)
+- Seules les **10 premières lignes** sont affichées
+- Le **nombre total de lignes et colonnes** est indiqué
+
 ```{r}
-# Structure
+# Convertir un data.frame en tibble
+iris_tbl <- as_tibble(iris)
+iris_tbl
+```
+
+### `glimpse()` — explorer rapidement les données
+
+```{r}
+# Vue synthétique de toutes les colonnes
 glimpse(gapminder)
 ```
 
+`glimpse()` affiche :
+- le **nombre de lignes et colonnes**
+- le **nom** et le **type** de chaque colonne
+- les **premières valeurs** de chaque colonne
+
 ---
 
-## Manipulation de données avec `dplyr`
+## Les 6 verbes de `dplyr`
 
-Les **six verbes fondamentaux** de `dplyr` :
-
-| Verbe | Action |
-|-------|--------|
-| `filter()` | Sélectionner des lignes selon une condition |
-| `select()` | Sélectionner des colonnes |
-| `mutate()` | Créer ou modifier des colonnes |
-| `arrange()` | Trier les lignes |
-| `summarise()` | Calculer des résumés |
-| `group_by()` | Regrouper avant de résumer |
-
-### `filter()` — Filtrer des lignes
+`dplyr` fonctionne avec **6 fonctions fondamentales** (les « verbes »)
+qui couvrent 90% des opérations de manipulation de données :
 
 ```{r}
-# Données de l'Afrique subsaharienne pour 2007
+#| echo: false
+knitr::include_graphics("../images/dplyr.png")
+```
+
+| Verbe | Traduit en français | Sur quoi |
+|-------|--------------------:|---------|
+| `filter()` | Filtrer des lignes | Lignes |
+| `select()` | Sélectionner des colonnes | Colonnes |
+| `mutate()` | Créer / modifier des colonnes | Colonnes |
+| `arrange()` | Trier | Lignes |
+| `summarise()` | Résumer / agréger | Valeurs |
+| `group_by()` | Regrouper avant de résumer | Groupes |
+
+::: {.callout-note}
+## Règle commune à tous les verbes dplyr
+1. Le **premier argument** est toujours le tableau de données
+2. Les **arguments suivants** décrivent quoi faire avec les colonnes
+   (on écrit le nom des colonnes **sans guillemets**)
+3. Le résultat est toujours un **nouveau tableau** (l'original n'est pas modifié)
+:::
+
+---
+
+### `filter()` — Sélectionner des lignes selon une condition
+
+`filter()` garde seulement les lignes qui satisfont une condition.
+
+```{r}
+# Données africaines pour 2007
 gapminder |>
   filter(continent == "Africa", year == 2007)
 ```
 
-```{r}
-# Pays avec une espérance de vie > 70 ans en Asie
-gapminder |>
-  filter(continent == "Asia", lifeExp > 70, year == 2007)
-```
+**Les opérateurs de comparaison dans `filter()` :**
 
-**Opérateurs utiles dans `filter()`** :
+| Opérateur | Signification | Exemple |
+|:----------:|--------------|---------|
+| `==` | Égal à | `continent == "Africa"` |
+| `!=` | Différent de | `continent != "Africa"` |
+| `>` | Strictement supérieur | `lifeExp > 70` |
+| `>=` | Supérieur ou égal | `year >= 2000` |
+| `<` | Strictement inférieur | `gdpPercap < 1000` |
+| `<=` | Inférieur ou égal | `pop <= 1e6` |
+| `%in%` | Appartient à un ensemble | `country %in% c("France", "Kenya")` |
+| `is.na()` | Est manquant | `is.na(gdpPercap)` |
+| `!is.na()` | N'est pas manquant | `!is.na(gdpPercap)` |
 
-| Opérateur | Signification |
-|-----------|---------------|
-| `==` | Égal à |
-| `!=` | Différent de |
-| `>`, `>=` | Supérieur (ou égal) à |
-| `<`, `<=` | Inférieur (ou égal) à |
-| `&` ou `,` | ET logique |
-| `\|` | OU logique |
-| `%in%` | Appartient à un ensemble |
-| `is.na()` | Est manquant |
-| `!is.na()` | N'est pas manquant |
+Combiner plusieurs conditions :
+- `,` ou `&` : **ET** (les deux conditions doivent être vraies)
+- `|` : **OU** (au moins une condition doit être vraie)
 
 ```{r}
-# Pays de l'Océan Indien et Afrique de l'Est en 2007
-pays_tropicaux <- c("Madagascar", "Mozambique", "Tanzania",
-                    "Kenya", "Comoros", "Mauritius")
+# Pays de la zone Océan Indien avec une espérance de vie > 65 ans en 2007
+pays_oi <- c("Madagascar", "Mozambique", "Tanzania", "Kenya",
+             "Comoros", "Mauritius", "Reunion")
 
 gapminder |>
-  filter(country %in% pays_tropicaux, year == 2007)
+  filter(country %in% pays_oi,
+         year == 2007,
+         lifeExp > 65)
 ```
 
-### `select()` — Sélectionner des colonnes
+```{r}
+# Pays très pauvres OU à très faible espérance de vie (2007)
+gapminder |>
+  filter(year == 2007,
+         gdpPercap < 500 | lifeExp < 50)
+```
+
+---
+
+### `select()` — Choisir les colonnes à conserver
+
+`select()` permet de **garder, supprimer ou renommer** des colonnes.
 
 ```{r}
-# Conserver seulement certaines colonnes
+# Garder seulement certaines colonnes
 gapminder |>
   select(country, year, lifeExp, gdpPercap)
 ```
 
 ```{r}
-# Supprimer une colonne
+# Renommer en sélectionnant
+gapminder |>
+  select(pays = country,
+         annee = year,
+         esperance_vie = lifeExp,
+         pib_habitant = gdpPercap)
+```
+
+```{r}
+# Supprimer une colonne avec -
 gapminder |>
   select(-continent)
 
-# Renommer en sélectionnant
+# Supprimer plusieurs colonnes
 gapminder |>
-  select(pays = country, annee = year, esperance_vie = lifeExp)
+  select(-continent, -pop)
 ```
 
-**Fonctions d'aide pour `select()`** :
+**Fonctions d'aide pour `select()` :**
 
-| Fonction | Usage |
-|----------|-------|
-| `starts_with("x")` | Colonnes commençant par "x" |
-| `ends_with("x")` | Colonnes finissant par "x" |
-| `contains("x")` | Colonnes contenant "x" |
-| `everything()` | Toutes les autres colonnes |
+| Fonction | Sélectionne les colonnes qui… |
+|----------|-------------------------------|
+| `starts_with("x")` | …commencent par "x" |
+| `ends_with("x")` | …se terminent par "x" |
+| `contains("x")` | …contiennent "x" |
+| `where(is.numeric)` | …sont numériques |
+| `where(is.character)` | …sont des chaînes de texte |
+| `everything()` | …toutes les autres (utile pour réordonner) |
+
+```{r}
+# Sélectionner uniquement les colonnes numériques
+gapminder |>
+  select(country, year, where(is.numeric))
+```
+
+---
 
 ### `mutate()` — Créer ou modifier des colonnes
 
+`mutate()` **ajoute de nouvelles colonnes** ou **modifie des colonnes existantes**.
+Les autres colonnes sont conservées.
+
 ```{r}
-# Calculer le PIB total (PIB/habitant × population)
+# Calculer le PIB total (PIB/hab × population)
 gapminder |>
-  mutate(pib_total = gdpPercap * pop) |>
-  select(country, year, pib_total) |>
+  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) |>
+  select(country, year, pib_total_mrd) |>
   filter(year == 2007) |>
-  arrange(desc(pib_total))
+  arrange(desc(pib_total_mrd)) |>
+  head(8)
 ```
 
 ```{r}
-# Créer une catégorie de revenu
+# Créer plusieurs colonnes à la fois
 gapminder |>
   filter(year == 2007) |>
   mutate(
-    categorie_revenu = case_when(
-      gdpPercap < 1000              ~ "Faible",
-      gdpPercap >= 1000 & gdpPercap < 5000  ~ "Intermédiaire bas",
-      gdpPercap >= 5000 & gdpPercap < 15000 ~ "Intermédiaire haut",
-      gdpPercap >= 15000            ~ "Élevé"
+    pib_total_mrd  = (gdpPercap * pop) / 1e9,
+    pop_millions   = pop / 1e6,
+    # case_when : l'équivalent tidyverse du if/else imbriqué
+    categorie_pib = case_when(
+      gdpPercap < 1000              ~ "Faible revenu",
+      gdpPercap < 4000              ~ "Revenu intermédiaire bas",
+      gdpPercap < 12500             ~ "Revenu intermédiaire haut",
+      TRUE                          ~ "Revenu élevé"     # Condition par défaut
     )
   ) |>
-  count(categorie_revenu)
+  count(categorie_pib)
 ```
+
+::: {.callout-note}
+## `case_when()` — l'alternative lisible à `if`/`else`
+`case_when()` permet de créer une variable à partir de plusieurs conditions :
+```r
+mutate(
+  note = case_when(
+    score >= 16  ~ "Très bien",
+    score >= 14  ~ "Bien",
+    score >= 12  ~ "Assez bien",
+    score >= 10  ~ "Passable",
+    TRUE         ~ "Insuffisant"   # Toutes les autres valeurs
+  )
+)
+```
+La condition `TRUE ~ ...` fonctionne comme un `else` final.
+:::
+
+---
 
 ### `arrange()` — Trier les lignes
 
+`arrange()` trie le tableau selon une ou plusieurs colonnes.
+Par défaut, le tri est **croissant**. Utilisez `desc()` pour un tri **décroissant**.
+
 ```{r}
-# Top 10 des pays africains par espérance de vie en 2007
+# Les 10 pays africains avec la plus longue espérance de vie en 2007
 gapminder |>
   filter(continent == "Africa", year == 2007) |>
   arrange(desc(lifeExp)) |>
-  head(10)
+  head(10) |>
+  select(country, lifeExp, gdpPercap)
 ```
 
-### `summarise()` et `group_by()` — Agréger par groupe
+```{r}
+# Tri sur plusieurs colonnes (continent d'abord, puis PIB décroissant)
+gapminder |>
+  filter(year == 2007) |>
+  arrange(continent, desc(gdpPercap)) |>
+  select(continent, country, gdpPercap)
+```
+
+---
+
+### `summarise()` — Résumer les données
+
+`summarise()` **réduit** un tableau à un résumé statistique.
+Il est presque toujours utilisé **après `group_by()`**.
+
+```{r}
+# Résumé global de l'espérance de vie en 2007
+gapminder |>
+  filter(year == 2007) |>
+  summarise(
+    nb_pays          = n(),                         # Compter les lignes
+    esp_vie_moy      = mean(lifeExp),
+    esp_vie_mediane  = median(lifeExp),
+    esp_vie_ecart_t  = sd(lifeExp),
+    pib_mediane      = median(gdpPercap)
+  )
+```
+
+**Les fonctions de résumé les plus courantes :**
+
+| Fonction | Calcule |
+|----------|---------|
+| `n()` | Nombre de lignes dans le groupe |
+| `n_distinct(x)` | Nombre de valeurs distinctes |
+| `mean(x, na.rm=T)` | Moyenne |
+| `median(x, na.rm=T)` | Médiane |
+| `sd(x, na.rm=T)` | Écart-type |
+| `min(x, na.rm=T)` | Minimum |
+| `max(x, na.rm=T)` | Maximum |
+| `sum(x, na.rm=T)` | Somme |
+| `first(x)` / `last(x)` | Premier / dernier élément |
+
+---
+
+### `group_by()` + `summarise()` — Résumer par groupe
+
+La combinaison `group_by()` + `summarise()` est l'une des plus utilisées en analyse de données.
+Elle permet de calculer des statistiques **pour chaque groupe** d'observations.
 
 ```{r}
 # Statistiques par continent en 2007
@@ -243,137 +456,174 @@ gapminder |>
   filter(year == 2007) |>
   group_by(continent) |>
   summarise(
-    nb_pays          = n(),
-    pib_median       = median(gdpPercap),
-    esp_vie_moyenne  = mean(lifeExp),
-    population_tot   = sum(pop)
+    nb_pays       = n(),
+    pib_median    = round(median(gdpPercap), 0),
+    esp_vie_moy   = round(mean(lifeExp), 1),
+    pop_totale_M  = round(sum(pop) / 1e6, 0)
   ) |>
   arrange(desc(pib_median))
 ```
 
 ```{r}
-# Évolution du PIB médian mondial par décennie
+# Évolution de l'espérance de vie médiane par décennie
 gapminder |>
-  mutate(decennie = (year %/% 10) * 10) |>
-  group_by(decennie) |>
+  mutate(decennie = floor(year / 10) * 10) |>
+  group_by(continent, decennie) |>
   summarise(
-    pib_median = median(gdpPercap),
-    esp_vie_mediane = median(lifeExp)
-  )
-```
-
-### `rename()` — Renommer des colonnes
-
-```{r}
-gapminder |>
-  rename(
-    pays          = country,
-    annee         = year,
-    esperance_vie = lifeExp,
-    population    = pop,
-    pib_habitant  = gdpPercap
+    esp_vie_med = round(median(lifeExp), 1),
+    .groups     = "drop"    # Supprimer le groupement après summarise
   ) |>
-  glimpse()
+  filter(continent %in% c("Africa", "Asia", "Europe"))
 ```
 
-### Jointures entre tableaux
+::: {.callout-warning}
+## `.groups = "drop"` dans `summarise()`
+Depuis dplyr 1.0, `summarise()` après `group_by()` sur plusieurs variables
+conserve un niveau de groupement. Ajoutez `.groups = "drop"` pour éviter
+des comportements inattendus dans les opérations suivantes.
+:::
 
 ```{r}
-# Données des pays de l'Océan Indien (table supplémentaire fictive)
-info_geo <- tibble(
-  country = c("Madagascar", "Mozambique", "Tanzania", "Kenya",
-              "Comoros", "Mauritius", "Reunion"),
-  ocean   = "Indien",
-  climat  = c("Tropical", "Tropical", "Tropical", "Tropical",
-              "Tropical", "Tropical humide", "Tropical humide"),
-  facade_maritime = TRUE
-)
-
-# Jointure (left_join : on garde tous les pays de gapminder)
+# count() : raccourci pour group_by() + summarise(n = n())
 gapminder |>
   filter(year == 2007) |>
-  left_join(info_geo, by = "country") |>
-  filter(!is.na(ocean)) |>
-  select(country, lifeExp, gdpPercap, climat)
+  count(continent, sort = TRUE)
 ```
+
+---
+
+### Combiner les verbes : une analyse complète
+
+```{r}
+# Analyse des pays d'Afrique de l'Est : top 5 en termes de PIB total en 2007
+gapminder |>
+  # 1. Filtrer l'Afrique pour 2007
+  filter(continent == "Africa", year == 2007) |>
+  # 2. Calculer le PIB total
+  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) |>
+  # 3. Sélectionner les colonnes utiles
+  select(country, lifeExp, gdpPercap, pib_total_mrd) |>
+  # 4. Trier par PIB total décroissant
+  arrange(desc(pib_total_mrd)) |>
+  # 5. Garder le top 5
+  slice_head(n = 5)
+```
+
+---
+
+## Les jointures entre tableaux
+
+Dans la réalité, les données sont souvent réparties sur plusieurs fichiers.
+Les fonctions de jointure permettent de combiner plusieurs tableaux sur une colonne commune.
+
+```{r}
+# Tableau de classification climatique de quelques pays
+info_climatique <- tibble(
+  country = c("Kenya", "Ethiopia", "Tanzania", "Mozambique",
+              "Madagascar", "Mauritius"),
+  zone_climatique = c("Tropical humide/sec", "Semi-aride/Tropical",
+                      "Tropical", "Tropical", "Tropical", "Tropical humide"),
+  facade_ocean_indien = c(TRUE, FALSE, TRUE, TRUE, TRUE, TRUE)
+)
+
+# left_join : on garde TOUS les pays de gapminder (table de gauche)
+# et on ajoute les infos climatiques quand elles existent
+gapminder |>
+  filter(year == 2007) |>
+  left_join(info_climatique, by = "country") |>
+  filter(!is.na(zone_climatique)) |>
+  select(country, lifeExp, gdpPercap, zone_climatique)
+```
+
+**Les 4 types de jointure :**
+
+| Fonction | Garde les lignes de… |
+|----------|----------------------|
+| `left_join(x, y)` | Toutes celles de **x** |
+| `right_join(x, y)` | Toutes celles de **y** |
+| `inner_join(x, y)` | Seulement les lignes présentes **dans les deux** |
+| `full_join(x, y)` | **Toutes** les lignes des deux tableaux |
 
 ---
 
 ## Restructuration avec `tidyr`
 
-### `pivot_longer()` — Du format large au format long
+![](../images/tidyr.png){.hex-logo style="float:right; margin-left:1rem;"}
+
+`tidyr` permet de **changer la forme** d'un tableau entre le format large (wide) et le format long.
+
+### `pivot_longer()` — Passer du format large au format long
 
 ```{r}
-# Données larges (format original non-tidy)
-temperatures_larges <- tibble(
-  station  = c("Saint-Denis", "Saint-Pierre", "Le Tampon"),
-  T_jan    = c(27.2, 27.8, 21.5),
-  T_avr    = c(24.5, 25.1, 19.2),
-  T_juil   = c(19.8, 20.5, 14.9),
-  T_oct    = c(23.1, 23.9, 17.8)
+# Données en format large (souvent le cas des exports Excel/FAOSTAT)
+vanille_large <- tibble(
+  pays    = c("Madagascar", "Comores", "La Réunion"),
+  `2020`  = c(2600, 320, 22),
+  `2021`  = c(2750, 335, 24),
+  `2022`  = c(2900, 350, 25)
 )
 
-temperatures_larges
-```
+vanille_large
 
-```{r}
 # Conversion en format long (tidy)
-temperatures_longues <- temperatures_larges |>
+vanille_long <- vanille_large |>
   pivot_longer(
-    cols      = starts_with("T_"),
-    names_to  = "mois",
-    values_to = "temperature"
+    cols      = `2020`:`2022`,   # Colonnes à pivoter
+    names_to  = "annee",          # Nom de la nouvelle colonne "variable"
+    values_to = "production_t"    # Nom de la nouvelle colonne "valeur"
   ) |>
-  mutate(mois = str_remove(mois, "T_"))
+  mutate(annee = as.integer(annee))
 
-temperatures_longues
+vanille_long
 ```
 
-### `pivot_wider()` — Du format long au format large
+### `pivot_wider()` — Passer du format long au format large
 
 ```{r}
-# L'opération inverse
-temperatures_longues |>
+# L'opération inverse : reconstituer le tableau large
+vanille_long |>
   pivot_wider(
-    names_from  = mois,
-    values_from = temperature
+    names_from  = annee,
+    values_from = production_t
   )
 ```
 
-### `separate()` et `unite()`
+### `separate()` — Séparer une colonne en plusieurs
 
 ```{r}
-# Séparer une colonne en plusieurs
-df <- tibble(date_station = c("2024-01_Saint-Denis",
-                               "2024-02_Saint-Pierre",
-                               "2024-03_Le Tampon"))
+# Colonne contenant deux informations fusionnées
+observations <- tibble(
+  id_obs = c("REU-2024-001", "MDG-2024-042", "COM-2023-017")
+)
 
-df |>
-  separate(date_station, into = c("date", "station"), sep = "_", extra = "merge")
+observations |>
+  separate(
+    col  = id_obs,
+    into = c("pays", "annee", "numero"),
+    sep  = "-"
+  )
 ```
 
 ---
 
-## Exemple complet : analyse de l'Afrique subsaharienne
+## Exemple complet : analyse de l'Afrique
 
 ```{r}
-# Analyse complète enchaînée avec le pipe
-resultat <- gapminder |>
-  # Filtrer l'Afrique subsaharienne
+# Analyse complète : comment le développement a-t-il évolué en Afrique ?
+gapminder |>
   filter(continent == "Africa") |>
-  # Calculer le PIB total
-  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) |>
-  # Garder seulement les colonnes utiles
-  select(country, year, lifeExp, pib_total_mrd) |>
-  # Regrouper par décennie
-  mutate(decennie = paste0(floor(year / 10) * 10, "s")) |>
+  mutate(
+    pib_total_mrd = (gdpPercap * pop) / 1e9,
+    decennie      = paste0(floor(year / 10) * 10, "s")
+  ) |>
   group_by(decennie) |>
   summarise(
-    esp_vie_moy    = round(mean(lifeExp), 1),
-    pib_tot_median = round(median(pib_total_mrd), 2)
+    nb_pays         = n_distinct(country),
+    esp_vie_moy     = round(mean(lifeExp), 1),
+    pib_hab_median  = round(median(gdpPercap), 0),
+    pop_totale_M    = round(sum(pop) / 1e6, 0),
+    .groups = "drop"
   )
-
-resultat
 ```
 
 ---
@@ -382,14 +632,21 @@ resultat
 
 ::: {.callout-note}
 ## Exercice
+
 En utilisant le jeu de données `gapminder` :
 
-1. Filtrez les données pour l'année 2007 et le continent africain.
-2. Créez une nouvelle colonne `pib_total_mrd` = PIB total en milliards de dollars.
-3. Sélectionnez uniquement `country`, `lifeExp`, `gdpPercap`, `pib_total_mrd`.
-4. Triez par espérance de vie décroissante.
-5. Affichez les 5 premiers pays.
-6. Calculez l'espérance de vie médiane et le PIB/habitant médian pour ce sous-ensemble.
+1. **Filtrez** les données pour l'**Asie** et l'année **2007**.
+2. **Créez** une nouvelle colonne `pib_total_mrd` = PIB total en milliards de dollars
+   (`gdpPercap × pop / 1e9`).
+3. **Créez** une colonne `categorie` qui classifie les pays :
+   - `"< 5 000 USD"` si `gdpPercap < 5000`
+   - `"5 000–20 000 USD"` si `gdpPercap` est entre 5 000 et 20 000
+   - `"> 20 000 USD"` si `gdpPercap >= 20000`
+4. **Comptez** le nombre de pays dans chaque catégorie.
+5. Pour chaque catégorie, calculez l'**espérance de vie médiane** et le **PIB/habitant médian**.
+6. **Triez** le résultat par PIB médian décroissant.
+7. **Bonus** : utilisez `pivot_wider()` pour créer un tableau avec une ligne par continent
+   et une colonne par décennie, contenant l'espérance de vie médiane.
 :::
 
 ::: {.callout-caution collapse="true"}
@@ -399,22 +656,31 @@ En utilisant le jeu de données `gapminder` :
 library(gapminder)
 library(tidyverse)
 
-# Étapes 1 à 5
-top5 <- gapminder |>
-  filter(year == 2007, continent == "Africa") |>
-  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) |>
-  select(country, lifeExp, gdpPercap, pib_total_mrd) |>
-  arrange(desc(lifeExp)) |>
-  head(5)
-
-top5
-
-# Étape 6 : Statistiques sur l'ensemble du sous-ensemble africain 2007
+# 1 à 6 : Analyse Asie 2007
 gapminder |>
-  filter(year == 2007, continent == "Africa") |>
+  filter(continent == "Asia", year == 2007) |>
+  mutate(
+    pib_total_mrd = (gdpPercap * pop) / 1e9,
+    categorie = case_when(
+      gdpPercap < 5000               ~ "< 5 000 USD",
+      gdpPercap >= 5000 & gdpPercap < 20000 ~ "5 000–20 000 USD",
+      gdpPercap >= 20000             ~ "> 20 000 USD"
+    )
+  ) |>
+  group_by(categorie) |>
   summarise(
-    esp_vie_mediane  = median(lifeExp),
-    pib_habitant_med = median(gdpPercap)
-  )
+    nb_pays       = n(),
+    esp_vie_med   = round(median(lifeExp), 1),
+    pib_hab_med   = round(median(gdpPercap), 0),
+    .groups = "drop"
+  ) |>
+  arrange(desc(pib_hab_med))
+
+# 7. Bonus : tableau pivot
+gapminder |>
+  mutate(decennie = paste0(floor(year / 10) * 10, "s")) |>
+  group_by(continent, decennie) |>
+  summarise(esp_vie_med = round(median(lifeExp), 1), .groups = "drop") |>
+  pivot_wider(names_from = decennie, values_from = esp_vie_med)
 ```
 :::

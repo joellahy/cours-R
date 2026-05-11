@@ -16,6 +16,15 @@ title: "Séance 4 — Approfondissement du tidyverse"
 library(tidyverse)
 ```
 
+Cette séance couvre quatre packages spécialisés du tidyverse :
+
+| Package | Rôle |
+|---------|------|
+| ![](../images/stringr.png){.hex-logo} **`stringr`** | Manipuler le texte (chaînes de caractères) |
+| ![](../images/forcats.png){.hex-logo} **`forcats`** | Gérer les variables catégorielles (facteurs) |
+| ![](../images/lubridate.png){.hex-logo} **`lubridate`** | Travailler avec les dates et les heures |
+| ![](../images/purrr.png){.hex-logo} **`purrr`** | Appliquer des fonctions à des listes ou vecteurs |
+
 ---
 
 ## Manipulation de chaînes de caractères avec `stringr`

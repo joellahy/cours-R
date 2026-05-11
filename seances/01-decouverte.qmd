@@ -1,147 +1,396 @@
 ---
-title: "Séance 1 — Découverte et prise en main"
+title: "Séance 1 — Découverte et prise en main de R"
 ---
 
 ::: {.callout-tip}
 ## Objectifs de la séance
 À l'issue de cette séance, vous serez capable de :
 
-- Installer et configurer R et RStudio sur votre machine
-- Naviguer dans l'interface de RStudio
-- Créer et manipuler les objets fondamentaux de R (vecteurs, matrices, data frames, listes)
-- Identifier les principaux types de données
-- Écrire des scripts R propres et bien organisés
+- Installer R et RStudio sur votre machine
+- Naviguer dans les quatre panneaux de l'interface RStudio
+- Créer et manipuler les objets fondamentaux de R : vecteurs, matrices, data frames, listes
+- Distinguer les types de données (numérique, texte, logique, facteur)
+- Écrire un premier script R propre et commenté, en respectant les bonnes pratiques
 :::
+
+---
+
+## Qu'est-ce que R et pourquoi l'apprendre ?
+
+**R** est un langage de programmation spécialisé dans l'analyse statistique et la visualisation de données.
+Créé en 1993 par Ross Ihaka et Robert Gentleman à l'Université d'Auckland,
+il est aujourd'hui utilisé par des millions de chercheurs, statisticiens et data scientists dans le monde entier.
+
+### Pourquoi R plutôt qu'Excel ?
+
+| Critère | Excel | R |
+|---------|-------|---|
+| Volume de données | Limité (~1 million de lignes) | Illimité (RAM) |
+| Reproductibilité | Difficile | Totale (le script = la recette) |
+| Automatisation | Limitée | Complète |
+| Statistiques avancées | Basiques | Très complètes |
+| Coût | Payant | **Gratuit** |
+| Graphiques | Limités | Publication-ready |
+
+::: {.callout-note}
+## R en France
+R est utilisé par **l'INSEE**, **France Travail**, **les Agences Régionales de Santé**,
+et par l'ensemble des services statistiques ministériels.
+Le package [utilitR](https://book.utilitr.org/) a été développé *par* les agents de l'INSEE *pour* les agents de l'État.
+:::
+
+---
 
 ## Installation de R et RStudio
 
-### Étape 1 — Installer R
+### Étape 1 — Installer R (le moteur)
 
-Rendez-vous sur [cran.r-project.org](https://cran.r-project.org) et téléchargez la version adaptée à votre système d'exploitation (Windows, macOS ou Linux).
-Choisissez toujours **la version la plus récente** (≥ 4.3).
+1. Rendez-vous sur [cran.r-project.org](https://cran.r-project.org)
+2. Cliquez sur votre système d'exploitation (Windows, macOS ou Linux)
+3. Téléchargez et installez la version la plus récente (≥ 4.3)
 
-### Étape 2 — Installer RStudio
+### Étape 2 — Installer RStudio (l'interface)
 
-RStudio est un **environnement de développement intégré (IDE)** qui facilite grandement le travail avec R.
-Téléchargez la version gratuite *RStudio Desktop* sur
-[posit.co/download/rstudio-desktop](https://posit.co/download/rstudio-desktop/).
+1. Rendez-vous sur [posit.co/download/rstudio-desktop](https://posit.co/download/rstudio-desktop/)
+2. Téléchargez *RStudio Desktop* (version gratuite)
+3. Installez-le **après** avoir installé R
 
-::: {.callout-note}
-## R ≠ RStudio
-R est le **moteur de calcul** (le langage). RStudio est l'**interface** qui permet de travailler
-avec R confortablement. On ne peut pas utiliser RStudio sans avoir installé R au préalable.
+::: {.callout-important}
+## R ≠ RStudio : une analogie
+
+Imaginez **R** comme le **moteur** d'une voiture : c'est lui qui fait le travail.
+**RStudio** est le **tableau de bord** : il rend le travail confortable, mais sans le moteur, il ne sert à rien.
+
+Vous devez installer les deux, dans cet ordre : d'abord R, puis RStudio.
 :::
 
 ---
 
 ## L'interface de RStudio
 
-L'interface de RStudio est divisée en **quatre panneaux** :
+Quand vous ouvrez RStudio pour la première fois, vous voyez quatre panneaux :
 
-| Panneau | Rôle |
-|---------|------|
-| **Éditeur de scripts** (haut gauche) | Écrire et sauvegarder du code `.R` |
-| **Console** (bas gauche) | Exécuter du code et voir les résultats immédiats |
-| **Environnement / Historique** (haut droite) | Voir les objets en mémoire |
-| **Fichiers / Graphiques / Aide** (bas droite) | Naviguer dans les fichiers, voir les graphiques |
+```
+┌─────────────────────┬─────────────────────┐
+│                     │                     │
+│   Éditeur de        │  Environnement /    │
+│   scripts (.R)      │  Historique         │
+│                     │                     │
+├─────────────────────┼─────────────────────┤
+│                     │                     │
+│   Console R         │  Fichiers /         │
+│   (résultats)       │  Graphiques / Aide  │
+│                     │                     │
+└─────────────────────┴─────────────────────┘
+```
+
+| Panneau | Rôle | Ce que vous y faites |
+|---------|------|----------------------|
+| **Éditeur** (haut gauche) | Écrire et sauvegarder du code | Tapez votre script ici, sauvegardez avec `Ctrl+S` |
+| **Console** (bas gauche) | Exécuter le code, voir les résultats | Les résultats s'affichent ici automatiquement |
+| **Environnement** (haut droite) | Liste de tous vos objets en mémoire | Voir les variables que vous avez créées |
+| **Fichiers / Graphiques** (bas droite) | Naviguer, voir les graphiques, lire l'aide | Les graphiques apparaissent ici |
 
 ### Raccourcis clavier essentiels
 
+Apprenez ces raccourcis dès maintenant, ils vous feront gagner un temps considérable :
+
 | Action | Windows / Linux | macOS |
-|--------|-----------------|-------|
+|--------|:---------------:|:-----:|
 | Exécuter la ligne courante | `Ctrl + Entrée` | `Cmd + Entrée` |
+| Exécuter tout le script | `Ctrl + Shift + Entrée` | `Cmd + Shift + Entrée` |
+| Insérer `<-` (opérateur d'affectation) | `Alt + -` | `Option + -` |
 | Insérer le pipe `|>` | `Ctrl + Shift + M` | `Cmd + Shift + M` |
-| Commenter une ligne | `Ctrl + Shift + C` | `Cmd + Shift + C` |
-| Indenter le code | `Tab` | `Tab` |
+| Commenter / décommenter une ligne | `Ctrl + Shift + C` | `Cmd + Shift + C` |
+| Indenter automatiquement | `Ctrl + I` | `Cmd + I` |
 | Autocomplétion | `Tab` | `Tab` |
-| Aide sur une fonction | `F1` | `F1` |
+| Aide sur une fonction | F1 (curseur sur la fonction) | F1 |
+| Nouveau fichier script | `Ctrl + Shift + N` | `Cmd + Shift + N` |
 
 ---
 
-## Les projets RStudio
+## Les projets RStudio — Travaillez toujours dans un projet
 
-Avant tout travail, créez un **projet RStudio** (`.Rproj`).
-Un projet fixe automatiquement le répertoire de travail et organise vos fichiers.
+Avant tout travail, la première chose à faire est de créer un **projet RStudio**.
 
-Pour créer un projet :
+Un projet RStudio (fichier `.Rproj`) est un dossier de travail qui :
+- fixe automatiquement votre répertoire de travail ;
+- organise vos scripts, données et résultats ;
+- rend votre travail **reproductible** sur n'importe quelle machine.
+
+**Créer un projet :**
 `File > New Project > New Directory > New Project`
 
+Donnez-lui un nom explicite (ex. : `analyse_agriculture`) et choisissez l'emplacement.
+
 ::: {.callout-warning}
-## Bonne pratique
-**Travaillez toujours dans un projet RStudio.**
-N'utilisez jamais `setwd()` pour changer votre répertoire de travail :
-cela rend votre code non-reproductible sur une autre machine.
+## Règle absolue — Ne jamais utiliser `setwd()`
+La commande `setwd("C:/Users/moi/Documents/MonDossier")` est une mauvaise pratique
+car ce chemin n'existera pas sur la machine d'un collègue ou sur votre propre machine
+si vous déplacez votre dossier.
+
+**Solution :** Travaillez toujours dans un projet RStudio.
+Le répertoire de travail sera automatiquement le bon, sur toutes les machines.
 :::
 
 ---
 
-## Les objets de base dans R
+## Les fondamentaux : calcul et affectation
 
-Tout dans R est un **objet**. On crée un objet avec l'opérateur d'affectation `<-`.
+### R comme calculatrice
+
+Dans la **console**, vous pouvez taper directement des calculs :
+
+```{r}
+# Opérations arithmétiques de base
+2 + 3
+10 - 4
+3 * 7
+15 / 4
+2^8          # 2 à la puissance 8
+sqrt(144)    # Racine carrée
+log(100)     # Logarithme naturel (base e)
+log10(100)   # Logarithme base 10
+abs(-42)     # Valeur absolue
+```
+
+### L'affectation : créer des objets avec `<-`
+
+En R, on **stocke une valeur** dans un objet avec l'opérateur d'affectation `<-`
+(raccourci : `Alt + -` sous Windows).
+
+```{r}
+# Créer un objet nommé "surface"
+surface <- 2512    # Superficie de La Réunion en km²
+
+# Afficher l'objet (tapez son nom ou utilisez print())
+surface
+print(surface)
+```
+
+::: {.callout-note}
+## Pourquoi `<-` et pas `=` ?
+On peut aussi utiliser `=` pour affecter en R, mais la convention de la communauté R
+est d'utiliser `<-` pour les affectations et de réserver `=` pour les arguments de fonctions.
 
 ```r
-# Affectation
-x <- 42
-nom <- "La Réunion"
+# Convention recommandée
+superficie <- 2512
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp))
+#                              ^ ici on utilise = pour les arguments
+
+# À éviter pour les affectations
+superficie = 2512   # Fonctionne, mais non conventionnel
 ```
-
-### Vecteurs
-
-Le **vecteur** est l'objet fondamental de R. Un vecteur ne peut contenir qu'un seul type de données.
+:::
 
 ```{r}
-# Vecteur numérique : PIB par habitant (USD, 2023)
-# Source : Banque Mondiale
-pib_habitant <- c(8500, 15200, 3100, 6800, 22000, 1200, 4500)
+# Les objets peuvent être utilisés dans des calculs
+superficie <- 2512     # km²
+population <- 880000   # habitants
 
-# Vecteur de chaînes : noms des pays
-pays <- c("Maurice", "Maldives", "Comores", "Seychelles",
-          "Nouvelle-Calédonie", "Madagascar", "Timor-Leste")
-
-# Vecteur logique
-est_insulaire <- c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
-
-# Longueur d'un vecteur
-length(pib_habitant)
+# Densité de population (hab/km²)
+densite <- population / superficie
+densite
 ```
 
+---
+
+## Les vecteurs — l'objet fondamental de R
+
+Un **vecteur** est une séquence de valeurs du **même type**.
+C'est l'objet de base de R : même un nombre seul est un vecteur de longueur 1.
+
+On crée un vecteur avec la fonction `c()` (*combine*) :
+
 ```{r}
-# Accès aux éléments (l'indexation commence à 1 en R)
+# Vecteur numérique : espérance de vie (années) dans des pays de l'Océan Indien
+# Source : OMS, 2022
+esperance_vie <- c(77.2, 74.5, 68.3, 63.8, 71.6, 62.1, 67.4)
+
+# Vecteur de chaînes de caractères
+pays <- c("La Réunion", "Maurice", "Comores", "Madagascar",
+          "Maldives", "Mozambique", "Seychelles")
+
+# Vecteur logique (vrai/faux)
+est_independant <- c(FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
+
+# Vecteur d'entiers
+annee_independance <- c(NA, 1968L, 1975L, 1960L, 1965L, 1975L, 1976L)
+# NA = Not Available (valeur manquante), L = entier (integer)
+```
+
+### Propriétés d'un vecteur
+
+```{r}
+# Longueur (nombre d'éléments)
+length(esperance_vie)
+
+# Type des éléments
+class(esperance_vie)    # "numeric"
+class(pays)             # "character"
+class(est_independant)  # "logical"
+
+# Résumé statistique rapide
+summary(esperance_vie)
+```
+
+### Indexation — accéder aux éléments
+
+En R, les indices commencent à **1** (contrairement à Python qui commence à 0).
+
+```{r}
+# Accéder à un élément par sa position
 pays[1]          # Premier élément
-pays[c(1, 3)]    # Premier et troisième éléments
-pib_habitant[pib_habitant > 5000]  # Filtrage conditionnel
+pays[3]          # Troisième élément
+pays[c(1, 4)]    # Premier et quatrième éléments
+
+# Derniers éléments
+pays[length(pays)]     # Dernier
+tail(pays, n = 2)      # 2 derniers
+
+# Accès négatif (tout SAUF)
+pays[-1]         # Tout sauf le premier
+pays[-c(1, 2)]   # Tout sauf les deux premiers
 ```
 
-### Opérations sur les vecteurs
-
-Les opérations s'appliquent **élément par élément** :
-
 ```{r}
-# Conversion USD → EUR (taux approximatif : 1 USD = 0.92 EUR)
-pib_eur <- pib_habitant * 0.92
-pib_eur
+# Filtrage conditionnel — très puissant !
+# Quels pays ont une espérance de vie > 70 ans ?
+pays[esperance_vie > 70]
 
-# Statistiques de base
-mean(pib_habitant)    # Moyenne
-median(pib_habitant)  # Médiane
-sum(pib_habitant)     # Somme
-min(pib_habitant)     # Minimum
-max(pib_habitant)     # Maximum
-range(pib_habitant)   # Étendue
+# Espérance de vie de ces pays
+esperance_vie[esperance_vie > 70]
 ```
 
-### Matrices
+### Opérations sur les vecteurs — vectorisation
 
-Une **matrice** est un tableau bidimensionnel avec des données du même type.
+L'un des grands atouts de R : les opérations s'appliquent **à chaque élément** automatiquement,
+sans boucle nécessaire.
 
 ```{r}
-# Matrice : températures mensuelles moyennes à Saint-Denis (°C)
-# Source : Météo-France
+# Convertir l'espérance de vie en mois
+esperance_vie_mois <- esperance_vie * 12
+esperance_vie_mois
+
+# Comparer à la moyenne mondiale (72.0 ans, OMS 2022)
+esperance_vie - 72.0    # Différence par rapport à la moyenne mondiale
+
+# Tous les pays au-dessus de la moyenne mondiale ?
+esperance_vie > 72.0
+```
+
+### Fonctions statistiques essentielles sur les vecteurs
+
+```{r}
+mean(esperance_vie)           # Moyenne
+median(esperance_vie)         # Médiane
+sd(esperance_vie)             # Écart-type
+var(esperance_vie)            # Variance
+min(esperance_vie)            # Minimum
+max(esperance_vie)            # Maximum
+range(esperance_vie)          # Étendue (min et max)
+sum(esperance_vie)            # Somme
+cumsum(c(1, 2, 3, 4))        # Somme cumulée
+```
+
+---
+
+## Les types de données
+
+R possède six types de données fondamentaux. En pratique, vous en utiliserez surtout quatre :
+
+| Type | Description | Exemple | Test |
+|------|-------------|---------|------|
+| `numeric` (double) | Nombre décimal | `3.14`, `2512` | `is.numeric(x)` |
+| `integer` | Nombre entier | `42L` | `is.integer(x)` |
+| `character` | Texte (chaîne) | `"Bonjour"` | `is.character(x)` |
+| `logical` | Vrai/Faux | `TRUE`, `FALSE` | `is.logical(x)` |
+| `factor` | Catégorie ordonnée | `factor("A")` | `is.factor(x)` |
+| `Date` | Date calendaire | `as.Date("2024-01-15")` | — |
+
+```{r}
+# Vérifier le type d'un objet
+x <- 42.5
+class(x)          # "numeric"
+typeof(x)         # "double" (représentation interne)
+
+y <- 42L          # Le L force l'entier
+class(y)          # "integer"
+
+z <- "La Réunion"
+class(z)          # "character"
+
+b <- TRUE
+class(b)          # "logical"
+```
+
+### Conversion entre types
+
+```{r}
+# On peut convertir un type en un autre avec as.*()
+nombre_texte <- "123"
+class(nombre_texte)            # "character"
+
+nombre <- as.numeric(nombre_texte)
+class(nombre)                  # "numeric"
+nombre + 1                     # 124 — on peut maintenant faire des calculs
+
+# Conversion logique → numérique (TRUE = 1, FALSE = 0)
+# Très utile pour compter les "vrais"
+votes <- c(TRUE, FALSE, TRUE, TRUE, FALSE)
+sum(votes)         # 3 — nombre de TRUE
+mean(votes)        # 0.6 — proportion de TRUE (60%)
+```
+
+### Les facteurs — variables catégorielles
+
+Un **facteur** (`factor`) est utilisé pour représenter des variables catégorielles
+(comme des groupes, des modalités, des catégories).
+
+```{r}
+# Catégories de menace selon l'UICN
+statut_uicn <- factor(
+  c("VU", "EN", "LC", "CR", "VU", "NT", "LC", "EN"),
+  levels = c("LC", "NT", "VU", "EN", "CR"),  # Ordre des niveaux
+  ordered = TRUE                               # Ordonné du moins au plus menacé
+)
+
+statut_uicn
+levels(statut_uicn)     # Les niveaux dans l'ordre
+table(statut_uicn)      # Fréquences
+```
+
+::: {.callout-note}
+## Pourquoi utiliser des facteurs ?
+Quand vous importez un CSV, les colonnes texte sont souvent de type `character`.
+Convertir en `factor` permet à R de :
+- créer automatiquement les bonnes catégories dans les graphiques
+- calculer des fréquences
+- trier dans le bon ordre (ex. : LC < NT < VU < EN < CR)
+:::
+
+---
+
+## Les matrices
+
+Une **matrice** est un tableau bidimensionnel dont tous les éléments sont du **même type**.
+
+```{r}
+# Températures moyennes mensuelles à 3 stations réunionnaises (°C)
+# Source : Météo-France La Réunion
 temperatures <- matrix(
-  c(27, 27, 26, 24, 22, 20, 19, 20, 22, 24, 25, 26),
-  nrow = 1, ncol = 12,
+  data = c(
+    # Jan  Fév  Mar  Avr  Mai  Jun  Jul  Aoû  Sep  Oct  Nov  Déc
+    27.2, 27.0, 26.1, 24.5, 22.3, 20.1, 19.5, 19.8, 21.5, 23.8, 25.4, 26.8,  # Saint-Denis
+    27.8, 27.5, 26.8, 25.1, 22.9, 20.8, 20.2, 20.5, 22.1, 24.4, 26.1, 27.4,  # Saint-Pierre
+    21.5, 21.2, 20.3, 18.9, 16.8, 14.5, 14.1, 14.4, 15.9, 17.9, 19.5, 21.0   # Le Tampon
+  ),
+  nrow = 3,
+  ncol = 12,
+  byrow = TRUE,
   dimnames = list(
-    "Saint-Denis",
+    c("Saint-Denis", "Saint-Pierre", "Le Tampon"),
     c("Jan", "Fév", "Mar", "Avr", "Mai", "Jun",
       "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc")
   )
@@ -150,254 +399,378 @@ temperatures <- matrix(
 temperatures
 ```
 
-### Data frames
+```{r}
+# Accès aux éléments
+temperatures["Saint-Denis", "Jul"]      # Température à Saint-Denis en juillet
+temperatures["Le Tampon", ]             # Toutes les températures au Tampon
+temperatures[ , "Jan"]                  # Température en janvier pour toutes les stations
 
-Le **data frame** est l'objet le plus utilisé en analyse de données : c'est un tableau où chaque
-colonne peut être d'un type différent.
+# Statistiques sur les lignes et colonnes
+rowMeans(temperatures)    # Température moyenne annuelle par station
+colMeans(temperatures)    # Température moyenne mensuelle (toutes stations)
+```
+
+---
+
+## Les data frames — le tableau de données
+
+Le **data frame** est l'objet le plus utilisé en analyse de données.
+C'est un tableau où :
+- chaque **ligne** est une observation ;
+- chaque **colonne** est une variable ;
+- les colonnes peuvent être de **types différents**.
+
+Pensez-y comme un tableau Excel, mais bien plus puissant.
 
 ```{r}
-# Création d'un data frame
-iles_ocean_indien <- data.frame(
-  pays       = c("La Réunion", "Maurice", "Rodrigues",
-                 "Mayotte", "Comores", "Seychelles", "Madagascar"),
-  population = c(880000, 1265000, 42000, 321000, 870000, 99000, 28915000),
-  superficie = c(2512, 2040, 108, 374, 2235, 455, 587041),
-  pib_usd    = c(NA, 14085, NA, NA, 1429, 17432, 528),
+# Créer un data frame décrivant des îles de l'Océan Indien
+iles_oi <- data.frame(
+  nom        = c("La Réunion", "Maurice", "Comores",
+                 "Seychelles", "Mayotte", "Rodrigues"),
+  archipel   = c("Mascareignes", "Mascareignes", "Comores",
+                 "Seychelles", "Comores", "Mascareignes"),
+  superficie = c(2512, 2040, 2235, 455, 374, 108),   # km²
+  population = c(880000, 1265000, 870000, 99000, 321000, 42000),
+  pib_par_hab_usd = c(NA, 11400, 1429, 17432, NA, NA),  # NA = donnée manquante
+  independant = c(FALSE, TRUE, TRUE, TRUE, FALSE, FALSE),
   stringsAsFactors = FALSE
 )
 
-iles_ocean_indien
+iles_oi
+```
+
+### Explorer un data frame
+
+```{r}
+# Dimensions
+nrow(iles_oi)           # Nombre de lignes (observations)
+ncol(iles_oi)           # Nombre de colonnes (variables)
+dim(iles_oi)            # Les deux à la fois : c(nlignes, ncol)
+
+# Structure détaillée (types de chaque colonne)
+str(iles_oi)
+
+# Résumé statistique de chaque colonne
+summary(iles_oi)
+
+# Premières / dernières lignes
+head(iles_oi, n = 3)    # 3 premières lignes (par défaut : 6)
+tail(iles_oi, n = 2)    # 2 dernières lignes
 ```
 
 ```{r}
-# Accès aux colonnes
-iles_ocean_indien$pays
-iles_ocean_indien$population
+# Noms des colonnes
+names(iles_oi)
+colnames(iles_oi)
 
-# Dimensions du data frame
-nrow(iles_ocean_indien)   # Nombre de lignes
-ncol(iles_ocean_indien)   # Nombre de colonnes
-dim(iles_ocean_indien)    # Dimensions
+# Noms des lignes (rownames)
+rownames(iles_oi)
 ```
 
+### Accéder aux colonnes et aux cellules
+
 ```{r}
-# Aperçu global
-str(iles_ocean_indien)
-summary(iles_ocean_indien)
+# Accès à une colonne avec $ (le plus courant)
+iles_oi$nom
+iles_oi$superficie
+
+# Accès par position [ligne, colonne]
+iles_oi[1, ]          # Première ligne (toutes les colonnes)
+iles_oi[ , 1]         # Première colonne (toutes les lignes)
+iles_oi[1, 2]         # Première ligne, deuxième colonne
+iles_oi[2, "nom"]     # Deuxième ligne, colonne "nom"
+
+# Filtrage de lignes selon une condition
+iles_oi[iles_oi$independant == TRUE, ]           # Îles indépendantes
+iles_oi[iles_oi$superficie > 500, "nom"]         # Noms des grandes îles
+iles_oi[!is.na(iles_oi$pib_par_hab_usd), ]       # Îles avec PIB connu
 ```
 
-### Listes
+---
 
-Une **liste** peut contenir des objets de types et de structures différents.
+## Les listes — conteneurs polyvalents
+
+Une **liste** peut contenir des objets de **types et de tailles différents**.
+C'est le conteneur le plus flexible de R.
 
 ```{r}
-# Liste décrivant un pays
-reunion <- list(
-  nom        = "La Réunion",
-  statut     = "Région ultrapériphérique française",
-  population = 880000,
-  superficie = 2512,
-  langues    = c("français", "créole réunionnais"),
-  capitale   = "Saint-Denis"
+# Liste décrivant une espèce protégée de La Réunion
+petrel_barau <- list(
+  nom_commun    = "Pétrel de Barau",
+  nom_latin     = "Pterodroma baraui",
+  statut_uicn   = "EN",           # En danger
+  population    = 16000,           # individus estimés
+  envergure_cm  = c(90, 96),       # min–max
+  sites_nidification = c("Piton des Neiges", "Piton de la Fournaise"),
+  protege       = TRUE
 )
 
-# Accès aux éléments
-reunion$nom
-reunion[["langues"]]
+petrel_barau
 ```
-
----
-
-## Types de données
-
-| Type | Exemple | Fonction de test |
-|------|---------|-----------------|
-| `numeric` | `42.5`, `3.14` | `is.numeric()` |
-| `integer` | `42L` | `is.integer()` |
-| `character` | `"bonjour"` | `is.character()` |
-| `logical` | `TRUE`, `FALSE` | `is.logical()` |
-| `factor` | `factor("A")` | `is.factor()` |
-| `Date` | `as.Date("2024-01-01")` | `is.Date()` (via lubridate) |
 
 ```{r}
-# Vérification et conversion de types
-x <- "123"
-class(x)         # "character"
-x_num <- as.numeric(x)
-class(x_num)     # "numeric"
+# Accéder aux éléments d'une liste
+petrel_barau$nom_commun              # Avec le symbole $
+petrel_barau[["statut_uicn"]]        # Avec [[ ]] (retourne le contenu)
+petrel_barau["population"]           # Avec [ ] (retourne une sous-liste)
 
-# Facteur : variable catégorielle
-region <- factor(c("Est", "Ouest", "Nord", "Sud", "Est", "Ouest", "Ouest"))
-levels(region)
-table(region)
+# Modifier un élément
+petrel_barau$population <- 16500     # Mise à jour de la population
+petrel_barau$population
 ```
 
----
-
-## Fonctions essentielles
-
-### Fonctions de base
-
-```{r}
-# Séquences
-seq(1, 10, by = 2)
-seq(0, 1, length.out = 5)
-1:10
-
-# Répétition
-rep("R", 3)
-rep(c(1, 2), times = 3)
-rep(c(1, 2), each = 3)
-
-# Tri
-x <- c(3, 1, 4, 1, 5, 9, 2, 6)
-sort(x)
-order(x)
-
-# Valeurs uniques
-unique(c("a", "b", "a", "c", "b"))
-
-# Gestion des valeurs manquantes
-y <- c(1, NA, 3, NA, 5)
-is.na(y)
-sum(is.na(y))           # Nombre de NA
-mean(y, na.rm = TRUE)   # Calcul en ignorant les NA
-```
-
-### Fonctions d'affichage et d'aide
-
-```{r}
-# Affichage
-print("Bonjour La Réunion")
-cat("La superficie est :", 2512, "km²\n")
-
-# Types et structure
-class(iles_ocean_indien)
-typeof(pib_habitant)
-str(reunion)
-```
-
-```r
-# Aide sur une fonction (à exécuter dans la console)
-?mean
-help(sum)
-example(plot)
-```
-
----
-
-## Bonnes pratiques de programmation
-
-::: {.callout-warning}
-## Règles de style essentielles
-Adoptez ces conventions dès le début : votre code futur vous remerciera.
+::: {.callout-note}
+## Quand utiliser une liste ?
+Les listes servent principalement à stocker les résultats de fonctions complexes
+(ex. : un modèle statistique `lm()` renvoie une liste). En manipulation de données du quotidien,
+vous utiliserez surtout des **data frames** (ou des **tibbles** avec le tidyverse).
 :::
 
-### Nommage des objets
+---
 
-```r
-# ✓ Bon : snake_case, noms explicites
-pib_par_habitant <- 15000
-temperature_moyenne <- 24.5
-donnees_fao_2023 <- read.csv("fao_2023.csv")
+## Gestion des valeurs manquantes (`NA`)
 
-# ✗ À éviter : noms peu explicites, camelCase, accents
-x <- 15000
-TempMoy <- 24.5
-données <- read.csv("fao_2023.csv")
+Les données réelles contiennent souvent des valeurs manquantes.
+En R, elles sont représentées par `NA` (*Not Available*).
+
+```{r}
+# Créer un vecteur avec des NA
+precipitations_mm <- c(320, NA, 145, NA, 480, 210, NA, 390)
+
+# Détecter les NA
+is.na(precipitations_mm)
+
+# Compter les NA
+sum(is.na(precipitations_mm))    # 3 valeurs manquantes
+
+# Les calculs avec NA donnent NA par défaut
+mean(precipitations_mm)           # NA !
+
+# Solution : ignorer les NA avec na.rm = TRUE
+mean(precipitations_mm, na.rm = TRUE)
+sum(precipitations_mm, na.rm = TRUE)
 ```
 
-### Organisation d'un script
+::: {.callout-warning}
+## Erreur classique avec `NA`
+```r
+x <- NA
+x == NA     # Renvoie NA, pas TRUE !
+```
+Pour tester si une valeur est `NA`, utilisez toujours `is.na()` :
+```r
+is.na(x)    # Renvoie TRUE ✓
+```
+:::
 
-Un script R bien structuré suit ce modèle :
+---
+
+## Les fonctions
+
+Une **fonction** est une opération nommée qui prend des **arguments** (entrées)
+et retourne un **résultat** (sortie).
+
+```r
+nom_de_la_fonction(argument1, argument2, ...)
+```
+
+```{r}
+# Exemples de fonctions avec leurs arguments
+round(3.14159, digits = 2)    # Arrondir à 2 décimales → 3.14
+paste("La", "Réunion")        # Coller des chaînes → "La Réunion"
+paste0("val_", 1:3)           # Sans séparateur → "val_1" "val_2" "val_3"
+nchar("Madagascar")           # Longueur d'une chaîne → 10
+toupper("réunion")            # Mettre en majuscules
+
+# Fonctions de séquence
+seq(from = 1, to = 10, by = 2)        # 1 3 5 7 9
+seq(0, 1, length.out = 5)             # 0.00 0.25 0.50 0.75 1.00
+1:10                                   # Entiers de 1 à 10
+rep(c("Espèce A", "Espèce B"), times = 3)   # Répétition
+```
+
+### Obtenir de l'aide sur une fonction
+
+```r
+?mean           # Ouvre la documentation de mean()
+help(sum)       # Equivalent
+example(plot)   # Montre des exemples d'usage
+```
+
+La documentation d'une fonction comprend toujours :
+- **Description** : ce que fait la fonction
+- **Arguments** : les paramètres qu'elle accepte
+- **Value** : ce qu'elle retourne
+- **Examples** : des exemples prêts à exécuter
+
+---
+
+## Bonnes pratiques de programmation en R
+
+Écrire un bon code ne se résume pas à ce qu'il fonctionne.
+Un bon code se lit facilement, se comprend rapidement et se corrige aisément.
+
+### 1. Nommage des objets
+
+```r
+# ✅ Recommandé : snake_case, noms explicites
+pib_par_habitant <- 15000
+temperature_juillet <- 24.5
+donnees_fao_2022 <- read.csv("fao_2022.csv")
+
+# ❌ À éviter : noms peu explicites ou conventions incohérentes
+x     <- 15000
+TempJ <- 24.5
+df1   <- read.csv("fao_2022.csv")
+```
+
+**Règles de nommage :**
+- Utilisez des lettres, chiffres et `_` (underscore) uniquement
+- Commencez toujours par une lettre
+- Privilégiez le `snake_case` (mots séparés par `_`)
+- Soyez cohérent tout au long de votre script
+
+### 2. Commentaires
+
+Un commentaire commence par `#`. Il explique le **pourquoi**, pas le **quoi** :
+
+```r
+# ✅ Bon commentaire : explique une décision de fond
+pib_usd * 0.92   # Taux BCE janv. 2024 : 1 USD = 0.92 EUR
+
+# ❌ Commentaire inutile (dit ce que le code montre déjà)
+x <- x * 0.92   # Multiplier x par 0.92
+```
+
+### 3. Structure d'un script R
 
 ```r
 # ============================================================
-# Titre : Analyse des températures à La Réunion
-# Auteur : Marius LAHY
-# Date   : 2025-01-01
+# Titre   : Analyse des températures de La Réunion
+# Auteur  : Marius LAHY
+# Date    : 2025-01-01
+# Source  : Météo-France La Réunion
 # ============================================================
 
-# 1. Chargement des packages --------------------------------
+# 1. Packages -----------------------------------------------
 library(tidyverse)
 
 # 2. Importation des données --------------------------------
-donnees <- read_csv("data/temperatures_reunion.csv")
+temperatures <- read_csv("data/temperatures_reunion.csv")
 
-# 3. Exploration rapide ------------------------------------
-glimpse(donnees)
+# 3. Vérification initiale ----------------------------------
+glimpse(temperatures)
 
-# 4. Analyse -----------------------------------------------
-# ... votre code ici
+# 4. Analyse ------------------------------------------------
+# ... votre code d'analyse ici ...
+
+# 5. Export ------------------------------------------------
+# write_csv(resultats, "data/resultats.csv")
 ```
 
-### Commentaires
+### 4. Indentation et espaces
 
 ```r
-# Un commentaire commence par #
-# Commentez le POURQUOI, pas le QUOI
+# ✅ Lisible : espaces autour des opérateurs, après les virgules
+densite <- population / superficie
+iles_oi[iles_oi$independant == TRUE, ]
 
-# ✓ Bon commentaire : explique une décision
-pib_par_habitant * 0.92  # Conversion USD → EUR (taux BCE, jan. 2024)
-
-# ✗ Commentaire inutile : décrit ce que le code fait déjà
-x <- x * 0.92  # Multiplie x par 0.92
+# ❌ Difficile à lire
+densite<-population/superficie
+iles_oi[iles_oi$independant==TRUE,]
 ```
 
-### Utilisation des packages
+::: {.callout-tip}
+## Astuce : formatage automatique
+Dans RStudio, utilisez `Code > Reformat Code` (`Ctrl + Shift + A`)
+pour formater automatiquement votre code selon les conventions R.
+:::
+
+---
+
+## Les erreurs courantes des débutants
+
+Voici les erreurs que vous allez faire (tout le monde les fait au début) :
+
+| Erreur | Message typique | Cause | Solution |
+|--------|----------------|-------|---------|
+| Parenthèse non fermée | `+` dans la console | Vous avez oublié `)` | Appuyez sur `Échap` et corrigez |
+| Objet introuvable | `Error: object 'x' not found` | Faute de frappe ou objet non créé | Vérifiez l'orthographe et relancez la création |
+| Fonction introuvable | `Error: could not find function` | Package non chargé | `library(nom_du_package)` |
+| Mauvais type | `Error: non-numeric argument` | Opération sur du texte | Vérifiez `class()` de l'objet |
+| NA dans le résultat | Résultat = `NA` | Valeur manquante dans les données | Ajoutez `na.rm = TRUE` |
 
 ```r
-# Installer un package (une seule fois)
-install.packages("ggplot2")
-
-# Charger un package (à chaque session)
-library(ggplot2)
-
-# Bonne pratique : charger tous les packages en début de script
+# Exemple d'erreur de parenthèse — la console affiche "+"
+mean(c(1, 2, 3)   # ← parenthèse manquante
+# La console attend la suite... appuyez sur Échap pour annuler
 ```
 
 ---
 
-## Exercice récapitulatif
+## Exercice récapitulatif de la séance
 
 ::: {.callout-note}
-## Exercice
-1. Créez un vecteur `especes` contenant les noms de cinq espèces endémiques de La Réunion
-   (exemple : "Pétrel de Barau", "Sterne fuligineuse"…).
-2. Créez un vecteur `nb_individus` avec le nombre estimé d'individus pour chacune.
-3. Calculez la somme totale et la moyenne du nombre d'individus.
-4. Affichez uniquement les espèces avec moins de 10 000 individus.
-5. Créez un data frame `faune_reunion` combinant ces deux vecteurs.
+## Exercice complet
+
+Vous analysez les données de production agricole de quelques pays tropicaux en 2022.
+
+**Données :**
+
+| Pays | Culture principale | Production (tonnes) | Surface (ha) |
+|------|-------------------|---------------------|--------------|
+| Madagascar | Vanille | 2 900 | 4 462 |
+| Comores | Girofle | 8 000 | 7 619 |
+| La Réunion | Canne à sucre | 1 800 000 | 25 000 |
+| Maurice | Canne à sucre | 3 700 000 | 52 857 |
+| Kenya | Café | 49 000 | 84 483 |
+
+**Questions :**
+
+1. Créez un vecteur `pays` avec les noms des 5 pays.
+2. Créez un vecteur `production` avec les productions en tonnes.
+3. Créez un vecteur `surface_ha` avec les surfaces en hectares.
+4. Calculez le **rendement** (kg/ha) pour chaque pays : `rendement = (production / surface) * 1000`.
+5. Quel pays a le **rendement le plus élevé** ? Utilisez `which.max()`.
+6. Créez un **data frame** `agri` avec les colonnes `pays`, `production`, `surface_ha`, `rendement`.
+7. Affichez uniquement les lignes où la production dépasse 1 000 000 tonnes.
+8. Calculez la production totale (en millions de tonnes) de tous ces pays réunis.
 :::
 
 ::: {.callout-caution collapse="true"}
 ## Corrigé
 
 ```r
-especes <- c(
-  "Pétrel de Barau",
-  "Puffin tropical",
-  "Sterne fuligineuse",
-  "Papangue",
-  "Tuit-tuit"
-)
+# 1 à 3 : Vecteurs de données
+pays <- c("Madagascar", "Comores", "La Réunion", "Maurice", "Kenya")
 
-nb_individus <- c(16000, 3000, 70000, 800, 200)
+production <- c(2900, 8000, 1800000, 3700000, 49000)
 
-# Statistiques
-sum(nb_individus)
-mean(nb_individus)
+surface_ha <- c(4462, 7619, 25000, 52857, 84483)
 
-# Filtrage
-especes[nb_individus < 10000]
+# 4 : Rendement en kg/ha
+rendement <- (production / surface_ha) * 1000
+round(rendement, 0)
 
-# Data frame
-faune_reunion <- data.frame(
-  espece      = especes,
-  population  = nb_individus,
+# 5 : Pays avec le rendement le plus élevé
+pays[which.max(rendement)]
+# → La Réunion (72 000 kg/ha pour la canne à sucre)
+
+# 6 : Data frame
+agri <- data.frame(
+  pays       = pays,
+  production = production,
+  surface_ha = surface_ha,
+  rendement  = round(rendement, 0),
   stringsAsFactors = FALSE
 )
+agri
 
-faune_reunion
+# 7 : Filtrer les grandes productions
+agri[agri$production > 1000000, ]
+
+# 8 : Production totale en millions de tonnes
+sum(production) / 1e6
+# → 5.56 millions de tonnes
 ```
 :::
