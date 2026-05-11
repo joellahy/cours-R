@@ -346,7 +346,7 @@ tinytex::install_tinytex()
 
 Voici la structure type d'un rapport d'analyse de données :
 
-```markdown
+````markdown
 ---
 title: "Analyse des productions agricoles tropicales"
 author: "Prénom NOM"
@@ -396,7 +396,7 @@ ggplot(...)
 Synthèse des principaux résultats.
 
 ## Références
-```
+````
 
 ---
 
