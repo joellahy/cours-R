@@ -60,14 +60,10 @@ book:
     right: |
       Marius LAHY — M1 EA & RNET
 
-  favicon: images/favicon.ico
-
-  cover-image: images/cover.png
-
 format:
   html:
-    theme:
-      light: [cosmo, styles.css]
+    theme: cosmo
+    css: styles.css
     highlight-style: github
     code-copy: true
     code-overflow: wrap
