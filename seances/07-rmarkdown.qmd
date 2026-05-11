@@ -1,5 +1,5 @@
 ---
-title: "Séance 7 — Introduction à Rmarkdown et Quarto"
+title: "Séance 7 - Introduction à Rmarkdown et Quarto"
 ---
 
 ::: {.callout-tip}
@@ -30,7 +30,7 @@ Ce workflow présente de nombreux problèmes :
 > *"An article about computational science in a scientific publication is not the scholarship itself,
 > it is merely advertising of the scholarship. The actual scholarship is the complete software
 > development environment and the complete set of instructions which generated the figures."*
-> — Buckheit & Donoho (1995)
+> - Buckheit & Donoho (1995)
 
 ---
 
@@ -403,7 +403,7 @@ Synthèse des principaux résultats.
 ## Exercice récapitulatif
 
 ::: {.callout-note}
-## Exercice — Créer votre premier rapport reproductible
+## Exercice - Créer votre premier rapport reproductible
 
 Créez un fichier `rapport_seance7.qmd` qui produit un rapport HTML sur
 **l'analyse du développement économique en Afrique subsaharienne** avec :

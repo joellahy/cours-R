@@ -1,5 +1,5 @@
 ---
-title: "Séance 8 — Améliorer sa productivité avec l'IA dans R"
+title: "Séance 8 - Améliorer sa productivité avec l'IA dans R"
 ---
 
 ::: {.callout-tip}
@@ -158,7 +158,7 @@ gapminder |>
 
 ## Exemples d'usage productif de l'IA
 
-### Cas 1 — Convertir du code base R en tidyverse
+### Cas 1 - Convertir du code base R en tidyverse
 
 **Prompt :**
 ```
@@ -181,7 +181,7 @@ mean_pib <- data_afr |>
   pull(mean_pib)
 ```
 
-### Cas 2 — Comprendre une fonction inconnue
+### Cas 2 - Comprendre une fonction inconnue
 
 **Prompt :**
 ```
@@ -190,7 +190,7 @@ Explique-moi ce que fait cette ligne R et dans quel contexte l'utiliser :
 gapminder |> group_by(continent) |> group_map(~ lm(lifeExp ~ year, data = .x))
 ```
 
-### Cas 3 — Générer de la documentation
+### Cas 3 - Générer de la documentation
 
 **Prompt :**
 ```
@@ -202,7 +202,7 @@ calculer_rendement <- function(production, surface) {
 }
 ```
 
-### Cas 4 — Identifier un package adapté
+### Cas 4 - Identifier un package adapté
 
 **Prompt :**
 ```
@@ -273,7 +273,7 @@ Recommandation : essayez d'abord par vous-même, utilisez l'IA comme second reco
 ::: {.callout-note}
 ## Exercice
 
-**Partie 1 — Débogage guidé**
+**Partie 1 - Débogage guidé**
 
 Les codes suivants contiennent chacun une erreur. Identifiez-la, corrigez-la,
 et expliquez ce qui ne va pas.
@@ -299,7 +299,7 @@ ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) +
   geom_point(color = blue)      # oubli des guillemets
 ```
 
-**Partie 2 — Prompt engineering**
+**Partie 2 - Prompt engineering**
 
 Rédigez un prompt précis pour demander à une IA de :
 
@@ -311,7 +311,7 @@ Rédigez un prompt précis pour demander à une IA de :
 ::: {.callout-caution collapse="true"}
 ## Corrigé
 
-**Partie 1 — Débogage**
+**Partie 1 - Débogage**
 
 ```r
 # Code 1 : = doit être ==
@@ -332,7 +332,7 @@ ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) +
   geom_point(color = "blue")
 ```
 
-**Partie 2 — Exemple de prompt**
+**Partie 2 - Exemple de prompt**
 
 ```
 Je travaille en R avec le tidyverse.

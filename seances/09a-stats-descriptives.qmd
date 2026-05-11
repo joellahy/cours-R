@@ -1,5 +1,5 @@
 ---
-title: "Séance 9a — Statistiques descriptives avec R"
+title: "Séance 9a - Statistiques descriptives avec R"
 subtitle: "<span class='badge-rnet'>RNET</span>"
 ---
 
@@ -231,7 +231,7 @@ La **variance** ($s^2$) mesure la dispersion moyenne au carré autour de la moye
 
 $$s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2$$
 
-L'**écart-type** ($s$) est la racine carrée de la variance — il est dans la **même unité** que la variable :
+L'**écart-type** ($s$) est la racine carrée de la variance - il est dans la **même unité** que la variable :
 
 $$s = \sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2}$$
 
@@ -385,7 +385,7 @@ penguins |>
     x       = "Masse corporelle (g)",
     y       = "Nombre d'individus",
     fill    = "Espèce",
-    caption = "Source : Gorman et al. (2014) — Station Palmer, Antarctique"
+    caption = "Source : Gorman et al. (2014) - Station Palmer, Antarctique"
   ) +
   theme_bw(base_size = 11) +
   theme(legend.position = "none")
@@ -427,7 +427,7 @@ penguins |>
     ────────│     │     │────────────  ●
     Min     Q1  Médiane  Q3    Max   (valeur aberrante)
            └─────┴─────┘
-           ←——IQR——→
+           ←--IQR--→
 ```
 
 - La **ligne centrale** = médiane
@@ -483,7 +483,7 @@ penguins |>
   ) +
   labs(
     title   = "Matrice de corrélation des mesures morphologiques",
-    subtitle = "Manchots de l'archipel Palmer — toutes espèces confondues",
+    subtitle = "Manchots de l'archipel Palmer - toutes espèces confondues",
     x       = NULL, y = NULL,
     caption = "Source : Gorman et al. (2014)"
   ) +

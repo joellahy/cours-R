@@ -1,5 +1,5 @@
 ---
-title: "TP 2 — Visualisation de données"
+title: "TP 2 - Visualisation de données"
 ---
 
 ::: {.callout-tip}
@@ -22,9 +22,9 @@ pour un rapport sur la biodiversité et le développement économique des îles 
 
 Vous disposez de deux sources de données :
 
-1. **`gapminder`** — Indicateurs de développement (PIB, espérance de vie, population)
-2. **`penguins`** (`palmerpenguins`) — Données morphologiques de manchots (exemple de données écologiques)
-3. **`biodiversite_mascareignes.csv`** — Données de biodiversité pour les exercices avancés
+1. **`gapminder`** - Indicateurs de développement (PIB, espérance de vie, population)
+2. **`penguins`** (`palmerpenguins`) - Données morphologiques de manchots (exemple de données écologiques)
+3. **`biodiversite_mascareignes.csv`** - Données de biodiversité pour les exercices avancés
 
 ```{r}
 library(tidyverse)
@@ -37,7 +37,7 @@ biodiv <- read_csv("../data/biodiversite_mascareignes.csv")
 
 ---
 
-## Partie 1 — Choisir le bon graphique
+## Partie 1 - Choisir le bon graphique
 
 Avant de créer un graphique, posez-vous toujours ces questions :
 
@@ -50,7 +50,7 @@ Avant de créer un graphique, posez-vous toujours ces questions :
 | Composition (parties d'un tout) ? | Barplot empilé, treemap |
 | Distribution de plusieurs groupes ? | Boxplot, violin plot, ridge plot |
 
-### Exercice 1.1 — Le bon graphique pour la bonne question
+### Exercice 1.1 - Le bon graphique pour la bonne question
 
 ::: {.callout-note}
 ## Consignes
@@ -67,18 +67,18 @@ e. Comment se compare l'espérance de vie des pays selon leur niveau de revenu ?
 ::: {.callout-caution collapse="true"}
 ## Éléments de réponse
 
-a. **Histogramme ou density plot** — distribution d'une variable continue pour un groupe
-b. **Line chart** — évolution d'une variable quantitative dans le temps
-c. **Nuage de points (scatterplot)** — relation entre deux variables continues
-d. **Barplot ou camembert** — composition/proportions (le barplot est généralement préférable)
-e. **Boxplot ou violin plot** — comparaison de distributions entre groupes
+a. **Histogramme ou density plot** - distribution d'une variable continue pour un groupe
+b. **Line chart** - évolution d'une variable quantitative dans le temps
+c. **Nuage de points (scatterplot)** - relation entre deux variables continues
+d. **Barplot ou camembert** - composition/proportions (le barplot est généralement préférable)
+e. **Boxplot ou violin plot** - comparaison de distributions entre groupes
 :::
 
 ---
 
-## Partie 2 — Visualisations sur le développement mondial
+## Partie 2 - Visualisations sur le développement mondial
 
-### Exercice 2.1 — Carte de chaleur temporelle
+### Exercice 2.1 - Carte de chaleur temporelle
 
 ::: {.callout-note}
 ## Consignes
@@ -130,7 +130,7 @@ gapminder |>
 ```
 :::
 
-### Exercice 2.2 — Graphique en haltères (Dumbbell chart)
+### Exercice 2.2 - Graphique en haltères (Dumbbell chart)
 
 ::: {.callout-note}
 ## Consignes
@@ -180,9 +180,9 @@ df_dumbbell |>
 
 ---
 
-## Partie 3 — Visualisations écologiques
+## Partie 3 - Visualisations écologiques
 
-### Exercice 3.1 — Morphologie des manchots
+### Exercice 3.1 - Morphologie des manchots
 
 ::: {.callout-note}
 ## Consignes
@@ -218,14 +218,14 @@ penguins |>
     y        = "Longueur des nageoires (mm)",
     color    = "Espèce",
     shape    = "Île",
-    caption  = "Source : Gorman et al. (2014) — Station Palmer, Antarctique"
+    caption  = "Source : Gorman et al. (2014) - Station Palmer, Antarctique"
   ) +
   theme_bw(base_size = 11) +
   theme(legend.position = "right")
 ```
 :::
 
-### Exercice 3.2 — Données de biodiversité des Mascareignes
+### Exercice 3.2 - Données de biodiversité des Mascareignes
 
 ::: {.callout-note}
 ## Consignes
@@ -284,24 +284,24 @@ biodiv |>
 
 ---
 
-## Partie 4 — Mini-projet de visualisation
+## Partie 4 - Mini-projet de visualisation
 
 ::: {.callout-note}
-## Consignes — Mini-projet (travail individuel ou en binôme)
+## Consignes - Mini-projet (travail individuel ou en binôme)
 
 **Durée estimée : 45 minutes**
 
 Choisissez l'une des deux thématiques suivantes et produisez **3 graphiques**
 qui racontent une histoire cohérente avec les données.
 
-### Thématique A — Économie de l'Océan Indien
+### Thématique A - Économie de l'Océan Indien
 
 En utilisant `gapminder` (et éventuellement d'autres sources) :
 - L'évolution du PIB/habitant dans les pays de l'Océan Indien ou d'Afrique de l'Est
 - La relation entre développement économique et espérance de vie dans cette région
 - Une comparaison avec d'autres régions du monde
 
-### Thématique B — Biodiversité tropicale
+### Thématique B - Biodiversité tropicale
 
 En utilisant `biodiversite_mascareignes.csv` et `palmerpenguins` :
 - La richesse spécifique des îles de l'Océan Indien

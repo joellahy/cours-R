@@ -1,5 +1,5 @@
 ---
-title: "Séance 5 — Visualisation avec ggplot2"
+title: "Séance 5 - Visualisation avec ggplot2"
 ---
 
 ::: {.callout-tip}
@@ -138,11 +138,11 @@ ggplot(data = gm_2007, aes(x = gdpPercap, y = lifeExp,
   scale_size(range = c(1, 12), guide = "none") +
   labs(
     title    = "Espérance de vie et richesse économique (2007)",
-    subtitle = "Chaque point = un pays — la taille est proportionnelle à la population",
+    subtitle = "Chaque point = un pays - la taille est proportionnelle à la population",
     x        = "PIB par habitant (USD, échelle logarithmique)",
     y        = "Espérance de vie (années)",
     color    = "Continent",
-    caption  = "Source : Gapminder Foundation — gapminder.org"
+    caption  = "Source : Gapminder Foundation - gapminder.org"
   ) +
   theme_minimal(base_size = 12)
 ```
@@ -159,7 +159,7 @@ Notez la syntaxe :
 
 ## Les géométries principales (`geom_*`)
 
-### `geom_point()` — Nuage de points
+### `geom_point()` - Nuage de points
 
 Idéal pour explorer la **relation entre deux variables continues**.
 
@@ -198,7 +198,7 @@ ggplot(penguins |> drop_na(),
 
 ---
 
-### `geom_line()` — Courbes et séries temporelles
+### `geom_line()` - Courbes et séries temporelles
 
 Utilisé pour représenter l'**évolution d'une variable dans le temps**.
 
@@ -233,7 +233,7 @@ Si `color` est déjà mappé à la variable, `group` est souvent inféré automa
 
 ---
 
-### `geom_col()` et `geom_bar()` — Diagrammes en barres
+### `geom_col()` et `geom_bar()` - Diagrammes en barres
 
 Deux façons de créer un diagramme en barres :
 
@@ -281,7 +281,7 @@ vanille_2022 |>
 
 ---
 
-### `geom_histogram()` — Histogramme
+### `geom_histogram()` - Histogramme
 
 Représente la **distribution d'une variable continue**
 en la découpant en intervalles (*bins*).
@@ -320,7 +320,7 @@ Essayez plusieurs valeurs et choisissez celle qui révèle le mieux la forme de 
 
 ---
 
-### `geom_boxplot()` — Boîte à moustaches
+### `geom_boxplot()` - Boîte à moustaches
 
 La boîte à moustaches résume la **distribution d'une variable** par groupe.
 Elle montre cinq statistiques : minimum, Q1, médiane, Q3, maximum.
@@ -350,7 +350,7 @@ gapminder |>
   scale_fill_brewer(palette = "Set2") +
   labs(
     title    = "Distribution de l'espérance de vie par continent (2007)",
-    subtitle = "Ordonné par médiane croissante — violin + boxplot + points",
+    subtitle = "Ordonné par médiane croissante - violin + boxplot + points",
     x        = NULL,
     y        = "Espérance de vie (années)",
     caption  = "Source : Gapminder Foundation"
@@ -361,9 +361,9 @@ gapminder |>
 
 ---
 
-### `geom_density()` — Courbe de densité
+### `geom_density()` - Courbe de densité
 
-Alternative lissée à l'histogramme — utile pour comparer plusieurs groupes.
+Alternative lissée à l'histogramme - utile pour comparer plusieurs groupes.
 
 ```{r}
 # Densité du PIB/habitant par continent en 2007
@@ -433,7 +433,7 @@ Un **thème** contrôle l'apparence générale (fond, grille, police, etc.) :
 
 | Thème | Style |
 |-------|-------|
-| `theme_minimal()` | Fond blanc, grille légère — **recommandé** |
+| `theme_minimal()` | Fond blanc, grille légère - **recommandé** |
 | `theme_bw()` | Fond blanc avec bordure noire |
 | `theme_classic()` | Axes seulement, sans grille |
 | `theme_void()` | Rien (pour les cartes) |
@@ -473,12 +473,12 @@ p +
 
 ---
 
-## Facettes — Comparer des groupes
+## Facettes - Comparer des groupes
 
 Les **facettes** divisent un graphique en **sous-graphiques** selon une variable catégorielle.
 C'est l'une des fonctionnalités les plus puissantes de `ggplot2`.
 
-### `facet_wrap()` — Facettes en grille libre
+### `facet_wrap()` - Facettes en grille libre
 
 ```{r}
 # Évolution du PIB vs espérance de vie pour 4 années clés
@@ -505,7 +505,7 @@ gapminder |>
   theme(legend.position = "bottom")
 ```
 
-### `facet_grid()` — Grille avec deux variables
+### `facet_grid()` - Grille avec deux variables
 
 ```{r}
 # Grille : continent en ligne, décennie en colonne
@@ -563,7 +563,7 @@ ggsave("figures/histogramme.pdf", plot = mon_graphique,
 ::: {.callout-note}
 ## Exercice
 
-**Partie 1 — Reproduction guidée**
+**Partie 1 - Reproduction guidée**
 
 Reproduisez ce graphique à partir des données `gapminder` (2007, Afrique) :
 - Nuage de points `gdpPercap` (x, log) vs `lifeExp` (y)
@@ -572,13 +572,13 @@ Reproduisez ce graphique à partir des données `gapminder` (2007, Afrique) :
 - Une ligne horizontale à la médiane
 - Thème `theme_minimal()`, palette manuelle rouge/vert
 
-**Partie 2 — Graphique libre**
+**Partie 2 - Graphique libre**
 
 Créez un graphique de votre choix avec `palmerpenguins::penguins` qui montre
 la distribution de la longueur du bec (`bill_length_mm`) par espèce et par île,
 en utilisant `facet_wrap(~ island)` et `geom_violin()` + `geom_boxplot()`.
 
-**Partie 3 — Série temporelle**
+**Partie 3 - Série temporelle**
 
 Avec `gapminder`, créez une série temporelle de la **population totale** par continent
 entre 1952 et 2007. Chaque continent est une ligne de couleur différente.

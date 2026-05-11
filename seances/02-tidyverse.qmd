@@ -1,5 +1,5 @@
 ---
-title: "Séance 2 — Introduction au tidyverse"
+title: "Séance 2 - Introduction au tidyverse"
 ---
 
 ::: {.callout-tip}
@@ -90,7 +90,7 @@ Le format large est pratique pour la saisie humaine, mais difficile à analyser 
 
 ---
 
-## Le pipe `|>` — enchaîner des opérations lisiblement
+## Le pipe `|>` - enchaîner des opérations lisiblement
 
 Le **pipe** est l'une des innovations les plus importantes du tidyverse.
 Il se lit comme « *puis* » et permet d'écrire du code **de gauche à droite**,
@@ -196,7 +196,7 @@ iris_tbl <- as_tibble(iris)
 iris_tbl
 ```
 
-### `glimpse()` — explorer rapidement les données
+### `glimpse()` - explorer rapidement les données
 
 ```{r}
 # Vue synthétique de toutes les colonnes
@@ -239,7 +239,7 @@ knitr::include_graphics("../images/dplyr.png")
 
 ---
 
-### `filter()` — Sélectionner des lignes selon une condition
+### `filter()` - Sélectionner des lignes selon une condition
 
 `filter()` garde seulement les lignes qui satisfont une condition.
 
@@ -287,7 +287,7 @@ gapminder |>
 
 ---
 
-### `select()` — Choisir les colonnes à conserver
+### `select()` - Choisir les colonnes à conserver
 
 `select()` permet de **garder, supprimer ou renommer** des colonnes.
 
@@ -335,7 +335,7 @@ gapminder |>
 
 ---
 
-### `mutate()` — Créer ou modifier des colonnes
+### `mutate()` - Créer ou modifier des colonnes
 
 `mutate()` **ajoute de nouvelles colonnes** ou **modifie des colonnes existantes**.
 Les autres colonnes sont conservées.
@@ -369,7 +369,7 @@ gapminder |>
 ```
 
 ::: {.callout-note}
-## `case_when()` — l'alternative lisible à `if`/`else`
+## `case_when()` - l'alternative lisible à `if`/`else`
 `case_when()` permet de créer une variable à partir de plusieurs conditions :
 ```r
 mutate(
@@ -387,7 +387,7 @@ La condition `TRUE ~ ...` fonctionne comme un `else` final.
 
 ---
 
-### `arrange()` — Trier les lignes
+### `arrange()` - Trier les lignes
 
 `arrange()` trie le tableau selon une ou plusieurs colonnes.
 Par défaut, le tri est **croissant**. Utilisez `desc()` pour un tri **décroissant**.
@@ -411,7 +411,7 @@ gapminder |>
 
 ---
 
-### `summarise()` — Résumer les données
+### `summarise()` - Résumer les données
 
 `summarise()` **réduit** un tableau à un résumé statistique.
 Il est presque toujours utilisé **après `group_by()`**.
@@ -445,7 +445,7 @@ gapminder |>
 
 ---
 
-### `group_by()` + `summarise()` — Résumer par groupe
+### `group_by()` + `summarise()` - Résumer par groupe
 
 La combinaison `group_by()` + `summarise()` est l'une des plus utilisées en analyse de données.
 Elle permet de calculer des statistiques **pour chaque groupe** d'observations.
@@ -552,7 +552,7 @@ gapminder |>
 
 `tidyr` permet de **changer la forme** d'un tableau entre le format large (wide) et le format long.
 
-### `pivot_longer()` — Passer du format large au format long
+### `pivot_longer()` - Passer du format large au format long
 
 ```{r}
 # Données en format large (souvent le cas des exports Excel/FAOSTAT)
@@ -577,7 +577,7 @@ vanille_long <- vanille_large |>
 vanille_long
 ```
 
-### `pivot_wider()` — Passer du format long au format large
+### `pivot_wider()` - Passer du format long au format large
 
 ```{r}
 # L'opération inverse : reconstituer le tableau large
@@ -588,7 +588,7 @@ vanille_long |>
   )
 ```
 
-### `separate()` — Séparer une colonne en plusieurs
+### `separate()` - Séparer une colonne en plusieurs
 
 ```{r}
 # Colonne contenant deux informations fusionnées

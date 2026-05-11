@@ -1,5 +1,5 @@
 ---
-title: "Séance 4 — Approfondissement du tidyverse"
+title: "Séance 4 - Approfondissement du tidyverse"
 ---
 
 ::: {.callout-tip}
@@ -351,7 +351,7 @@ croissance <- params |>
 head(croissance, 10)
 ```
 
-### `map2()` et `pmap()` — Plusieurs arguments
+### `map2()` et `pmap()` - Plusieurs arguments
 
 ```{r}
 # map2() : itérer sur deux vecteurs en parallèle
@@ -441,7 +441,7 @@ gapminder |>
   select(country, year, date_ref, jours_since) |>
   head(10)
 
-# 4. purrr — modèles linéaires par continent
+# 4. purrr - modèles linéaires par continent
 gapminder |>
   group_by(continent) |>
   group_map(~ lm(lifeExp ~ year, data = .x)) |>

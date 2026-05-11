@@ -1,5 +1,5 @@
 ---
-title: "Séance 9b — Tests statistiques et régression linéaire"
+title: "Séance 9b - Tests statistiques et régression linéaire"
 subtitle: "<span class='badge-rnet'>RNET</span>"
 ---
 
@@ -38,9 +38,9 @@ compatibles avec l'hypothèse « c'est le hasard ».
 
 Tout test statistique repose sur deux hypothèses opposées :
 
-- **H₀ — Hypothèse nulle** : « Il n'y a pas d'effet / pas de différence / pas de relation ».
+- **H₀ - Hypothèse nulle** : « Il n'y a pas d'effet / pas de différence / pas de relation ».
   C'est l'hypothèse du *statu quo*, celle qu'on cherche à réfuter.
-- **H₁ — Hypothèse alternative** : « Il y a un effet réel ». C'est ce qu'on cherche à démontrer.
+- **H₁ - Hypothèse alternative** : « Il y a un effet réel ». C'est ce qu'on cherche à démontrer.
 
 ```
 Exemple : Les manchots mâles pèsent-ils plus que les femelles ?
@@ -85,8 +85,8 @@ Cela signifie seulement qu'on n'a pas assez de données pour le détecter.
 
 | | H₀ vraie | H₀ fausse |
 |--|:--------:|:---------:|
-| **On rejette H₀** | Erreur de type I (faux positif) — probabilité = α | Bonne décision (puissance = 1−β) |
-| **On ne rejette pas H₀** | Bonne décision | Erreur de type II (faux négatif) — probabilité = β |
+| **On rejette H₀** | Erreur de type I (faux positif) - probabilité = α | Bonne décision (puissance = 1−β) |
+| **On ne rejette pas H₀** | Bonne décision | Erreur de type II (faux négatif) - probabilité = β |
 
 ### Choisir le bon test
 
@@ -192,7 +192,7 @@ round(d_cohen, 2)   # > 0.8 → effet de grande taille
 > Les manchots mâles (`r round(moy_m, 0)` g en moyenne) sont significativement plus lourds
 > que les femelles (`r round(moy_f, 0)` g), avec une différence de `r round(moy_m - moy_f, 0)` g
 > (t = `r round(resultat_t$statistic, 2)`, ddl = `r round(resultat_t$parameter, 0)`,
-> p < 0,001, d de Cohen = `r round(d_cohen, 2)` — effet de grande taille).
+> p < 0,001, d de Cohen = `r round(d_cohen, 2)` - effet de grande taille).
 
 ---
 
@@ -299,7 +299,7 @@ tidy(cor_test)
 ```
 
 ```{r}
-# Corrélation de Spearman (non paramétrique — sur les rangs)
+# Corrélation de Spearman (non paramétrique - sur les rangs)
 # À utiliser si la relation n'est pas linéaire ou si distribution très asymétrique
 cor.test(
   penguins$flipper_length_mm,
@@ -331,7 +331,7 @@ $$Y = \beta_0 + \beta_1 X + \varepsilon$$
 
 - **$\beta_0$** (intercept) : valeur de Y quand X = 0
 - **$\beta_1$** (pente) : augmentation de Y pour chaque augmentation d'une unité de X
-- **$\varepsilon$** : terme d'erreur (résidu — ce que le modèle ne capture pas)
+- **$\varepsilon$** : terme d'erreur (résidu - ce que le modèle ne capture pas)
 
 ### Ajuster un modèle avec `lm()`
 
@@ -348,7 +348,7 @@ summary(modele1)
 
 ### Lire la sortie de `summary(lm())`
 
-La sortie est dense — décortiquons-la :
+La sortie est dense - décortiquons-la :
 
 ```
 Call: lm(formula = body_mass_g ~ flipper_length_mm, data = penguins)
@@ -475,7 +475,7 @@ augment(modele1) |>
   stat_qq(alpha = 0.5) +
   stat_qq_line(color = "red", linewidth = 1) +
   labs(
-    title    = "QQ-plot des résidus — Modèle 1",
+    title    = "QQ-plot des résidus - Modèle 1",
     subtitle = "Les points doivent suivre la diagonale pour valider la normalité",
     x        = "Quantiles théoriques (loi normale)",
     y        = "Quantiles observés (résidus)"
@@ -497,7 +497,7 @@ shapiro.test(residuals(modele1))
 ::: {.callout-note}
 ## Exercice
 
-**Partie 1 — Tests**
+**Partie 1 - Tests**
 
 En utilisant `palmerpenguins::penguins` :
 
@@ -512,7 +512,7 @@ En utilisant `palmerpenguins::penguins` :
    Quelle est son intensité ? Expliquez le paradoxe que vous observez en calculant
    cette corrélation séparément pour chaque espèce.
 
-**Partie 2 — Régression**
+**Partie 2 - Régression**
 
 4. Construisez un modèle linéaire simple : `flipper_length_mm ~ body_mass_g`.
    Interprétez l'intercept, la pente et le R².
@@ -551,7 +551,7 @@ d <- (moy_C - moy_A) / sd(adelie_chinstrap$bill_length_mm)
 round(d, 2)
 
 # → Chinstrap a un bec significativement plus long que Adelie
-# (t = ..., p < 0.001, d ≈ 1.8 — effet très large)
+# (t = ..., p < 0.001, d ≈ 1.8 - effet très large)
 
 # 2. Khi² : sexe × espèce
 tab_sex_esp <- table(penguins$sex, penguins$species)

@@ -1,5 +1,5 @@
 ---
-title: "Séance 1 — Découverte et prise en main de R"
+title: "Séance 1 - Découverte et prise en main de R"
 ---
 
 ::: {.callout-tip}
@@ -43,13 +43,13 @@ Le package [utilitR](https://book.utilitr.org/) a été développé *par* les ag
 
 ## Installation de R et RStudio
 
-### Étape 1 — Installer R (le moteur)
+### Étape 1 - Installer R (le moteur)
 
 1. Rendez-vous sur [cran.r-project.org](https://cran.r-project.org)
 2. Cliquez sur votre système d'exploitation (Windows, macOS ou Linux)
 3. Téléchargez et installez la version la plus récente (≥ 4.3)
 
-### Étape 2 — Installer RStudio (l'interface)
+### Étape 2 - Installer RStudio (l'interface)
 
 1. Rendez-vous sur [posit.co/download/rstudio-desktop](https://posit.co/download/rstudio-desktop/)
 2. Téléchargez *RStudio Desktop* (version gratuite)
@@ -109,7 +109,7 @@ Apprenez ces raccourcis dès maintenant, ils vous feront gagner un temps consid�
 
 ---
 
-## Les projets RStudio — Travaillez toujours dans un projet
+## Les projets RStudio - Travaillez toujours dans un projet
 
 Avant tout travail, la première chose à faire est de créer un **projet RStudio**.
 
@@ -124,7 +124,7 @@ Un projet RStudio (fichier `.Rproj`) est un dossier de travail qui :
 Donnez-lui un nom explicite (ex. : `analyse_agriculture`) et choisissez l'emplacement.
 
 ::: {.callout-warning}
-## Règle absolue — Ne jamais utiliser `setwd()`
+## Règle absolue - Ne jamais utiliser `setwd()`
 La commande `setwd("C:/Users/moi/Documents/MonDossier")` est une mauvaise pratique
 car ce chemin n'existera pas sur la machine d'un collègue ou sur votre propre machine
 si vous déplacez votre dossier.
@@ -196,7 +196,7 @@ densite
 
 ---
 
-## Les vecteurs — l'objet fondamental de R
+## Les vecteurs - l'objet fondamental de R
 
 Un **vecteur** est une séquence de valeurs du **même type**.
 C'est l'objet de base de R : même un nombre seul est un vecteur de longueur 1.
@@ -235,7 +235,7 @@ class(est_independant)  # "logical"
 summary(esperance_vie)
 ```
 
-### Indexation — accéder aux éléments
+### Indexation - accéder aux éléments
 
 En R, les indices commencent à **1** (contrairement à Python qui commence à 0).
 
@@ -255,7 +255,7 @@ pays[-c(1, 2)]   # Tout sauf les deux premiers
 ```
 
 ```{r}
-# Filtrage conditionnel — très puissant !
+# Filtrage conditionnel - très puissant !
 # Quels pays ont une espérance de vie > 70 ans ?
 pays[esperance_vie > 70]
 
@@ -263,7 +263,7 @@ pays[esperance_vie > 70]
 esperance_vie[esperance_vie > 70]
 ```
 
-### Opérations sur les vecteurs — vectorisation
+### Opérations sur les vecteurs - vectorisation
 
 L'un des grands atouts de R : les opérations s'appliquent **à chaque élément** automatiquement,
 sans boucle nécessaire.
@@ -307,7 +307,7 @@ R possède six types de données fondamentaux. En pratique, vous en utiliserez s
 | `character` | Texte (chaîne) | `"Bonjour"` | `is.character(x)` |
 | `logical` | Vrai/Faux | `TRUE`, `FALSE` | `is.logical(x)` |
 | `factor` | Catégorie ordonnée | `factor("A")` | `is.factor(x)` |
-| `Date` | Date calendaire | `as.Date("2024-01-15")` | — |
+| `Date` | Date calendaire | `as.Date("2024-01-15")` | - |
 
 ```{r}
 # Vérifier le type d'un objet
@@ -334,16 +334,16 @@ class(nombre_texte)            # "character"
 
 nombre <- as.numeric(nombre_texte)
 class(nombre)                  # "numeric"
-nombre + 1                     # 124 — on peut maintenant faire des calculs
+nombre + 1                     # 124 - on peut maintenant faire des calculs
 
 # Conversion logique → numérique (TRUE = 1, FALSE = 0)
 # Très utile pour compter les "vrais"
 votes <- c(TRUE, FALSE, TRUE, TRUE, FALSE)
-sum(votes)         # 3 — nombre de TRUE
-mean(votes)        # 0.6 — proportion de TRUE (60%)
+sum(votes)         # 3 - nombre de TRUE
+mean(votes)        # 0.6 - proportion de TRUE (60%)
 ```
 
-### Les facteurs — variables catégorielles
+### Les facteurs - variables catégorielles
 
 Un **facteur** (`factor`) est utilisé pour représenter des variables catégorielles
 (comme des groupes, des modalités, des catégories).
@@ -412,7 +412,7 @@ colMeans(temperatures)    # Température moyenne mensuelle (toutes stations)
 
 ---
 
-## Les data frames — le tableau de données
+## Les data frames - le tableau de données
 
 Le **data frame** est l'objet le plus utilisé en analyse de données.
 C'est un tableau où :
@@ -488,7 +488,7 @@ iles_oi[!is.na(iles_oi$pib_par_hab_usd), ]       # Îles avec PIB connu
 
 ---
 
-## Les listes — conteneurs polyvalents
+## Les listes - conteneurs polyvalents
 
 Une **liste** peut contenir des objets de **types et de tailles différents**.
 C'est le conteneur le plus flexible de R.
@@ -701,7 +701,7 @@ Voici les erreurs que vous allez faire (tout le monde les fait au début) :
 | NA dans le résultat | Résultat = `NA` | Valeur manquante dans les données | Ajoutez `na.rm = TRUE` |
 
 ```r
-# Exemple d'erreur de parenthèse — la console affiche "+"
+# Exemple d'erreur de parenthèse - la console affiche "+"
 mean(c(1, 2, 3)   # ← parenthèse manquante
 # La console attend la suite... appuyez sur Échap pour annuler
 ```
