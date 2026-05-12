@@ -69,6 +69,11 @@ a:hover {
 }
 
 /* --- Code -------------------------------------------------- */
+code, pre, .sourceCode {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
 code {
   font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
   font-size: 0.88em;
