@@ -1,0 +1,2087 @@
+---
+format:
+  revealjs:
+    slide-number: c/t
+    footer: "<span style='font-size:18pt;'>Introduction à R — Université de La Réunion</span>"
+    code-copy: true
+    center-title-slide: false
+    code-link: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+    css: style.css
+execute:
+  eval: true
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggforce)
+```
+
+[Cours d'introduction à R]{.titre}
+
+[Université de La Réunion — [Master 1 EA & RNET]{style="color: #00538b;"}]{.sous-titre}
+
+<hr>
+
+[<br> Marius LAHY]{.absolute .sous-titre}
+
+[`r format(Sys.Date(), "%Y")`]{.absolute}
+
+![](https://miro.medium.com/v2/resize:fit:1024/1*6NYlgXgLqXTAkcOd-JGdIw.png){fig-align="right"}
+
+## Plan du cours
+
+. . .
+
+Ce cours d'introduction à R se déroule sur **24 heures**, réparti entre cours magistraux et travaux pratiques. Nous allons découvrir ensemble le langage R et ses principales applications en analyse de données.
+
+. . .
+
+L'apprentissage se fera **essentiellement par la pratique**, avec des données issues du monde réel :
+
+. . .
+
+[➔ Agriculture tropicale, biodiversité des Mascareignes, et économie mondiale.]{style="color:#00538b;"}
+
+<br>
+
+::: {.fragment .fade-up}
+
+```{r plan_cours, echo=FALSE, fig.width=20, fig.align='center'}
+plan_cours <- tribble(
+  ~titre,                                    ~x,     ~y,
+  "1.\nDécouverte\nde R & RStudio",          0,      0,
+  "2.\nIntroduction\nau tidyverse",          3.25,  -1.75,
+  "TP 1\nAgriculture\ntropicale",            6.5,    0,
+  "3.\nTidyverse\navancé",                   9.75,  -1.75,
+  "4.\nVisualisation\nggplot2",             13,      0,
+  "TP 2\nBiodiversité\n& Visualisation",   16.25,  -1.75,
+  "5.\nRmarkdown\n& Quarto",               19.5,    0,
+  "6.\nIA\ndans R",                        22.75,  -1.75
+) %>%
+  mutate(sides = 6, r = 2.05, angle = 0)
+
+ggplot(plan_cours) +
+  geom_regon(aes(x0 = x, y0 = y, sides = sides, r = r,
+                 angle = angle, fill = titre), linewidth = 1) +
+  scale_fill_brewer(palette = "GnBu", direction = -1) +
+  coord_equal() +
+  geom_text(aes(x = x, y = y, label = titre, colour = titre),
+            size = 6, fontface = "bold", family = "Arial", lineheight = 1.5) +
+  scale_colour_manual(values = c(rep("white", 3), rep("black", 5))) +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+:::
+
+---
+
+# Séance 1 — Découverte et prise en main de R {background-color="#00538b"}
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### Qu'est-ce que R ?
+
+::: {.fragment}
+**R** est un langage de programmation libre (open source), spécialement conçu pour les **statistiques** et la **science des données**. Créé en 1993 par Ross Ihaka et Robert Gentleman à l'Université d'Auckland.
+:::
+
+::: {.fragment}
+R permet de :
+
+::: {.incremental}
+- Traiter et nettoyer des données
+- Réaliser des analyses statistiques
+- Produire des visualisations de haute qualité
+- Générer des rapports reproductibles (HTML, PDF, Word)
+- Construire des tableaux de bord interactifs
+:::
+:::
+
+::: {.fragment .callout-note}
+Aujourd'hui, tous les services statistiques de l'État français migrent vers R, délaissant la solution propriétaire SAS.
+Exemples : INSEE, DARES, DEAL Réunion, Agences Régionales de Santé.
+:::
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### R vs Excel — Pourquoi changer ?
+
+| Critère | Excel | R |
+|---------|:-----:|:-----:|
+| Volume de données | ~1 million de lignes | Illimité (RAM) |
+| Reproductibilité | Difficile | Totale (le script = la recette) |
+| Automatisation | Limitée | Complète |
+| Statistiques avancées | Basiques | Très complètes |
+| Graphiques | Limités | Publication-ready |
+| Coût | Payant | **Gratuit** |
+
+::: {.fragment .fade-up}
+> **Règle d'or :** un script R documenté peut être relu, relancé et partagé sans cliquer nulle part.
+:::
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### Installation — Deux outils indispensables
+
+:::::{.columns}
+
+:::{.column width="50%"}
+
+**Étape 1 — R (le moteur)**
+
+1. [cran.r-project.org](https://cran.r-project.org)
+2. Choisir son OS (Windows / macOS / Linux)
+3. Installer la version ≥ 4.3
+
+:::
+
+:::{.column width="50%"}
+
+**Étape 2 — RStudio (l'interface)**
+
+1. [posit.co/download/rstudio-desktop](https://posit.co/download/rstudio-desktop/)
+2. Télécharger *RStudio Desktop* (gratuit)
+3. Installer **après** R
+
+:::
+
+:::::
+
+::: {.fragment .callout-important}
+**R ≠ RStudio — une analogie :**
+R est le **moteur** du véhicule, RStudio est le **tableau de bord**.
+Sans le moteur, le tableau de bord ne sert à rien.
+Installez d'abord R, puis RStudio.
+:::
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### L'interface de RStudio — 4 panneaux
+
+:::::{.columns}
+
+:::{.column width="60%"}
+
+::: {.incremental}
+**1 — Éditeur de scripts :** écrire et sauvegarder le code `.R`
+
+**2 — Environnement / Historique :** visualiser les objets en mémoire
+
+**3 — Console :** exécuter des commandes rapidement
+
+**4 — Plots / Files / Packages / Help :** graphiques, fichiers, aide
+:::
+
+::: {.fragment}
+> Raccourci clavier essentiel : **`Ctrl + Entrée`** pour exécuter une ligne depuis l'éditeur.
+:::
+
+:::
+
+:::{.column width="40%"}
+
+![](https://miro.medium.com/v2/resize:fit:1400/1*_L48x5W4k5AupR8nC-qpTw.png){fig-align="right"}
+
+:::
+
+:::::
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### Projets RStudio — La règle absolue
+
+::: {.callout-warning}
+**Ne jamais utiliser `setwd()`.**
+Utiliser **toujours** un projet RStudio.
+:::
+
+::: {.fragment}
+
+**Créer un projet :** `File > New Project > New Directory`
+
+Cela génère un fichier `.Rproj` qui :
+
+::: {.incremental}
+- Fixe le répertoire de travail automatiquement
+- Organise vos fichiers (données, scripts, outputs)
+- Rend le projet **portable** (partageable, reproductible)
+:::
+
+:::
+
+::: {.fragment}
+Structure recommandée d'un projet :
+```
+mon_projet/
+├── mon_projet.Rproj
+├── data/          ← données brutes (jamais modifiées)
+├── scripts/       ← vos fichiers .R ou .qmd
+└── outputs/       ← graphiques, tableaux exportés
+```
+:::
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### Calcul et affectation
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+# R comme calculatrice
+2 + 2
+20 / 6
+sqrt(144)
+2^10
+
+# Affecter une valeur à un objet
+age <- 25
+prenom <- "Marie"
+est_etudiant <- TRUE
+
+# Afficher un objet
+age
+print(prenom)
+
+# Opérations sur objets
+age + 5
+age * 2
+paste("Bonjour", prenom)
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+2 + 2
+20 / 6
+sqrt(144)
+2^10
+
+age <- 25
+prenom <- "Marie"
+est_etudiant <- TRUE
+
+age
+print(prenom)
+
+age + 5
+age * 2
+paste("Bonjour", prenom)
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### Vecteurs — La brique de base de R
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+# Créer un vecteur avec c()
+productions <- c(1200, 850, 2100, 650, 1750)
+iles <- c("Réunion", "Maurice", "Madagascar", "Comores", "Mayotte")
+
+# Indexation (la 1ère position = 1, pas 0 !)
+productions[1]          # première valeur
+iles[2:4]               # indices 2 à 4
+productions[productions > 1000]  # filtre logique
+
+# Vectorisation : opérations sur tout le vecteur à la fois
+productions * 1000      # en kg → en tonnes
+productions / sum(productions) * 100  # en %
+
+# Fonctions statistiques de base
+mean(productions)
+median(productions)
+sum(productions)
+max(productions)
+length(productions)
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+productions <- c(1200, 850, 2100, 650, 1750)
+iles <- c("Réunion", "Maurice", "Madagascar", "Comores", "Mayotte")
+
+productions[1]
+iles[2:4]
+productions[productions > 1000]
+
+productions * 1000
+round(productions / sum(productions) * 100, 1)
+
+mean(productions)
+median(productions)
+sum(productions)
+max(productions)
+length(productions)
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### Types de données
+
+| Type | Exemple | Vérifier |
+|------|---------|----------|
+| Numérique (`numeric`) | `3.14`, `42` | `is.numeric()` |
+| Entier (`integer`) | `1L`, `5L` | `is.integer()` |
+| Texte (`character`) | `"Réunion"` | `is.character()` |
+| Logique (`logical`) | `TRUE`, `FALSE` | `is.logical()` |
+| Facteur (`factor`) | `factor("A", "B")` | `is.factor()` |
+| Manquant (`NA`) | `NA` | `is.na()` |
+
+::: {.fragment}
+
+```{r}
+x <- "2.5"
+class(x)         # "character"
+as.numeric(x)    # conversion : 2.5
+```
+
+:::
+
+::: {.fragment .callout-tip}
+**Facteur vs Texte :** le facteur est un texte avec des **niveaux ordonnés** (ex. tailles S/M/L/XL, notes A/B/C). Indispensable pour les graphiques et modèles statistiques.
+:::
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### Data frames — Le tableau de données
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+# Créer un data frame
+agriculture <- data.frame(
+  ile        = c("Réunion", "Maurice", "Madagascar"),
+  culture    = c("Canne", "Sucre", "Vanille"),
+  production = c(1850000, 350000, 2200),
+  annee      = c(2022, 2022, 2022)
+)
+
+# Explorer
+dim(agriculture)      # dimensions (lignes, colonnes)
+names(agriculture)    # noms des colonnes
+str(agriculture)      # structure complète
+head(agriculture)     # 6 premières lignes
+
+# Accéder à une colonne
+agriculture$ile
+agriculture[, "production"]
+
+# Accéder à une ligne
+agriculture[1, ]
+
+# Accéder à une valeur précise
+agriculture[2, "production"]
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+agriculture <- data.frame(
+  ile        = c("Réunion", "Maurice", "Madagascar"),
+  culture    = c("Canne", "Sucre", "Vanille"),
+  production = c(1850000, 350000, 2200),
+  annee      = c(2022, 2022, 2022)
+)
+
+dim(agriculture)
+names(agriculture)
+str(agriculture)
+head(agriculture)
+agriculture$ile
+agriculture[2, "production"]
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### Structures de données — Récapitulatif
+
+```{mermaid}
+%%| echo: false
+flowchart LR
+    V["<b>Vecteur</b><br/>Séquence de valeurs<br/>du même type<br/>c(1, 2, 3)"]
+    M["<b>Matrice</b><br/>Vecteur en grille 2D<br/>même type<br/>matrix(...)"]
+    D["<b>Data frame / Tibble</b><br/>Tableau à colonnes hétérogènes<br/>data.frame(...)"]
+    L["<b>Liste</b><br/>Conteneur universel<br/>types mixtes<br/>list(...)"]
+
+    V --> M
+    V --> D
+    M --> L
+    D --> L
+    V --> L
+
+    style V fill:#e3f2fd,stroke:#1565c0,color:#000
+    style M fill:#fce4ec,stroke:#c62828,color:#000
+    style D fill:#e8f5e9,stroke:#388e3c,color:#000
+    style L fill:#fff3e0,stroke:#e07b00,color:#000
+```
+
+---
+
+:::{.slide-title}
+Séance 1 — Découverte de R
+:::
+
+### Valeurs manquantes — `NA`
+
+::: {.callout-warning}
+**`NA`** (Not Available) représente une valeur manquante. C'est l'un des pièges les plus fréquents pour les débutants.
+:::
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+x <- c(10, NA, 30, NA, 50)
+
+# Piège classique : NA "contamine" les calculs
+mean(x)          # NA ! pas un nombre
+
+# Solution : ignorer les NA
+mean(x, na.rm = TRUE)   # 30
+sum(x, na.rm = TRUE)    # 90
+
+# Détecter les NA
+is.na(x)         # TRUE aux positions 2 et 4
+sum(is.na(x))    # combien de NA ?
+
+# Filtrer les NA
+x[!is.na(x)]    # garder uniquement les valeurs non-NA
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+x <- c(10, NA, 30, NA, 50)
+mean(x)
+mean(x, na.rm = TRUE)
+sum(x, na.rm = TRUE)
+is.na(x)
+sum(is.na(x))
+x[!is.na(x)]
+```
+
+:::
+
+---
+
+# Séance 2 — Introduction au tidyverse {background-color="#00538b"}
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### Le tidyverse — une collection cohérente
+
+**Le tidyverse** est une collection de packages R partageant la même philosophie, syntaxe et structures de données. Développé par Hadley Wickham et son équipe chez Posit.
+
+::: {.fragment}
+
+| Package | Rôle |
+|---------|------|
+| `readr` | Importer des données (CSV, TSV…) |
+| `dplyr` | Manipuler les tableaux (filtrer, résumer…) |
+| `tidyr` | Restructurer les tableaux (pivot…) |
+| `ggplot2` | Visualiser les données |
+| `stringr` | Manipuler le texte |
+| `forcats` | Gérer les facteurs |
+| `lubridate` | Travailler avec les dates |
+| `purrr` | Programmation fonctionnelle |
+
+:::
+
+::: {.fragment}
+```{r, eval=FALSE}
+library(tidyverse)  # charge les 8 packages d'un coup
+```
+:::
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### La philosophie — Données « tidy »
+
+Hadley Wickham a formalisé le concept de **tidy data** (2014). Les données sont *tidy* si :
+
+::: {.incremental}
+1. **Chaque variable** est dans **une colonne**
+2. **Chaque observation** est dans **une ligne**
+3. **Chaque valeur** occupe **une seule cellule**
+:::
+
+::: {.fragment}
+
+**NON tidy — format large (souvent Excel) :**
+
+| Pays | 2020 | 2021 | 2022 |
+|------|-----:|-----:|-----:|
+| Madagascar | 2 600 | 2 750 | 2 900 |
+| Comores | 7 500 | 7 800 | 8 000 |
+
+**TIDY — format long :**
+
+| pays | annee | production |
+|------|------:|-----------:|
+| Madagascar | 2020 | 2 600 |
+| Madagascar | 2021 | 2 750 |
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### Le pipe `%>%` — Enchaîner les opérations
+
+::: {.incremental}
+- **Sans pipe :** `arrange(summarise(filter(data, pays == "Réunion"), total = sum(prod)), desc(total))`
+- **Avec pipe :** lisible de gauche à droite, comme une recette
+:::
+
+::: {.fragment}
+```{r, eval=FALSE}
+library(tidyverse)
+library(gapminder)
+
+gapminder %>%
+  filter(continent == "Africa") %>%
+  group_by(country) %>%
+  summarise(pib_moy = mean(gdpPercap)) %>%
+  arrange(desc(pib_moy)) %>%
+  head(5)
+```
+:::
+
+::: {.fragment .callout-tip}
+**Raccourci clavier :** `Ctrl + Shift + M` insère `%>%`
+:::
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### Le pipe natif `|>` (R ≥ 4.1)
+
+Depuis R 4.1, R propose son propre pipe intégré, sans charger de package :
+
+| | `%>%` (magrittr) | `|>` (natif R ≥ 4.1) |
+|---|---|---|
+| Disponibilité | Requiert `library(magrittr)` | Intégré à R |
+| Placeholder | `.` | `_` (depuis R 4.2) |
+| Vitesse | Légèrement plus lent | Un peu plus rapide |
+| Usage recommandé | Cours (compatibilité) | Nouveaux projets |
+
+::: {.fragment}
+```{r, eval=FALSE}
+# Les deux font la même chose ici :
+gapminder %>% filter(year == 2007)
+gapminder |> filter(year == 2007)
+```
+:::
+
+::: {.fragment .callout-note}
+Dans ce cours, nous utilisons `%>%` pour des raisons de compatibilité avec les anciennes versions de R que vous pourrez rencontrer.
+:::
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### `readr` — Importer des données
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(tidyverse)
+
+# Importer un CSV avec read_csv() (readr)
+# Note : read_csv() crée un tibble (amélioration du data.frame)
+agri <- read_csv("data/agriculture_tropicale.csv")
+
+# Explorer
+glimpse(agri)         # aperçu compact des colonnes
+head(agri)            # 6 premières lignes
+nrow(agri)            # nombre de lignes
+ncol(agri)            # nombre de colonnes
+names(agri)           # noms des colonnes
+
+# read_csv() vs read.csv() (R de base)
+# read_csv() : plus rapide, messages d'import, tibble
+# read.csv() : data.frame classique, moins de messages
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+agri <- read_csv("../data/agriculture_tropicale.csv")
+glimpse(agri)
+nrow(agri)
+ncol(agri)
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### Les 6 verbes `dplyr`
+
+| Verbe | Action |
+|-------|--------|
+| `filter()` | Sélectionner des **lignes** selon une condition |
+| `select()` | Choisir des **colonnes** |
+| `mutate()` | Créer ou modifier des **colonnes** |
+| `arrange()` | **Trier** les lignes |
+| `summarise()` | **Résumer** en une valeur |
+| `group_by()` + `summarise()` | Résumer **par groupe** |
+
+::: {.fragment}
+```{r, eval=FALSE}
+agri %>%
+  filter(pays == "Madagascar", annee >= 2015) %>%
+  select(culture, annee, production_tonnes) %>%
+  mutate(prod_milliers = production_tonnes / 1000) %>%
+  group_by(culture) %>%
+  summarise(prod_moy = mean(prod_milliers, na.rm = TRUE)) %>%
+  arrange(desc(prod_moy))
+```
+:::
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### `filter()` et `select()`
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+agri <- read_csv("data/agriculture_tropicale.csv")
+
+# filter() : garder des lignes selon condition
+agri %>% filter(pays == "Madagascar")
+agri %>% filter(annee >= 2015, production_tonnes > 1000)
+agri %>% filter(culture %in% c("Vanille", "Café"))
+
+# select() : choisir des colonnes
+agri %>% select(pays, annee, production_tonnes)
+agri %>% select(-rendement_kg_ha)   # exclure une colonne
+agri %>% select(starts_with("p"))   # colonnes commençant par "p"
+
+# Combiner
+agri %>%
+  filter(annee == 2022) %>%
+  select(pays, culture, production_tonnes)
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+agri <- read_csv("../data/agriculture_tropicale.csv")
+agri %>% filter(culture %in% c("Vanille", "Café"), annee == 2022) %>%
+  select(pays, culture, annee, production_tonnes) %>% head(8)
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### `mutate()` et `case_when()`
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+agri %>%
+  mutate(
+    # Calcul simple
+    prod_kg = production_tonnes * 1000,
+    # Catégorisation avec case_when()
+    niveau_prod = case_when(
+      production_tonnes > 100000 ~ "Élevée",
+      production_tonnes > 10000  ~ "Moyenne",
+      TRUE                  ~ "Faible"
+    )
+  ) %>%
+  select(pays, culture, production_tonnes, prod_kg, niveau_prod)
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+agri <- read_csv("../data/agriculture_tropicale.csv")
+agri %>%
+  mutate(
+    prod_kg = production_tonnes * 1000,
+    niveau_prod = case_when(
+      production_tonnes > 100000 ~ "Élevée",
+      production_tonnes > 10000  ~ "Moyenne",
+      TRUE                  ~ "Faible"
+    )
+  ) %>%
+  select(pays, culture, production_tonnes, prod_kg, niveau_prod) %>%
+  head(6)
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### `group_by()` + `summarise()`
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+agri <- read_csv("data/agriculture_tropicale.csv")
+
+# Production totale par pays
+agri %>%
+  group_by(pays) %>%
+  summarise(
+    prod_totale = sum(production_tonnes, na.rm = TRUE),
+    prod_moy    = mean(production_tonnes, na.rm = TRUE),
+    n_obs       = n()
+  ) %>%
+  arrange(desc(prod_totale))
+
+# Production par pays ET par culture
+agri %>%
+  group_by(pays, culture) %>%
+  summarise(prod_moy = mean(production_tonnes, na.rm = TRUE), .groups = "drop") %>%
+  filter(culture == "Vanille")
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+agri <- read_csv("../data/agriculture_tropicale.csv")
+agri %>%
+  group_by(pays) %>%
+  summarise(
+    prod_totale = sum(production_tonnes, na.rm = TRUE),
+    prod_moy    = round(mean(production_tonnes, na.rm = TRUE), 0),
+    n_obs       = n()
+  ) %>%
+  arrange(desc(prod_totale))
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 2 — Introduction au tidyverse
+:::
+
+### `tidyr` — Restructurer les tableaux
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+agri <- read_csv("data/agriculture_tropicale.csv")
+
+# Format large → long avec pivot_longer()
+agri_large <- agri %>%
+  filter(culture == "Canne à sucre") %>%
+  select(pays, annee, production_tonnes) %>%
+  pivot_wider(names_from = annee, values_from = production_tonnes)
+
+agri_large  # colonnes = années
+
+# Revenir au format long avec pivot_longer()
+agri_large %>%
+  pivot_longer(
+    cols      = -pays,
+    names_to  = "annee",
+    values_to = "production_tonnes"
+  )
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+agri <- read_csv("../data/agriculture_tropicale.csv")
+agri_large <- agri %>%
+  filter(culture == "Canne à sucre", annee %in% 2018:2022) %>%
+  select(pays, annee, production_tonnes) %>%
+  pivot_wider(names_from = annee, values_from = production_tonnes)
+agri_large
+
+agri_large %>%
+  pivot_longer(cols = -pays, names_to = "annee", values_to = "production_tonnes") %>%
+  head(6)
+```
+
+:::
+
+---
+
+# Séance 4 — Approfondissement du tidyverse {background-color="#00538b"}
+
+---
+
+:::{.slide-title}
+Séance 4 — Approfondissement du tidyverse
+:::
+
+### Au programme
+
+| Package | Thème |
+|---------|-------|
+| `stringr` | Manipulation de chaînes de caractères |
+| `forcats` | Variables catégorielles (facteurs) |
+| `lubridate` | Dates et heures |
+| `purrr` | Programmation fonctionnelle |
+
+::: {.fragment}
+Tous ces packages font partie du tidyverse et se chargent avec `library(tidyverse)`.
+:::
+
+---
+
+:::{.slide-title}
+Séance 4 — Approfondissement du tidyverse
+:::
+
+### `stringr` — Manipuler le texte
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(tidyverse)
+
+communes <- c("Saint-Denis", "Saint-Pierre", "Le Port", "Saint-Paul", "La Possession")
+
+# Détecter
+str_detect(communes, "Saint")       # TRUE/FALSE
+str_starts(communes, "Le")          # commence par "Le"
+
+# Extraire et remplacer
+str_replace(communes, "Saint-", "St-")
+str_to_upper(communes)
+str_to_lower(communes)
+
+# Combiner avec dplyr
+agri %>%
+  mutate(pays_maj = str_to_upper(pays),
+         est_madagascar = str_detect(pays, "Madagascar"))
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+communes <- c("Saint-Denis", "Saint-Pierre", "Le Port", "Saint-Paul", "La Possession")
+str_detect(communes, "Saint")
+str_starts(communes, "Le")
+str_replace(communes, "Saint-", "St-")
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 4 — Approfondissement du tidyverse
+:::
+
+### `forcats` — Gérer les facteurs
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(tidyverse)
+
+# Problème : ordre alphabétique par défaut dans les graphiques
+agri <- read_csv("data/agriculture_tropicale.csv")
+
+# fct_reorder() : trier par une valeur numérique
+agri %>%
+  filter(annee == 2022) %>%
+  group_by(culture) %>%
+  summarise(prod_moy = mean(production_tonnes, na.rm = TRUE)) %>%
+  mutate(culture = fct_reorder(culture, prod_moy)) %>%  # trier !
+  ggplot(aes(x = prod_moy, y = culture)) +
+  geom_col(fill = "#007acc")
+
+# fct_infreq() : trier par fréquence
+agri %>%
+  mutate(culture = fct_infreq(culture)) %>%
+  count(culture)
+
+# fct_recode() : renommer les niveaux
+agri %>%
+  mutate(culture = fct_recode(culture,
+    "Canne" = "Canne à sucre"))
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE, fig.height=4}
+agri <- read_csv("../data/agriculture_tropicale.csv")
+agri %>%
+  filter(annee == 2022) %>%
+  group_by(culture) %>%
+  summarise(prod_moy = mean(production_tonnes, na.rm = TRUE)) %>%
+  mutate(culture = fct_reorder(culture, prod_moy)) %>%
+  ggplot(aes(x = prod_moy, y = culture)) +
+  geom_col(fill = "#007acc") +
+  labs(x = "Production moyenne (t)", y = NULL, title = "Production en 2022") +
+  theme_minimal()
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 4 — Approfondissement du tidyverse
+:::
+
+### `lubridate` — Travailler avec les dates
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(lubridate)
+
+# Créer des dates depuis du texte
+date1 <- ymd("2024-01-15")     # Année-Mois-Jour
+date2 <- dmy("15/01/2024")     # Jour/Mois/Année
+date3 <- mdy("01-15-2024")     # Mois-Jour-Année
+
+# Extraire des composantes
+year(date1)      # 2024
+month(date1)     # 1
+day(date1)       # 15
+wday(date1, label = TRUE)  # "lun."
+
+# Arithmétique sur les dates
+date1 + days(30)       # 30 jours plus tard
+date1 + months(3)      # 3 mois plus tard
+date2 - date1          # différence en jours
+
+# Application avec dplyr
+agri %>%
+  mutate(annee = as.integer(annee),
+         decennie = (annee %/% 10) * 10)
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+library(lubridate)
+date1 <- ymd("2024-01-15")
+date2 <- dmy("15/01/2024")
+
+year(date1)
+month(date1)
+day(date1)
+wday(date1, label = TRUE)
+
+date1 + days(30)
+date1 + months(3)
+as.numeric(date2 - date1)
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 4 — Approfondissement du tidyverse
+:::
+
+### `purrr` — Programmation fonctionnelle
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(purrr)
+
+# Appliquer une fonction à chaque élément d'une liste
+vecteurs <- list(a = c(1, 2, 3), b = c(4, 5, 6), c = c(7, 8, NA))
+
+# map() retourne une liste
+map(vecteurs, mean)
+
+# map_dbl() retourne un vecteur numérique
+map_dbl(vecteurs, mean, na.rm = TRUE)
+
+# map_chr() retourne un vecteur texte
+map_chr(vecteurs, ~ paste("n =", length(.x)))
+
+# Application : modèle linéaire par pays
+agri %>%
+  group_by(pays) %>%
+  group_split() %>%
+  map(~ lm(production_tonnes ~ annee, data = .x)) %>%
+  map_dbl(~ coef(.x)["annee"])  # tendance annuelle par pays
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE}
+library(purrr)
+vecteurs <- list(a = c(1, 2, 3), b = c(4, 5, 6), c = c(7, 8, NA))
+map(vecteurs, mean)
+map_dbl(vecteurs, mean, na.rm = TRUE)
+map_chr(vecteurs, ~ paste("n =", length(.x)))
+```
+
+:::
+
+---
+
+# Séance 5 — Visualisation avec ggplot2 {background-color="#00538b"}
+
+---
+
+:::{.slide-title}
+Séance 5 — Visualisation avec ggplot2
+:::
+
+### La grammaire graphique
+
+**ggplot2** repose sur une **grammaire des graphiques** (Wilkinson, 2005). Chaque graphique est construit par couches :
+
+::: {.incremental}
+1. **Données** : le tableau à visualiser (`data =`)
+2. **Esthétiques** : les variables encodées (`aes(x =, y =, color =, ...)`)
+3. **Géométries** : le type de graphique (`geom_point()`, `geom_col()`, ...)
+4. **Échelles** : contrôler axes, couleurs, tailles (`scale_*()`)
+5. **Thème** : apparence globale (`theme_minimal()`, `labs()`, ...)
+:::
+
+::: {.fragment}
+```{r, eval=FALSE}
+# Structure de base
+ggplot(data = mon_tableau,          # 1. données
+       mapping = aes(x = col_x,     # 2. esthétiques
+                     y = col_y)) +
+  geom_point()                      # 3. géométrie
+```
+:::
+
+---
+
+:::{.slide-title}
+Séance 5 — Visualisation avec ggplot2
+:::
+
+### Nuage de points — `geom_point()`
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(tidyverse)
+library(gapminder)
+
+gapminder %>%
+  filter(year == 2007) %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp,
+             color = continent, size = pop)) +
+  geom_point(alpha = 0.7) +
+  scale_x_log10() +
+  scale_size_continuous(labels = scales::comma) +
+  labs(
+    title = "Espérance de vie vs PIB par habitant (2007)",
+    x = "PIB par habitant (log)",
+    y = "Espérance de vie (années)",
+    color = "Continent",
+    size = "Population"
+  ) +
+  theme_minimal()
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE, fig.height=5, fig.width=10}
+library(gapminder)
+gapminder %>%
+  filter(year == 2007) %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp,
+             color = continent, size = pop)) +
+  geom_point(alpha = 0.7) +
+  scale_x_log10() +
+  labs(
+    title = "Espérance de vie vs PIB par habitant (2007)",
+    x = "PIB par habitant (échelle log)",
+    y = "Espérance de vie (années)",
+    color = "Continent", size = "Population"
+  ) +
+  theme_minimal()
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 5 — Visualisation avec ggplot2
+:::
+
+### Barres — `geom_col()`
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+agri <- read_csv("data/agriculture_tropicale.csv")
+
+agri %>%
+  filter(annee == 2022) %>%
+  group_by(pays) %>%
+  summarise(prod_totale = sum(production_tonnes, na.rm = TRUE)) %>%
+  mutate(pays = fct_reorder(pays, prod_totale)) %>%
+  ggplot(aes(x = prod_totale, y = pays, fill = pays)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_continuous(labels = scales::comma) +
+  labs(
+    title = "Production agricole totale en 2022",
+    x = "Production (tonnes)", y = NULL
+  ) +
+  theme_minimal()
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE, fig.height=5, fig.width=10}
+agri <- read_csv("../data/agriculture_tropicale.csv")
+agri %>%
+  filter(annee == 2022) %>%
+  group_by(pays) %>%
+  summarise(prod_totale = sum(production_tonnes, na.rm = TRUE)) %>%
+  mutate(pays = fct_reorder(pays, prod_totale)) %>%
+  ggplot(aes(x = prod_totale, y = pays, fill = pays)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_continuous(labels = scales::comma) +
+  labs(title = "Production agricole totale en 2022",
+       x = "Production (tonnes)", y = NULL) +
+  theme_minimal()
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 5 — Visualisation avec ggplot2
+:::
+
+### Séries temporelles — `geom_line()`
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice]{.tabset-titre}
+
+```{r, eval=FALSE}
+agri %>%
+  filter(culture == "Vanille") %>%
+  group_by(annee, pays) %>%
+  summarise(prod = sum(production_tonnes, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = annee, y = prod, color = pays)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  labs(
+    title = "Évolution de la production de vanille",
+    x = "Année", y = "Production (tonnes)",
+    color = "Pays"
+  ) +
+  theme_minimal()
+```
+
+### [Résultats]{.tabset-titre}
+
+```{r, echo=FALSE, fig.height=5, fig.width=10}
+agri %>%
+  filter(culture == "Vanille") %>%
+  group_by(annee, pays) %>%
+  summarise(prod = sum(production_tonnes, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = annee, y = prod, color = pays)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  labs(title = "Évolution de la production de vanille",
+       x = "Année", y = "Production (tonnes)", color = "Pays") +
+  theme_minimal()
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 5 — Visualisation avec ggplot2
+:::
+
+### Distributions — `geom_histogram()` et `geom_boxplot()`
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Exercice histogramme]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(palmerpenguins)
+
+penguins %>%
+  filter(!is.na(flipper_length_mm)) %>%
+  ggplot(aes(x = flipper_length_mm, fill = species)) +
+  geom_histogram(bins = 25, alpha = 0.7, position = "identity") +
+  labs(title = "Distribution de la longueur des nageoires",
+       x = "Longueur (mm)", y = "Effectif", fill = "Espèce") +
+  theme_minimal()
+```
+
+### [Résultat histogramme]{.tabset-titre}
+
+```{r, echo=FALSE, fig.height=5, fig.width=10}
+library(palmerpenguins)
+penguins %>%
+  filter(!is.na(flipper_length_mm)) %>%
+  ggplot(aes(x = flipper_length_mm, fill = species)) +
+  geom_histogram(bins = 25, alpha = 0.7, position = "identity") +
+  labs(title = "Distribution de la longueur des nageoires",
+       x = "Longueur (mm)", y = "Effectif", fill = "Espèce") +
+  theme_minimal()
+```
+
+### [Exercice boxplot]{.tabset-titre}
+
+```{r, eval=FALSE}
+penguins %>%
+  filter(!is.na(body_mass_g)) %>%
+  ggplot(aes(x = species, y = body_mass_g, fill = species)) +
+  geom_boxplot(show.legend = FALSE) +
+  labs(title = "Masse corporelle par espèce de manchot",
+       x = "Espèce", y = "Masse (g)") +
+  theme_minimal()
+```
+
+### [Résultat boxplot]{.tabset-titre}
+
+```{r, echo=FALSE, fig.height=5, fig.width=10}
+penguins %>%
+  filter(!is.na(body_mass_g)) %>%
+  ggplot(aes(x = species, y = body_mass_g, fill = species)) +
+  geom_boxplot(show.legend = FALSE) +
+  labs(title = "Masse corporelle par espèce de manchot",
+       x = "Espèce", y = "Masse (g)") +
+  theme_minimal()
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 5 — Visualisation avec ggplot2
+:::
+
+### Facettes et export
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Facettes]{.tabset-titre}
+
+```{r, eval=FALSE}
+# facet_wrap() : un graphique par sous-groupe
+agri %>%
+  group_by(culture, annee) %>%
+  summarise(prod_moy = mean(production_tonnes, na.rm = TRUE), .groups = "drop") %>%
+  ggplot(aes(x = annee, y = prod_moy)) +
+  geom_line(color = "#007acc") +
+  geom_area(fill = "#007acc", alpha = 0.2) +
+  facet_wrap(~ culture, scales = "free_y") +
+  labs(title = "Évolution par culture",
+       x = "Année", y = "Production moyenne (t)") +
+  theme_minimal()
+```
+
+### [Export]{.tabset-titre}
+
+```{r, eval=FALSE}
+# Créer le graphique
+mon_graphe <- agri %>%
+  ggplot(aes(x = annee, y = production_tonnes)) +
+  geom_line()
+
+# Exporter avec ggsave()
+ggsave(
+  filename = "outputs/production.png",  # ou .pdf, .svg
+  plot     = mon_graphe,
+  width    = 16,      # en cm
+  height   = 10,
+  dpi      = 300      # résolution (300 = qualité impression)
+)
+```
+
+:::
+
+---
+
+# Travaux Pratiques {background-color="#00538b"}
+
+---
+
+:::{.slide-title}
+TP 1 — Manipulation de données agricoles tropicales
+:::
+
+### Présentation des données
+
+**Fichier :** `data/agriculture_tropicale.csv`
+
+- **15 pays** d'Afrique subsaharienne, Océan Indien et Océanie
+- **5 cultures** : Canne à sucre, Vanille, Café, Girofle, Noix de coco
+- **Période :** 2000 à 2022
+- **1 633 observations**
+
+| Variable | Description |
+|----------|-------------|
+| `pays` | Nom du pays |
+| `culture` | Type de culture |
+| `annee` | Année (entier) |
+| `production_tonnes` | Production en tonnes |
+| `rendement_kg_ha` | Rendement en kg/hectare |
+| `superficie_ha` | Superficie cultivée en hectares |
+
+---
+
+:::{.slide-title}
+TP 1 — Manipulation de données agricoles tropicales
+:::
+
+### Structure du TP
+
+| Partie | Thème | Fonctions clés |
+|--------|-------|----------------|
+| 1 | Exploration initiale | `glimpse()`, `summary()`, `count()` |
+| 2 | Nettoyage & transformation | `is.na()`, `mutate()`, `case_when()` |
+| 3 | Filtrage & sélection | `filter()`, `select()` |
+| 4 | Agrégation | `group_by()`, `summarise()`, `arrange()` |
+| 5 | Restructuration | `pivot_longer()`, `pivot_wider()` |
+| 6 | Défi final | Pipeline complet, `write_csv()` |
+
+::: {.fragment .callout-tip}
+**Conseil :** travaillez dans un projet RStudio, avec un fichier `.R` ou `.qmd` propre.
+Commentez chaque étape pour pouvoir vous relire.
+:::
+
+---
+
+:::{.slide-title}
+TP 2 — Visualisation
+:::
+
+### Données biodiversité — Mascareignes
+
+**Fichier :** `data/biodiversite_mascareignes.csv`
+
+- Espèces UICN répertoriées dans les îles des Mascareignes
+- Variables : île, groupe taxonomique, statut UICN, nombre d'espèces
+
+::: {.fragment}
+
+| Partie | Thème | Type de graphique |
+|--------|-------|-----------------|
+| 1 | Choisir le bon graphique | Réflexion guidée |
+| 2 | Développement mondial | Heatmap, Dumbbell chart |
+| 3 | Visualisations écologiques | Morphologie manchots, biodiversité |
+| 4 | Mini-projet individuel | Thème libre |
+
+:::
+
+::: {.fragment .callout-tip}
+**Mini-projet :** produire une visualisation sur les données d'économie de l'Océan Indien ou de biodiversité tropicale, avec un titre et un contexte explicatif.
+:::
+
+---
+
+# Séance 7 — Rmarkdown et Quarto {background-color="#00538b"}
+
+---
+
+:::{.slide-title}
+Séance 7 — Rmarkdown et Quarto
+:::
+
+### Le problème du copier-coller
+
+:::::{.columns}
+
+:::{.column width="50%"}
+
+**Workflow habituel (risqué)**
+
+::: {.incremental}
+1. Analyser dans R
+2. Copier le tableau dans Word
+3. Copier le graphique dans Word
+4. Les données changent...
+5. Recommencer depuis l'étape 1
+6. Oublier de mettre à jour une figure
+7. Erreur dans le rapport final
+:::
+
+:::
+
+:::{.column width="50%"}
+
+::: {.fragment}
+
+**Workflow reproductible (Quarto)**
+
+::: {.incremental}
+1. Écrire texte + code dans un seul fichier `.qmd`
+2. Cliquer "Render"
+3. Le rapport HTML/PDF se génère automatiquement
+4. Les données changent ?
+5. Re-cliquer "Render"
+6. Tout est à jour instantanément
+:::
+
+:::
+
+:::
+
+:::::
+
+---
+
+:::{.slide-title}
+Séance 7 — Rmarkdown et Quarto
+:::
+
+### WYSIWYG vs WYSIWYW
+
+| | WYSIWYG | WYSIWYW |
+|---|---|---|
+| Signification | What You See Is What You Get | What You See Is What You *Write* |
+| Exemples | Word, LibreOffice | Quarto, LaTeX, Markdown |
+| Principe | Cliquer pour formater | Écrire des balises/instructions |
+| Avantage | Intuitif | Séparation contenu/mise en forme |
+| Reproductibilité | Difficile | Totale |
+
+::: {.fragment .callout-note}
+Quarto sépare le **contenu** (ce que vous écrivez) de la **mise en forme** (comment il s'affiche).
+C'est la même idée que HTML/CSS pour le web.
+:::
+
+---
+
+:::{.slide-title}
+Séance 7 — Rmarkdown et Quarto
+:::
+
+### Workflow de compilation Quarto
+
+```{mermaid}
+%%| echo: false
+flowchart LR
+    A["Fichier .qmd<br/>(texte + code R)"]
+    B["knitr<br/>(exécute le code R)"]
+    C["Pandoc<br/>(convertit le Markdown)"]
+    D["HTML / PDF / Word<br/>(document final)"]
+
+    A --> B --> C --> D
+
+    style A fill:#e3f2fd,stroke:#1565c0,color:#000
+    style B fill:#fff3e0,stroke:#e07b00,color:#000
+    style C fill:#fce4ec,stroke:#c62828,color:#000
+    style D fill:#e8f5e9,stroke:#388e3c,color:#000
+```
+
+::: {.fragment}
+
+**Pour rendre un document :** bouton **Render** dans RStudio, ou en console :
+
+```{r, eval=FALSE}
+quarto::quarto_render("mon_rapport.qmd")
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 7 — Rmarkdown et Quarto
+:::
+
+### En-tête YAML et syntaxe Markdown
+
+:::::{.columns}
+
+:::{.column width="50%"}
+
+**En-tête YAML (au sommet du fichier)**
+
+```yaml
+---
+title: "Mon rapport"
+author: "Prénom NOM"
+date: today
+format: html
+execute:
+  echo: false
+  warning: false
+---
+```
+
+:::
+
+:::{.column width="50%"}
+
+**Syntaxe Markdown**
+
+```markdown
+# Titre principal (niveau 1)
+## Sous-titre (niveau 2)
+
+**gras**, *italique*, `code`
+
+- Liste à puces
+  - sous-niveau
+1. Liste numérotée
+
+[Texte du lien](https://url.com)
+
+![](chemin/image.png)
+```
+
+:::
+
+:::::
+
+---
+
+:::{.slide-title}
+Séance 7 — Rmarkdown et Quarto
+:::
+
+### Chunks R — Options clés
+
+```{r, eval=FALSE}
+#| label: mon-graphe
+#| echo: false      # cacher le code, afficher le résultat
+#| eval: true       # exécuter le code
+#| fig-width: 10    # largeur de la figure (pouces)
+#| fig-height: 6    # hauteur de la figure
+#| fig-cap: "Ma figure"  # légende de la figure
+#| cache: false     # ne pas mettre en cache
+
+ggplot(agri, aes(x = annee, y = production_tonnes)) +
+  geom_line()
+```
+
+::: {.fragment}
+**Code inline :** intégrer un résultat dans le texte
+
+```
+La production moyenne est de `r mean(agri$production_tonnes, na.rm = TRUE)` tonnes.
+```
+
+→ La production moyenne est de **1 234** tonnes.
+:::
+
+---
+
+:::{.slide-title}
+Séance 7 — Rmarkdown et Quarto
+:::
+
+### Callouts et tableaux
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Callouts]{.tabset-titre}
+
+```markdown
+::: {.callout-note}
+## Titre de la note
+Contenu de la note...
+:::
+
+::: {.callout-tip}
+## Astuce
+Utilisez les callouts pour mettre en valeur l'information.
+:::
+
+::: {.callout-warning}
+## Attention
+Ce point est important.
+:::
+```
+
+### [kable]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(knitr)
+
+agri %>%
+  filter(annee == 2022) %>%
+  select(pays, culture, production_tonnes) %>%
+  kable(
+    col.names = c("Pays", "Culture", "Production (t)"),
+    format.args = list(big.mark = " ")
+  )
+```
+
+### [flextable]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(flextable)
+
+agri %>%
+  filter(annee == 2022, culture == "Vanille") %>%
+  select(pays, production_tonnes, rendement_kg_ha) %>%
+  flextable() %>%
+  set_header_labels(
+    pays = "Pays",
+    production_tonnes = "Production (t)",
+    rendement_kg_ha = "Rendement (kg/ha)"
+  ) %>%
+  bold(part = "header") %>%
+  color(color = "white", part = "header") %>%
+  bg(bg = "#007acc", part = "header") %>%
+  autofit()
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 7 — Rmarkdown et Quarto
+:::
+
+### Formats de sortie
+
+:::::{.columns}
+
+:::{.column width="50%"}
+
+**HTML**
+
+```yaml
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    theme: cosmo
+    self-contained: true
+```
+
+:::
+
+:::{.column width="50%"}
+
+**PDF (via TinyTeX)**
+
+```yaml
+format:
+  pdf:
+    documentclass: article
+    lang: fr
+    mainfont: "Arial"
+    fontsize: 12pt
+    toc: true
+    number-sections: true
+```
+
+Installer TinyTeX :
+```{r, eval=FALSE}
+install.packages("tinytex")
+tinytex::install_tinytex()
+```
+
+:::
+
+:::::
+
+---
+
+# Séance 8 — Productivité avec l'IA dans R {background-color="#00538b"}
+
+---
+
+:::{.slide-title}
+Séance 8 — IA dans R
+:::
+
+### Les assistants IA — Lesquels utiliser ?
+
+| Assistant | Forces | Limites |
+|-----------|--------|---------|
+| **GitHub Copilot** | Intégré à RStudio, contexte du code | Abonnement payant |
+| **ChatGPT** | Très connu, polyvalent | Données potentiellement périmées |
+| **Claude** | Contexte long, nuancé | Pas d'accès internet en temps réel |
+| **Gemini** | Intégré Google, multimodal | Qualité variable sur le code R |
+| **Ollama (local)** | Données confidentielles, gratuit | Moins puissant que les modèles cloud |
+
+::: {.fragment .callout-warning}
+**Hallucinations :** les IA peuvent inventer des fonctions R qui n'existent pas.
+Vérifiez toujours le code généré avant de l'utiliser.
+:::
+
+---
+
+:::{.slide-title}
+Séance 8 — IA dans R
+:::
+
+### Ce que l'IA fait bien / mal
+
+:::::{.columns}
+
+:::{.column width="50%"}
+
+**L'IA fait BIEN :**
+
+::: {.incremental}
+- Expliquer un message d'erreur
+- Suggérer du code pour une tâche connue
+- Convertir du code (Excel → R)
+- Reformuler un texte
+- Trouver la bonne fonction dans un package
+:::
+
+:::
+
+:::{.column width="50%"}
+
+::: {.fragment}
+
+**L'IA fait MAL :**
+
+::: {.incremental}
+- Analyser des données récentes (coupure de connaissance)
+- Inventer des données ou statistiques
+- Comprendre le contexte spécifique de votre projet
+- Raisonner sur des données confidentielles (cloud)
+- Remplacer votre compréhension du code
+:::
+
+:::
+
+:::
+
+:::::
+
+---
+
+:::{.slide-title}
+Séance 8 — IA dans R
+:::
+
+### Rédiger un bon prompt
+
+::: {.callout-tip}
+**Structure d'un prompt efficace :** Contexte + Tâche + Contraintes + Exemple
+:::
+
+::: {.fragment}
+
+**Prompt mal rédigé :**
+> "Comment faire un graphique ?"
+
+**Prompt bien rédigé :**
+> "Je travaille avec R et ggplot2.
+> J'ai un data frame `agri` avec les colonnes `pays` (character), `annee` (integer) et `production_tonnes` (numeric).
+> Je veux un graphique en ligne montrant l'évolution de la production par pays de 2010 à 2022.
+> Chaque pays doit avoir une couleur différente, avec un thème minimal.
+> Peux-tu me donner le code ggplot2 correspondant ?"
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 8 — IA dans R
+:::
+
+### Débogage avec l'IA
+
+**Fournir à l'IA :** le code + le message d'erreur + ce que vous attendiez
+
+::: {.fragment}
+
+```{r, eval=FALSE}
+# Code avec erreur
+agri %>%
+  filter(annee = 2022)  # Erreur !
+#> Error in `filter()`:
+#> ! We detected a named input.
+#> i This usually means that you've used `=` instead of `==`.
+```
+
+:::
+
+::: {.fragment}
+
+**Prompt de débogage :**
+> "En R avec dplyr, j'ai ce code :
+> `agri %>% filter(annee = 2022)`
+> J'obtiens l'erreur : `Error: We detected a named input. This usually means that you've used = instead of ==.`
+> Je veux filtrer les lignes où l'année est 2022. Qu'est-ce qui ne va pas ?"
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 8 — IA dans R
+:::
+
+### IA locale avec Ollama — Données confidentielles
+
+::: {.callout-note}
+Pour travailler sur des données **confidentielles** (données personnelles, données d'entreprise),
+on ne peut pas les envoyer à un service cloud.
+**Ollama** permet de faire tourner un modèle de langue sur son propre ordinateur.
+:::
+
+::: {.fragment}
+
+**Installation :**
+
+1. Télécharger Ollama sur [ollama.com](https://ollama.com)
+2. Dans un terminal, télécharger un petit modèle :
+
+```bash
+ollama pull qwen2.5:0.5b
+```
+
+3. Installer le package R :
+
+```{r, eval=FALSE}
+install.packages("ollamar")
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 8 — IA dans R
+:::
+
+### Application — Nettoyage d'adresses réunionnaises
+
+**Problème :** Nous avons 101 adresses réunionnaises mal formatées (`adresses_messy.csv`).
+Objectif : les nettoyer pour les géocoder sur [adresse.data.gouv.fr](https://adresse.data.gouv.fr/tools/batch-geocodage).
+
+::: {.panel-tabset .tabset-scroll}
+
+### [Code]{.tabset-titre}
+
+```{r, eval=FALSE}
+library(tidyverse)
+library(ollamar)
+
+# Lire les données
+adresses_brutes <- read_csv("data/adresses_messy.csv")
+
+# Définir les instructions pour le modèle
+system_prompt <- "Tu es un outil expert en nettoyage de données géographiques françaises.
+Ta tâche est de nettoyer l'adresse fournie pour la rendre compatible BAN.
+RÈGLES STRICTES :
+1. Conserve uniquement : le numéro, le type de voie, le nom de la voie, le code postal et la commune.
+2. SUPPRIME impérativement : bâtiment, appartement, étage, 'Chez...', entreprise, BP, résidence.
+3. Réponds UNIQUEMENT avec l'adresse nettoyée sur une seule ligne. Aucun commentaire."
+
+# Nettoyer ligne par ligne avec rowwise() + mutate()
+resultat <- adresses_brutes %>%
+  rowwise() %>%
+  mutate(adresse_nette = chat(
+    model   = "qwen2.5:0.5b",
+    message = list(
+      list(role = "system", content = system_prompt),
+      list(role = "user",   content = adresse_messy)
+    ),
+    output = "text"
+  )) %>%
+  ungroup()
+
+# Exporter pour géocodage BAN
+write_csv(resultat %>% select(adresse_nette), "outputs/adresses_propres.csv")
+```
+
+### [Pipeline complet]{.tabset-titre}
+
+```{mermaid}
+%%| echo: false
+flowchart LR
+    A["adresses_messy.csv<br/>(101 adresses mal formatées)"]
+    B["ollamar::chat()<br/>qwen2.5:0.5b<br/>via Ollama local"]
+    C["adresses_propres.csv<br/>(adresses standardisées)"]
+    D["adresse.data.gouv.fr<br/>/tools/batch-geocodage"]
+    E["Coordonnées GPS<br/>(latitude, longitude)"]
+
+    A --> B --> C --> D --> E
+
+    style A fill:#e3f2fd,stroke:#1565c0,color:#000
+    style B fill:#fff3e0,stroke:#e07b00,color:#000
+    style C fill:#e8f5e9,stroke:#388e3c,color:#000
+    style D fill:#fce4ec,stroke:#c62828,color:#000
+    style E fill:#f3e5f5,stroke:#6a1b9a,color:#000
+```
+
+:::
+
+---
+
+:::{.slide-title}
+Séance 8 — IA dans R
+:::
+
+### Workflow recommandé
+
+```{mermaid}
+%%| echo: false
+flowchart LR
+    A["Problème à résoudre"]
+    B["Lire la documentation<br/>?fonction, help()"]
+    C["Essayer soi-même<br/>avec la doc"]
+    D{Ça marche ?}
+    E["StackOverflow<br/>/ RSeek.org"]
+    F["Demander à l'IA<br/>avec un bon prompt"]
+    G["Analyser et comprendre<br/>le code proposé"]
+    H["Solution validée"]
+
+    A --> B --> C --> D
+    D -- Oui --> H
+    D -- Non --> E --> F --> G --> D
+
+    style H fill:#e8f5e9,stroke:#388e3c,color:#000
+    style A fill:#e3f2fd,stroke:#1565c0,color:#000
+```
+
+::: {.fragment .callout-caution}
+**Ne pas copier-coller aveuglément le code de l'IA.**
+Comprendre ce que le code fait, c'est ce qui vous rendra autonome.
+:::
+
+---
+
+# Merci ! {background-color="#00538b"}
+
+## Ressources pour aller plus loin
+
+| Ressource | Lien |
+|-----------|------|
+| Site du cours | [github.com/joellahy/cours-R](https://github.com/joellahy/cours-R) |
+| R for Data Science (2e) | [r4ds.hadley.nz](https://r4ds.hadley.nz) |
+| Guide R (Larmarange, FR) | [larmarange.github.io/guide-R](https://larmarange.github.io/guide-R/) |
+| utilitR (INSEE, FR) | [book.utilitr.org](https://book.utilitr.org) |
+| Cheatsheets RStudio | [rstudio.github.io/cheatsheets](https://rstudio.github.io/cheatsheets/) |
+| Géocodage BAN | [adresse.data.gouv.fr](https://adresse.data.gouv.fr/tools/batch-geocodage) |
+
+<br>
+
+[Questions ?]{style="font-size: 60pt; font-weight: bold; color: white;"}
