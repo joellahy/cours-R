@@ -33,7 +33,7 @@ library(ggforce)
 
 [`r format(Sys.Date(), "%Y")`]{.absolute}
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/R_logo.svg/724px-R_logo.svg.png){fig-align="right" width="300px"}
+![](https://miro.medium.com/v2/resize:fit:1024/1*6NYlgXgLqXTAkcOd-JGdIw.png){fig-align="right"}
 
 ## Plan du cours
 
@@ -55,14 +55,15 @@ L'apprentissage se fera **essentiellement par la pratique**, avec des données i
 
 ```{r plan_cours, echo=FALSE, fig.width=20, fig.align='center'}
 plan_cours <- tribble(
-  ~titre,                              ~x,    ~y,
-  "1.\nDécouverte\nde R & RStudio",    0,     0,
-  "2.\nIntroduction\nau tidyverse",    3.25, -1.75,
-  "3.\nTidyverse\navancé",             6.5,   0,
-  "4.\nVisualisation\nggplot2",        9.75, -1.75,
-  "TP 1 & 2\nMise en\npratique",      13,    0,
-  "5.\nRmarkdown\n& Quarto",          16.25, -1.75,
-  "6.\nIA\ndans R",                   19.5,   0
+  ~titre,                                    ~x,     ~y,
+  "1.\nDécouverte\nde R & RStudio",          0,      0,
+  "2.\nIntroduction\nau tidyverse",          3.25,  -1.75,
+  "TP 1\nAgriculture\ntropicale",            6.5,    0,
+  "3.\nTidyverse\navancé",                   9.75,  -1.75,
+  "4.\nVisualisation\nggplot2",             13,      0,
+  "TP 2\nBiodiversité\n& Visualisation",   16.25,  -1.75,
+  "5.\nRmarkdown\n& Quarto",               19.5,    0,
+  "6.\nIA\ndans R",                        22.75,  -1.75
 ) %>%
   mutate(sides = 6, r = 2.05, angle = 0)
 
@@ -73,7 +74,7 @@ ggplot(plan_cours) +
   coord_equal() +
   geom_text(aes(x = x, y = y, label = titre, colour = titre),
             size = 6, fontface = "bold", family = "Arial", lineheight = 1.5) +
-  scale_colour_manual(values = c(rep("white", 2), rep("black", 5))) +
+  scale_colour_manual(values = c(rep("white", 3), rep("black", 5))) +
   theme_void() +
   theme(legend.position = "none")
 ```
@@ -458,7 +459,7 @@ Séance 1 — Découverte de R
 
 ```{mermaid}
 %%| echo: false
-flowchart TD
+flowchart LR
     V["<b>Vecteur</b><br/>Séquence de valeurs<br/>du même type<br/>c(1, 2, 3)"]
     M["<b>Matrice</b><br/>Vecteur en grille 2D<br/>même type<br/>matrix(...)"]
     D["<b>Data frame / Tibble</b><br/>Tableau à colonnes hétérogènes<br/>data.frame(...)"]
@@ -716,8 +717,8 @@ Séance 2 — Introduction au tidyverse
 ```{r, eval=FALSE}
 agri %>%
   filter(pays == "Madagascar", annee >= 2015) %>%
-  select(culture, annee, production_t) %>%
-  mutate(prod_milliers = production_t / 1000) %>%
+  select(culture, annee, production_tonnes) %>%
+  mutate(prod_milliers = production_tonnes / 1000) %>%
   group_by(culture) %>%
   summarise(prod_moy = mean(prod_milliers, na.rm = TRUE)) %>%
   arrange(desc(prod_moy))
@@ -741,18 +742,18 @@ agri <- read_csv("data/agriculture_tropicale.csv")
 
 # filter() : garder des lignes selon condition
 agri %>% filter(pays == "Madagascar")
-agri %>% filter(annee >= 2015, production_t > 1000)
+agri %>% filter(annee >= 2015, production_tonnes > 1000)
 agri %>% filter(culture %in% c("Vanille", "Café"))
 
 # select() : choisir des colonnes
-agri %>% select(pays, annee, production_t)
+agri %>% select(pays, annee, production_tonnes)
 agri %>% select(-rendement_kg_ha)   # exclure une colonne
 agri %>% select(starts_with("p"))   # colonnes commençant par "p"
 
 # Combiner
 agri %>%
   filter(annee == 2022) %>%
-  select(pays, culture, production_t)
+  select(pays, culture, production_tonnes)
 ```
 
 ### [Résultats]{.tabset-titre}
@@ -760,7 +761,7 @@ agri %>%
 ```{r, echo=FALSE}
 agri <- read_csv("../data/agriculture_tropicale.csv")
 agri %>% filter(culture %in% c("Vanille", "Café"), annee == 2022) %>%
-  select(pays, culture, annee, production_t) %>% head(8)
+  select(pays, culture, annee, production_tonnes) %>% head(8)
 ```
 
 :::
@@ -781,15 +782,15 @@ Séance 2 — Introduction au tidyverse
 agri %>%
   mutate(
     # Calcul simple
-    prod_kg = production_t * 1000,
+    prod_kg = production_tonnes * 1000,
     # Catégorisation avec case_when()
     niveau_prod = case_when(
-      production_t > 100000 ~ "Élevée",
-      production_t > 10000  ~ "Moyenne",
+      production_tonnes > 100000 ~ "Élevée",
+      production_tonnes > 10000  ~ "Moyenne",
       TRUE                  ~ "Faible"
     )
   ) %>%
-  select(pays, culture, production_t, prod_kg, niveau_prod)
+  select(pays, culture, production_tonnes, prod_kg, niveau_prod)
 ```
 
 ### [Résultats]{.tabset-titre}
@@ -798,14 +799,14 @@ agri %>%
 agri <- read_csv("../data/agriculture_tropicale.csv")
 agri %>%
   mutate(
-    prod_kg = production_t * 1000,
+    prod_kg = production_tonnes * 1000,
     niveau_prod = case_when(
-      production_t > 100000 ~ "Élevée",
-      production_t > 10000  ~ "Moyenne",
+      production_tonnes > 100000 ~ "Élevée",
+      production_tonnes > 10000  ~ "Moyenne",
       TRUE                  ~ "Faible"
     )
   ) %>%
-  select(pays, culture, production_t, prod_kg, niveau_prod) %>%
+  select(pays, culture, production_tonnes, prod_kg, niveau_prod) %>%
   head(6)
 ```
 
@@ -830,8 +831,8 @@ agri <- read_csv("data/agriculture_tropicale.csv")
 agri %>%
   group_by(pays) %>%
   summarise(
-    prod_totale = sum(production_t, na.rm = TRUE),
-    prod_moy    = mean(production_t, na.rm = TRUE),
+    prod_totale = sum(production_tonnes, na.rm = TRUE),
+    prod_moy    = mean(production_tonnes, na.rm = TRUE),
     n_obs       = n()
   ) %>%
   arrange(desc(prod_totale))
@@ -839,7 +840,7 @@ agri %>%
 # Production par pays ET par culture
 agri %>%
   group_by(pays, culture) %>%
-  summarise(prod_moy = mean(production_t, na.rm = TRUE), .groups = "drop") %>%
+  summarise(prod_moy = mean(production_tonnes, na.rm = TRUE), .groups = "drop") %>%
   filter(culture == "Vanille")
 ```
 
@@ -850,8 +851,8 @@ agri <- read_csv("../data/agriculture_tropicale.csv")
 agri %>%
   group_by(pays) %>%
   summarise(
-    prod_totale = sum(production_t, na.rm = TRUE),
-    prod_moy    = round(mean(production_t, na.rm = TRUE), 0),
+    prod_totale = sum(production_tonnes, na.rm = TRUE),
+    prod_moy    = round(mean(production_tonnes, na.rm = TRUE), 0),
     n_obs       = n()
   ) %>%
   arrange(desc(prod_totale))
@@ -877,8 +878,8 @@ agri <- read_csv("data/agriculture_tropicale.csv")
 # Format large → long avec pivot_longer()
 agri_large <- agri %>%
   filter(culture == "Canne à sucre") %>%
-  select(pays, annee, production_t) %>%
-  pivot_wider(names_from = annee, values_from = production_t)
+  select(pays, annee, production_tonnes) %>%
+  pivot_wider(names_from = annee, values_from = production_tonnes)
 
 agri_large  # colonnes = années
 
@@ -887,7 +888,7 @@ agri_large %>%
   pivot_longer(
     cols      = -pays,
     names_to  = "annee",
-    values_to = "production_t"
+    values_to = "production_tonnes"
   )
 ```
 
@@ -897,12 +898,12 @@ agri_large %>%
 agri <- read_csv("../data/agriculture_tropicale.csv")
 agri_large <- agri %>%
   filter(culture == "Canne à sucre", annee %in% 2018:2022) %>%
-  select(pays, annee, production_t) %>%
-  pivot_wider(names_from = annee, values_from = production_t)
+  select(pays, annee, production_tonnes) %>%
+  pivot_wider(names_from = annee, values_from = production_tonnes)
 agri_large
 
 agri_large %>%
-  pivot_longer(cols = -pays, names_to = "annee", values_to = "production_t") %>%
+  pivot_longer(cols = -pays, names_to = "annee", values_to = "production_tonnes") %>%
   head(6)
 ```
 
@@ -996,7 +997,7 @@ agri <- read_csv("data/agriculture_tropicale.csv")
 agri %>%
   filter(annee == 2022) %>%
   group_by(culture) %>%
-  summarise(prod_moy = mean(production_t, na.rm = TRUE)) %>%
+  summarise(prod_moy = mean(production_tonnes, na.rm = TRUE)) %>%
   mutate(culture = fct_reorder(culture, prod_moy)) %>%  # trier !
   ggplot(aes(x = prod_moy, y = culture)) +
   geom_col(fill = "#007acc")
@@ -1019,7 +1020,7 @@ agri <- read_csv("../data/agriculture_tropicale.csv")
 agri %>%
   filter(annee == 2022) %>%
   group_by(culture) %>%
-  summarise(prod_moy = mean(production_t, na.rm = TRUE)) %>%
+  summarise(prod_moy = mean(production_tonnes, na.rm = TRUE)) %>%
   mutate(culture = fct_reorder(culture, prod_moy)) %>%
   ggplot(aes(x = prod_moy, y = culture)) +
   geom_col(fill = "#007acc") +
@@ -1116,7 +1117,7 @@ map_chr(vecteurs, ~ paste("n =", length(.x)))
 agri %>%
   group_by(pays) %>%
   group_split() %>%
-  map(~ lm(production_t ~ annee, data = .x)) %>%
+  map(~ lm(production_tonnes ~ annee, data = .x)) %>%
   map_dbl(~ coef(.x)["annee"])  # tendance annuelle par pays
 ```
 
@@ -1236,7 +1237,7 @@ agri <- read_csv("data/agriculture_tropicale.csv")
 agri %>%
   filter(annee == 2022) %>%
   group_by(pays) %>%
-  summarise(prod_totale = sum(production_t, na.rm = TRUE)) %>%
+  summarise(prod_totale = sum(production_tonnes, na.rm = TRUE)) %>%
   mutate(pays = fct_reorder(pays, prod_totale)) %>%
   ggplot(aes(x = prod_totale, y = pays, fill = pays)) +
   geom_col(show.legend = FALSE) +
@@ -1255,7 +1256,7 @@ agri <- read_csv("../data/agriculture_tropicale.csv")
 agri %>%
   filter(annee == 2022) %>%
   group_by(pays) %>%
-  summarise(prod_totale = sum(production_t, na.rm = TRUE)) %>%
+  summarise(prod_totale = sum(production_tonnes, na.rm = TRUE)) %>%
   mutate(pays = fct_reorder(pays, prod_totale)) %>%
   ggplot(aes(x = prod_totale, y = pays, fill = pays)) +
   geom_col(show.legend = FALSE) +
@@ -1283,7 +1284,7 @@ Séance 5 — Visualisation avec ggplot2
 agri %>%
   filter(culture == "Vanille") %>%
   group_by(annee, pays) %>%
-  summarise(prod = sum(production_t, na.rm = TRUE), .groups = "drop") %>%
+  summarise(prod = sum(production_tonnes, na.rm = TRUE), .groups = "drop") %>%
   ggplot(aes(x = annee, y = prod, color = pays)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
@@ -1301,7 +1302,7 @@ agri %>%
 agri %>%
   filter(culture == "Vanille") %>%
   group_by(annee, pays) %>%
-  summarise(prod = sum(production_t, na.rm = TRUE), .groups = "drop") %>%
+  summarise(prod = sum(production_tonnes, na.rm = TRUE), .groups = "drop") %>%
   ggplot(aes(x = annee, y = prod, color = pays)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
@@ -1391,7 +1392,7 @@ Séance 5 — Visualisation avec ggplot2
 # facet_wrap() : un graphique par sous-groupe
 agri %>%
   group_by(culture, annee) %>%
-  summarise(prod_moy = mean(production_t, na.rm = TRUE), .groups = "drop") %>%
+  summarise(prod_moy = mean(production_tonnes, na.rm = TRUE), .groups = "drop") %>%
   ggplot(aes(x = annee, y = prod_moy)) +
   geom_line(color = "#007acc") +
   geom_area(fill = "#007acc", alpha = 0.2) +
@@ -1406,7 +1407,7 @@ agri %>%
 ```{r, eval=FALSE}
 # Créer le graphique
 mon_graphe <- agri %>%
-  ggplot(aes(x = annee, y = production_t)) +
+  ggplot(aes(x = annee, y = production_tonnes)) +
   geom_line()
 
 # Exporter avec ggsave()
@@ -1445,7 +1446,7 @@ TP 1 — Manipulation de données agricoles tropicales
 | `pays` | Nom du pays |
 | `culture` | Type de culture |
 | `annee` | Année (entier) |
-| `production_t` | Production en tonnes |
+| `production_tonnes` | Production en tonnes |
 | `rendement_kg_ha` | Rendement en kg/hectare |
 | `superficie_ha` | Superficie cultivée en hectares |
 
@@ -1673,7 +1674,7 @@ Séance 7 — Rmarkdown et Quarto
 #| fig-cap: "Ma figure"  # légende de la figure
 #| cache: false     # ne pas mettre en cache
 
-ggplot(agri, aes(x = annee, y = production_t)) +
+ggplot(agri, aes(x = annee, y = production_tonnes)) +
   geom_line()
 ```
 
@@ -1681,7 +1682,7 @@ ggplot(agri, aes(x = annee, y = production_t)) +
 **Code inline :** intégrer un résultat dans le texte
 
 ```
-La production moyenne est de `r mean(agri$production_t, na.rm = TRUE)` tonnes.
+La production moyenne est de `r mean(agri$production_tonnes, na.rm = TRUE)` tonnes.
 ```
 
 → La production moyenne est de **1 234** tonnes.
@@ -1723,7 +1724,7 @@ library(knitr)
 
 agri %>%
   filter(annee == 2022) %>%
-  select(pays, culture, production_t) %>%
+  select(pays, culture, production_tonnes) %>%
   kable(
     col.names = c("Pays", "Culture", "Production (t)"),
     format.args = list(big.mark = " ")
@@ -1737,11 +1738,11 @@ library(flextable)
 
 agri %>%
   filter(annee == 2022, culture == "Vanille") %>%
-  select(pays, production_t, rendement_kg_ha) %>%
+  select(pays, production_tonnes, rendement_kg_ha) %>%
   flextable() %>%
   set_header_labels(
     pays = "Pays",
-    production_t = "Production (t)",
+    production_tonnes = "Production (t)",
     rendement_kg_ha = "Rendement (kg/ha)"
   ) %>%
   bold(part = "header") %>%
@@ -1891,7 +1892,7 @@ Séance 8 — IA dans R
 
 **Prompt bien rédigé :**
 > "Je travaille avec R et ggplot2.
-> J'ai un data frame `agri` avec les colonnes `pays` (character), `annee` (integer) et `production_t` (numeric).
+> J'ai un data frame `agri` avec les colonnes `pays` (character), `annee` (integer) et `production_tonnes` (numeric).
 > Je veux un graphique en ligne montrant l'évolution de la production par pays de 2010 à 2022.
 > Chaque pays doit avoir une couleur différente, avec un thème minimal.
 > Peux-tu me donner le code ggplot2 correspondant ?"
@@ -2043,7 +2044,7 @@ Séance 8 — IA dans R
 
 ```{mermaid}
 %%| echo: false
-flowchart TD
+flowchart LR
     A["Problème à résoudre"]
     B["Lire la documentation<br/>?fonction, help()"]
     C["Essayer soi-même<br/>avec la doc"]
