@@ -79,9 +79,9 @@ glimpse(agri)
 summary(agri)
 
 # 4. Valeurs manquantes par colonne
-agri |>
-  summarise(across(everything(), ~ sum(is.na(.)))) |>
-  pivot_longer(everything(), names_to = "variable", values_to = "nb_na") |>
+agri %>%
+  summarise(across(everything(), ~ sum(is.na(.)))) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "nb_na") %>%
   filter(nb_na > 0)
 
 # 5. Pays et cultures présents
@@ -89,8 +89,8 @@ unique(agri$pays)
 unique(agri$culture)
 
 # Ou de façon plus lisible avec count()
-agri |> count(pays, sort = TRUE)
-agri |> count(culture, sort = TRUE)
+agri %>% count(pays, sort = TRUE)
+agri %>% count(culture, sort = TRUE)
 ```
 :::
 
@@ -117,7 +117,7 @@ agri |> count(culture, sort = TRUE)
 sum(!complete.cases(agri))
 
 # 2. Suppression des lignes avec production manquante
-agri_propre <- agri |>
+agri_propre <- agri %>%
   filter(!is.na(production_tonnes))
 
 # 3. Vérification
@@ -146,7 +146,7 @@ En utilisant `agri_propre` :
 ## Corrigé 2.2
 
 ```r
-agri_enrichi <- agri_propre |>
+agri_enrichi <- agri_propre %>%
   mutate(
     production_ktonnes    = production_tonnes / 1000,
     decennie              = floor(annee / 10) * 10,
@@ -178,15 +178,15 @@ glimpse(agri_enrichi)
 
 ```r
 # 1 et 2 : Canne à sucre > 500 000 t en 2022
-agri_enrichi |>
+agri_enrichi %>%
   filter(culture == "Canne à sucre", annee == 2022,
-         production_tonnes > 500000) |>
+         production_tonnes > 500000) %>%
   arrange(desc(production_tonnes))
 
 # 4 : Pays producteurs de vanille avec rendement > 500 kg/ha
-agri_enrichi |>
-  filter(culture == "Vanille", rendement_kg_ha > 500) |>
-  distinct(pays) |>
+agri_enrichi %>%
+  filter(culture == "Vanille", rendement_kg_ha > 500) %>%
+  distinct(pays) %>%
   nrow()
 ```
 :::
@@ -213,26 +213,26 @@ agri_enrichi |>
 
 ```r
 # 1. Production totale 2022 par pays
-agri_enrichi |>
-  filter(annee == 2022) |>
-  group_by(pays) |>
-  summarise(production_totale = sum(production_tonnes, na.rm = TRUE)) |>
+agri_enrichi %>%
+  filter(annee == 2022) %>%
+  group_by(pays) %>%
+  summarise(production_totale = sum(production_tonnes, na.rm = TRUE)) %>%
   arrange(desc(production_totale))
 
 # 2. Production moyenne et rendement médian par culture
-agri_enrichi |>
-  group_by(culture) |>
+agri_enrichi %>%
+  group_by(culture) %>%
   summarise(
     prod_moyenne_t      = mean(production_tonnes, na.rm = TRUE),
     rendement_median_kg = median(rendement_kg_ha, na.rm = TRUE),
     nb_observations     = n()
-  ) |>
+  ) %>%
   arrange(desc(prod_moyenne_t))
 
 # 3. Production canne à sucre par décennie
-agri_enrichi |>
-  filter(culture == "Canne à sucre") |>
-  group_by(decennie) |>
+agri_enrichi %>%
+  filter(culture == "Canne à sucre") %>%
+  group_by(decennie) %>%
   summarise(
     production_totale_Mt = sum(production_tonnes, na.rm = TRUE) / 1e6
   )
@@ -259,10 +259,10 @@ agri_enrichi |>
 
 ```r
 # 1. Tableau large : production 2022 par pays × culture
-tableau_large <- agri_enrichi |>
-  filter(annee == 2022) |>
-  group_by(pays, culture) |>
-  summarise(production = sum(production_tonnes, na.rm = TRUE), .groups = "drop") |>
+tableau_large <- agri_enrichi %>%
+  filter(annee == 2022) %>%
+  group_by(pays, culture) %>%
+  summarise(production = sum(production_tonnes, na.rm = TRUE), .groups = "drop") %>%
   pivot_wider(
     names_from  = culture,
     values_from = production,
@@ -272,12 +272,12 @@ tableau_large <- agri_enrichi |>
 tableau_large
 
 # 2. Retour au format long
-tableau_large |>
+tableau_large %>%
   pivot_longer(
     cols      = -pays,
     names_to  = "culture",
     values_to = "production_tonnes"
-  ) |>
+  ) %>%
   filter(production_tonnes > 0)
 ```
 :::
@@ -304,18 +304,18 @@ Réalisez une analyse complète en une seule chaîne de pipes qui :
 ## Corrigé 6.1
 
 ```r
-agri |>
+agri %>%
   # 2. Suppression des NA
-  filter(!is.na(production_tonnes), !is.na(rendement_kg_ha)) |>
+  filter(!is.na(production_tonnes), !is.na(rendement_kg_ha)) %>%
   # 3. Filtre 2022 + calcul valeur en millions USD
-  filter(annee == 2022) |>
-  mutate(valeur_mUSD = valeur_production_kUSD / 1000) |>
+  filter(annee == 2022) %>%
+  mutate(valeur_mUSD = valeur_production_kUSD / 1000) %>%
   # 4. Culture avec valeur maximale par pays
-  group_by(pays) |>
-  slice_max(valeur_mUSD, n = 1, with_ties = FALSE) |>
-  ungroup() |>
+  group_by(pays) %>%
+  slice_max(valeur_mUSD, n = 1, with_ties = FALSE) %>%
+  ungroup() %>%
   # 5. Tri
-  select(pays, culture_principale = culture, valeur_mUSD) |>
+  select(pays, culture_principale = culture, valeur_mUSD) %>%
   arrange(desc(valeur_mUSD))
 ```
 :::

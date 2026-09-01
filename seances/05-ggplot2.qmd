@@ -99,7 +99,7 @@ La meilleure façon de comprendre `ggplot2` est de construire un graphique étap
 **Données utilisées** : l'espérance de vie vs le PIB par habitant en 2007 pour 142 pays.
 
 ```{r}
-gm_2007 <- gapminder |> filter(year == 2007)
+gm_2007 <- gapminder %>% filter(year == 2007)
 ```
 
 ```{r}
@@ -150,7 +150,7 @@ ggplot(data = gm_2007, aes(x = gdpPercap, y = lifeExp,
 ::: {.callout-note}
 ## Lire un graphique ggplot2
 Notez la syntaxe :
-- On utilise `+` (et non `|>`) pour ajouter des couches à un graphique
+- On utilise `+` (et non `%>%`) pour ajouter des couches à un graphique
 - Chaque `geom_*()` est une couche indépendante
 - Les options hors de `aes()` s'appliquent à **tous les points** de la même façon
 :::
@@ -186,7 +186,7 @@ ggplot(penguins, aes(x = body_mass_g, y = flipper_length_mm,
 **Ajouter une droite de régression avec `geom_smooth()` :**
 
 ```{r}
-ggplot(penguins |> drop_na(),
+ggplot(penguins %>% drop_na(),
        aes(x = body_mass_g, y = flipper_length_mm, color = species)) +
   geom_point(alpha = 0.5) +
   geom_smooth(method = "lm", se = TRUE) +   # Droite de régression + IC 95%
@@ -206,8 +206,8 @@ Utilisé pour représenter l'**évolution d'une variable dans le temps**.
 # Évolution de l'espérance de vie (1952–2007) dans 5 pays
 pays_selec <- c("France", "China", "Brazil", "Kenya", "Mauritius")
 
-gapminder |>
-  filter(country %in% pays_selec) |>
+gapminder %>%
+  filter(country %in% pays_selec) %>%
   ggplot(aes(x = year, y = lifeExp, color = country, group = country)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2.5) +
@@ -242,8 +242,8 @@ Deux façons de créer un diagramme en barres :
 
 ```{r}
 # Nombre de pays par continent en 2007 avec geom_bar()
-gapminder |>
-  filter(year == 2007) |>
+gapminder %>%
+  filter(year == 2007) %>%
   ggplot(aes(x = fct_infreq(continent),    # fct_infreq : trier par fréquence
              fill = continent)) +
   geom_bar() +
@@ -262,8 +262,8 @@ vanille_2022 <- tibble(
   production_t = c(2900, 2100, 600, 400, 350, 280)
 )
 
-vanille_2022 |>
-  mutate(pays = fct_reorder(pays, production_t)) |>     # Trier les barres
+vanille_2022 %>%
+  mutate(pays = fct_reorder(pays, production_t)) %>%     # Trier les barres
   ggplot(aes(x = production_t, y = pays, fill = pays)) +
   geom_col(show.legend = FALSE) +
   geom_text(aes(label = paste0(production_t, " t")),
@@ -288,8 +288,8 @@ en la découpant en intervalles (*bins*).
 
 ```{r}
 # Distribution du PIB par habitant en 2007 (toutes régions)
-gapminder |>
-  filter(year == 2007) |>
+gapminder %>%
+  filter(year == 2007) %>%
   ggplot(aes(x = gdpPercap, fill = continent)) +
   geom_histogram(
     binwidth = 2500,           # Largeur de chaque barre
@@ -339,9 +339,9 @@ Elle montre cinq statistiques : minimum, Q1, médiane, Q3, maximum.
 
 ```{r}
 # Comparer l'espérance de vie par continent en 2007
-gapminder |>
-  filter(year == 2007) |>
-  mutate(continent = fct_reorder(continent, lifeExp, .fun = median)) |>
+gapminder %>%
+  filter(year == 2007) %>%
+  mutate(continent = fct_reorder(continent, lifeExp, .fun = median)) %>%
   ggplot(aes(x = continent, y = lifeExp, fill = continent)) +
   geom_violin(alpha = 0.3, trim = FALSE) +     # Violin : forme de la distribution
   geom_boxplot(width = 0.25, alpha = 0.8,
@@ -367,8 +367,8 @@ Alternative lissée à l'histogramme - utile pour comparer plusieurs groupes.
 
 ```{r}
 # Densité du PIB/habitant par continent en 2007
-gapminder |>
-  filter(year == 2007) |>
+gapminder %>%
+  filter(year == 2007) %>%
   ggplot(aes(x = gdpPercap, fill = continent, color = continent)) +
   geom_density(alpha = 0.25, linewidth = 1) +
   scale_x_log10(labels = scales::dollar) +
@@ -406,8 +406,8 @@ Les fonctions `scale_*` contrôlent les **axes, les couleurs, les tailles** :
 
 ```{r}
 # Exemple de personnalisation des axes
-gapminder |>
-  filter(year == 2007, continent == "Africa") |>
+gapminder %>%
+  filter(year == 2007, continent == "Africa") %>%
   ggplot(aes(x = gdpPercap, y = lifeExp)) +
   geom_point(aes(size = pop), color = "#e74c3c", alpha = 0.7) +
   scale_x_continuous(
@@ -440,8 +440,8 @@ Un **thème** contrôle l'apparence générale (fond, grille, police, etc.) :
 | `theme_gray()` | Fond gris (défaut de ggplot2) |
 
 ```{r}
-p <- gapminder |>
-  filter(year == 2007) |>
+p <- gapminder %>%
+  filter(year == 2007) %>%
   ggplot(aes(gdpPercap, lifeExp, color = continent)) +
   geom_point(alpha = 0.7) +
   scale_x_log10() +
@@ -482,8 +482,8 @@ C'est l'une des fonctionnalités les plus puissantes de `ggplot2`.
 
 ```{r}
 # Évolution du PIB vs espérance de vie pour 4 années clés
-gapminder |>
-  filter(year %in% c(1962, 1977, 1992, 2007)) |>
+gapminder %>%
+  filter(year %in% c(1962, 1977, 1992, 2007)) %>%
   ggplot(aes(x = gdpPercap, y = lifeExp,
              color = continent, size = pop)) +
   geom_point(alpha = 0.6) +
@@ -509,9 +509,9 @@ gapminder |>
 
 ```{r}
 # Grille : continent en ligne, décennie en colonne
-gapminder |>
+gapminder %>%
   filter(continent %in% c("Africa", "Asia", "Europe"),
-         year %in% c(1967, 1987, 2007)) |>
+         year %in% c(1967, 1987, 2007)) %>%
   ggplot(aes(x = gdpPercap, y = lifeExp, color = continent)) +
   geom_point(alpha = 0.5, size = 1.5) +
   geom_smooth(method = "lm", se = FALSE,
@@ -594,8 +594,8 @@ library(gapminder)
 library(palmerpenguins)
 
 # Partie 1 : Afrique 2007
-afr_2007 <- gapminder |>
-  filter(continent == "Africa", year == 2007) |>
+afr_2007 <- gapminder %>%
+  filter(continent == "Africa", year == 2007) %>%
   mutate(sous_med = lifeExp < median(lifeExp))
 
 ggplot(afr_2007, aes(x = gdpPercap, y = lifeExp,
@@ -613,8 +613,8 @@ ggplot(afr_2007, aes(x = gdpPercap, y = lifeExp,
   theme_minimal()
 
 # Partie 2 : Manchots
-penguins |>
-  drop_na(bill_length_mm) |>
+penguins %>%
+  drop_na(bill_length_mm) %>%
   ggplot(aes(x = species, y = bill_length_mm, fill = species)) +
   geom_violin(alpha = 0.4, trim = FALSE) +
   geom_boxplot(width = 0.2, alpha = 0.8) +
@@ -626,9 +626,9 @@ penguins |>
   theme(legend.position = "bottom")
 
 # Partie 3 : Population totale par continent
-gapminder |>
-  group_by(continent, year) |>
-  summarise(pop_totale_M = sum(pop) / 1e6, .groups = "drop") |>
+gapminder %>%
+  group_by(continent, year) %>%
+  summarise(pop_totale_M = sum(pop) / 1e6, .groups = "drop") %>%
   ggplot(aes(x = year, y = pop_totale_M,
              color = continent, group = continent)) +
   geom_line(linewidth = 1.2) +

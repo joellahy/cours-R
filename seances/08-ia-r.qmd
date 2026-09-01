@@ -123,8 +123,8 @@ Quand votre code renvoie une erreur, fournissez à l'IA :
 library(tidyverse)
 library(gapminder)
 
-gapminder |>
-  filter(continent = "Africa") |>
+gapminder %>%
+  filter(continent = "Africa") %>%
   summarise(moy = mean(lifeExp))
 ```
 
@@ -149,8 +149,8 @@ Qu'est-ce qui ne va pas et comment le corriger ?
 **Solution :**
 ```r
 # Correction : utiliser == (égalité) et non = (affectation)
-gapminder |>
-  filter(continent == "Africa") |>    # == et non =
+gapminder %>%
+  filter(continent == "Africa") %>%    # == et non =
   summarise(moy = mean(lifeExp))
 ```
 
@@ -172,12 +172,12 @@ mean_pib <- mean(data_afr$gdpPercap)
 
 **Résultat attendu de l'IA :**
 ```r
-data_afr <- gapminder |>
-  filter(continent == "Africa", year == 2007) |>
+data_afr <- gapminder %>%
+  filter(continent == "Africa", year == 2007) %>%
   arrange(desc(lifeExp))
 
-mean_pib <- data_afr |>
-  summarise(mean_pib = mean(gdpPercap)) |>
+mean_pib <- data_afr %>%
+  summarise(mean_pib = mean(gdpPercap)) %>%
   pull(mean_pib)
 ```
 
@@ -187,7 +187,7 @@ mean_pib <- data_afr |>
 ```
 Explique-moi ce que fait cette ligne R et dans quel contexte l'utiliser :
 
-gapminder |> group_by(continent) |> group_map(~ lm(lifeExp ~ year, data = .x))
+gapminder %>% group_by(continent) %>% group_map(~ lm(lifeExp ~ year, data = .x))
 ```
 
 ### Cas 3 - Générer de la documentation
@@ -281,14 +281,14 @@ et expliquez ce qui ne va pas.
 ```r
 # Code 1
 library(tidyverse)
-gapminder |>
-  filter(year = 2007) |>
+gapminder %>%
+  filter(year = 2007) %>%
   select(country, gdpPercap, lifeExp)
 
 # Code 2
 library(gapminder)
-gapminder |>
-  group_by(continent) |>
+gapminder %>%
+  group_by(continent) %>%
   summarize(
     moy_pib = mean(gdpPercap),
     moy_vie = mean(lifeEXP)     # attention à la casse
@@ -315,13 +315,13 @@ Rédigez un prompt précis pour demander à une IA de :
 
 ```r
 # Code 1 : = doit être ==
-gapminder |>
-  filter(year == 2007) |>
+gapminder %>%
+  filter(year == 2007) %>%
   select(country, gdpPercap, lifeExp)
 
 # Code 2 : lifeEXP doit être lifeExp (R est sensible à la casse)
-gapminder |>
-  group_by(continent) |>
+gapminder %>%
+  group_by(continent) %>%
   summarize(
     moy_pib = mean(gdpPercap),
     moy_vie = mean(lifeExp)

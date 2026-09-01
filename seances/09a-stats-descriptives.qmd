@@ -132,8 +132,8 @@ Dans ce cas, la médiane est bien plus représentative de la « vie quotidienne 
 
 ```{r}
 # Comparaison des moyennes par espèce
-penguins |>
-  group_by(species) |>
+penguins %>%
+  group_by(species) %>%
   summarise(
     n             = sum(!is.na(body_mass_g)),
     masse_moyenne = round(mean(body_mass_g, na.rm = TRUE), 0),
@@ -166,8 +166,8 @@ median(penguins$body_mass_g, na.rm = TRUE)
 # Si moyenne > médiane → distribution asymétrique à droite (queue à droite)
 # Si moyenne < médiane → distribution asymétrique à gauche (queue à gauche)
 # Si moyenne ≈ médiane → distribution approximativement symétrique
-penguins |>
-  group_by(species) |>
+penguins %>%
+  group_by(species) %>%
   summarise(
     masse_moy = round(mean(body_mass_g, na.rm = TRUE), 0),
     masse_med = round(median(body_mass_g, na.rm = TRUE), 0),
@@ -244,8 +244,8 @@ sd(penguins$body_mass_g, na.rm = TRUE)    # Écart-type (en g)
 
 ```{r}
 # Comparaison de la dispersion par espèce
-penguins |>
-  group_by(species) |>
+penguins %>%
+  group_by(species) %>%
   summarise(
     masse_moy = round(mean(body_mass_g, na.rm = TRUE), 0),
     masse_sd  = round(sd(body_mass_g, na.rm = TRUE), 0),
@@ -292,8 +292,8 @@ Un CV élevé indique une grande variabilité **relative**.
 
 ```{r}
 # Comparaison de la variabilité relative des variables morphologiques
-penguins |>
-  select(where(is.numeric)) |>
+penguins %>%
+  select(where(is.numeric)) %>%
   summarise(across(
     everything(),
     list(
@@ -302,11 +302,11 @@ penguins |>
       cv  = ~ round(sd(.x, na.rm = TRUE) / mean(.x, na.rm = TRUE) * 100, 1)
     ),
     .names = "{.col}_{.fn}"
-  )) |>
+  )) %>%
   pivot_longer(everything(),
                names_to  = c("variable", "stat"),
-               names_sep = "_(?=[^_]+$)") |>
-  pivot_wider(names_from = stat, values_from = value) |>
+               names_sep = "_(?=[^_]+$)") %>%
+  pivot_wider(names_from = stat, values_from = value) %>%
   arrange(desc(cv))
 ```
 
@@ -314,8 +314,8 @@ penguins |>
 
 ```{r}
 # Résumé complet par espèce
-penguins |>
-  group_by(species) |>
+penguins %>%
+  group_by(species) %>%
   summarise(
     n       = sum(!is.na(body_mass_g)),
     min     = min(body_mass_g, na.rm = TRUE),
@@ -356,9 +356,9 @@ table(penguins$species, penguins$island)
 
 ```{r}
 # Version tidyverse plus lisible
-penguins |>
-  count(species, island) |>
-  mutate(pct = round(n / sum(n) * 100, 1)) |>
+penguins %>%
+  count(species, island) %>%
+  mutate(pct = round(n / sum(n) * 100, 1)) %>%
   arrange(desc(n))
 ```
 
@@ -369,8 +369,8 @@ penguins |>
 ### Distribution d'une variable continue : histogramme
 
 ```{r}
-penguins |>
-  drop_na(body_mass_g) |>
+penguins %>%
+  drop_na(body_mass_g) %>%
   ggplot(aes(x = body_mass_g, fill = species)) +
   geom_histogram(
     binwidth = 250,
@@ -394,12 +394,12 @@ penguins |>
 ### Comparaison de groupes : boxplot
 
 ```{r}
-penguins |>
-  drop_na(sex, body_mass_g) |>
+penguins %>%
+  drop_na(sex, body_mass_g) %>%
   mutate(
     species = fct_reorder(species, body_mass_g, .fun = median),
     sex_fr  = recode(sex, "male" = "Mâle", "female" = "Femelle")
-  ) |>
+  ) %>%
   ggplot(aes(x = species, y = body_mass_g, fill = sex_fr)) +
   geom_boxplot(
     outlier.shape  = 21,
@@ -438,8 +438,8 @@ penguins |>
 ### Variables qualitatives : diagramme en barres
 
 ```{r}
-penguins |>
-  count(species, island) |>
+penguins %>%
+  count(species, island) %>%
   ggplot(aes(x = island, y = n, fill = species)) +
   geom_col(position = "fill", color = "white", width = 0.7) +
   scale_y_continuous(labels = scales::percent) +
@@ -463,13 +463,13 @@ La **corrélation** entre deux variables numériques indique si elles tendent à
 - $r \approx 0$ : pas de relation linéaire détectable
 
 ```{r}
-penguins |>
-  select(bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g) |>
-  drop_na() |>
-  cor() |>
-  as.data.frame() |>
-  rownames_to_column("var1") |>
-  pivot_longer(-var1, names_to = "var2", values_to = "r") |>
+penguins %>%
+  select(bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g) %>%
+  drop_na() %>%
+  cor() %>%
+  as.data.frame() %>%
+  rownames_to_column("var1") %>%
+  pivot_longer(-var1, names_to = "var2", values_to = "r") %>%
   ggplot(aes(x = var1, y = var2, fill = r)) +
   geom_tile(color = "white", linewidth = 0.5) +
   geom_text(aes(label = round(r, 2)), size = 4, fontface = "bold") +
@@ -547,36 +547,36 @@ skim(biodiv)
 sum(is.na(biodiv))
 
 # 2. Tendance centrale par île
-biodiv |>
-  group_by(ile) |>
+biodiv %>%
+  group_by(ile) %>%
   summarise(
     total   = sum(nb_especes),
     mediane = median(nb_especes),
     moyenne = round(mean(nb_especes), 1),
     .groups = "drop"
-  ) |>
+  ) %>%
   arrange(desc(total))
 
 # 3. Dispersion par groupe taxonomique
-biodiv |>
-  group_by(groupe) |>
+biodiv %>%
+  group_by(groupe) %>%
   summarise(
     sd    = round(sd(nb_especes), 1),
     cv    = round(sd(nb_especes) / mean(nb_especes) * 100, 1),
     .groups = "drop"
-  ) |>
+  ) %>%
   arrange(desc(cv))
 
 # 4. Tableau croisé île × statut
-biodiv |>
-  group_by(ile, statut) |>
-  summarise(total = sum(nb_especes), .groups = "drop") |>
+biodiv %>%
+  group_by(ile, statut) %>%
+  summarise(total = sum(nb_especes), .groups = "drop") %>%
   pivot_wider(names_from = statut, values_from = total, values_fill = 0)
 
 # 5a. Histogramme
-biodiv |>
-  group_by(ile) |>
-  summarise(total = sum(nb_especes)) |>
+biodiv %>%
+  group_by(ile) %>%
+  summarise(total = sum(nb_especes)) %>%
   ggplot(aes(x = reorder(ile, total), y = total, fill = ile)) +
   geom_col(show.legend = FALSE) +
   coord_flip() +
@@ -585,8 +585,8 @@ biodiv |>
   theme_minimal()
 
 # 5b. Boxplot par groupe
-biodiv |>
-  mutate(groupe = fct_reorder(groupe, nb_especes, .fun = median)) |>
+biodiv %>%
+  mutate(groupe = fct_reorder(groupe, nb_especes, .fun = median)) %>%
   ggplot(aes(x = groupe, y = nb_especes, fill = groupe)) +
   geom_boxplot(show.legend = FALSE, alpha = 0.8) +
   coord_flip() +
@@ -595,10 +595,10 @@ biodiv |>
   theme_minimal()
 
 # 5c. Barplot statuts UICN
-biodiv |>
-  group_by(ile, statut) |>
-  summarise(total = sum(nb_especes), .groups = "drop") |>
-  mutate(statut = factor(statut, levels = c("Non menacé", "NT", "VU", "EN", "CR"))) |>
+biodiv %>%
+  group_by(ile, statut) %>%
+  summarise(total = sum(nb_especes), .groups = "drop") %>%
+  mutate(statut = factor(statut, levels = c("Non menacé", "NT", "VU", "EN", "CR"))) %>%
   ggplot(aes(x = ile, y = total, fill = statut)) +
   geom_col(position = "fill", color = "white") +
   scale_y_continuous(labels = scales::percent) +

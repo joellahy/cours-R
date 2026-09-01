@@ -127,8 +127,8 @@ Un **facteur** est une variable catégorielle avec des niveaux (`levels`) ordonn
 library(gapminder)
 
 # Transformer en facteur
-gm_2007 <- gapminder |>
-  filter(year == 2007) |>
+gm_2007 <- gapminder %>%
+  filter(year == 2007) %>%
   mutate(continent = as.factor(continent))
 
 levels(gm_2007$continent)
@@ -139,18 +139,18 @@ nlevels(gm_2007$continent)
 
 ```{r}
 # fct_infreq() : ordre décroissant d'effectif
-gm_2007 |>
-  mutate(continent = fct_infreq(continent)) |>
+gm_2007 %>%
+  mutate(continent = fct_infreq(continent)) %>%
   count(continent)
 ```
 
 ```{r}
 # fct_reorder() : ordre selon une autre variable (utile pour les graphiques)
-gm_2007 |>
+gm_2007 %>%
   mutate(
     continent = fct_reorder(continent, lifeExp, .fun = median)
-  ) |>
-  group_by(continent) |>
+  ) %>%
+  group_by(continent) %>%
   summarise(esp_vie_med = median(lifeExp))
 ```
 
@@ -158,8 +158,8 @@ gm_2007 |>
 # fct_relevel() : ordre manuel
 niveaux_manuels <- c("Africa", "Americas", "Asia", "Europe", "Oceania")
 
-gm_2007 |>
-  mutate(continent = fct_relevel(continent, niveaux_manuels)) |>
+gm_2007 %>%
+  mutate(continent = fct_relevel(continent, niveaux_manuels)) %>%
   count(continent)
 ```
 
@@ -167,34 +167,34 @@ gm_2007 |>
 
 ```{r}
 # fct_recode() : renommer des niveaux
-gm_2007 |>
+gm_2007 %>%
   mutate(continent_fr = fct_recode(continent,
     "Afrique"   = "Africa",
     "Amériques" = "Americas",
     "Asie"      = "Asia",
     "Europe"    = "Europe",
     "Océanie"   = "Oceania"
-  )) |>
+  )) %>%
   count(continent_fr)
 ```
 
 ```{r}
 # fct_collapse() : regrouper plusieurs niveaux
-gm_2007 |>
+gm_2007 %>%
   mutate(
     zone = fct_collapse(continent,
       "Global South" = c("Africa", "Americas", "Asia"),
       "Global North" = c("Europe", "Oceania")
     )
-  ) |>
+  ) %>%
   count(zone)
 ```
 
 ```{r}
 # fct_lump_n() : regrouper les niveaux rares dans "Other"
-gapminder |>
-  filter(year == 2007) |>
-  mutate(region = fct_lump_n(country, n = 5, other_level = "Autres")) |>
+gapminder %>%
+  filter(year == 2007) %>%
+  mutate(region = fct_lump_n(country, n = 5, other_level = "Autres")) %>%
   count(region, sort = TRUE)
 ```
 
@@ -255,7 +255,7 @@ cyclones <- tibble(
   categorie = c(4L, 4L, 2L, 3L, 3L)
 )
 
-cyclones |>
+cyclones %>%
   mutate(
     annee  = year(date),
     mois   = month(date, label = TRUE),
@@ -271,16 +271,16 @@ cyclones |>
 set.seed(42)
 climat_reunion <- tibble(
   date          = seq(ymd("2015-01-01"), ymd("2024-12-01"), by = "month"),
-  precipitations = round(rnorm(120, mean = 150, sd = 80) |> pmax(0), 1),
+  precipitations = round(rnorm(120, mean = 150, sd = 80) %>% pmax(0), 1),
   temperature    = round(25 - 4 * cos(2 * pi * (month(
     seq(ymd("2015-01-01"), ymd("2024-12-01"), by = "month")) - 1) / 12) +
     rnorm(120, 0, 0.5), 1)
 )
 
 # Résumé par mois (toutes années confondues)
-climat_reunion |>
-  mutate(mois = month(date, label = TRUE)) |>
-  group_by(mois) |>
+climat_reunion %>%
+  mutate(mois = month(date, label = TRUE)) %>%
+  group_by(mois) %>%
   summarise(
     pluie_moy  = mean(precipitations),
     temp_moy   = mean(temperature)
@@ -307,22 +307,22 @@ en remplacement des boucles `for`.
 
 ```{r}
 # Calculer des statistiques sur plusieurs variables numériques
-gapminder |>
-  filter(year == 2007) |>
-  select(lifeExp, pop, gdpPercap) |>
+gapminder %>%
+  filter(year == 2007) %>%
+  select(lifeExp, pop, gdpPercap) %>%
   map_dbl(mean)
 ```
 
 ```{r}
 # Appliquer une fonction à chaque continent
-gapminder |>
-  filter(year == 2007) |>
-  split(~continent) |>
+gapminder %>%
+  filter(year == 2007) %>%
+  split(~continent) %>%
   map(~ summarise(.x,
     nb_pays      = n(),
     pib_med      = median(gdpPercap),
     esp_vie_moy  = mean(lifeExp)
-  )) |>
+  )) %>%
   list_rbind(names_to = "continent")
 ```
 
@@ -340,7 +340,7 @@ params <- list(
 )
 
 # Croissance exponentielle : N(t) = N0 * e^(r*t)
-croissance <- params |>
+croissance <- params %>%
   map_dfr(function(p) {
     tibble(
       t = 0:20,
@@ -411,43 +411,43 @@ library(gapminder)
 library(lubridate)
 
 # 1. stringr
-gapminder |>
+gapminder %>%
   mutate(
     country_clean = str_replace_all(country, " ", "_"),
     first_letter  = str_sub(country, 1, 1)
-  ) |>
-  select(country, country_clean, first_letter) |>
-  distinct() |>
+  ) %>%
+  select(country, country_clean, first_letter) %>%
+  distinct() %>%
   head(10)
 
 # 2. forcats
-gapminder |>
-  filter(year == 2007) |>
+gapminder %>%
+  filter(year == 2007) %>%
   mutate(
     income_group = cut(gdpPercap,
       breaks = c(0, 2000, 10000, Inf),
       labels = c("Faible", "Intermédiaire", "Élevé")
     ),
     income_group = fct_relevel(income_group, "Faible", "Intermédiaire", "Élevé")
-  ) |>
+  ) %>%
   count(income_group)
 
 # 3. lubridate
-gapminder |>
+gapminder %>%
   mutate(
     date_ref    = ymd(paste0(year, "-01-01")),
     jours_since = as.numeric(date_ref - ymd("1900-01-01"))
-  ) |>
-  select(country, year, date_ref, jours_since) |>
+  ) %>%
+  select(country, year, date_ref, jours_since) %>%
   head(10)
 
 # 4. purrr - modèles linéaires par continent
-gapminder |>
-  group_by(continent) |>
-  group_map(~ lm(lifeExp ~ year, data = .x)) |>
-  set_names(levels(factor(gapminder$continent))) |>
+gapminder %>%
+  group_by(continent) %>%
+  group_map(~ lm(lifeExp ~ year, data = .x)) %>%
+  set_names(levels(factor(gapminder$continent))) %>%
   map_dfr(~ tibble(coef_year = coef(.x)["year"]),
-          .id = "continent") |>
+          .id = "continent") %>%
   arrange(desc(coef_year))
 ```
 :::

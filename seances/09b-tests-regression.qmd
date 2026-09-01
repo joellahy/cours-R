@@ -124,12 +124,12 @@ Le **test t** (ou test de Student) compare la **moyenne** de deux groupes indép
 
 ```{r}
 # Préparer les données
-penguins_mf <- penguins |>
+penguins_mf <- penguins %>%
   drop_na(sex, body_mass_g)
 
 # Résumé par sexe (pour visualiser la différence avant de tester)
-penguins_mf |>
-  group_by(sex) |>
+penguins_mf %>%
+  group_by(sex) %>%
   summarise(
     n       = n(),
     moy     = round(mean(body_mass_g), 0),
@@ -141,8 +141,8 @@ penguins_mf |>
 
 ```{r}
 # Visualiser avant de tester !
-penguins_mf |>
-  mutate(sex_fr = recode(sex, "male" = "Mâle", "female" = "Femelle")) |>
+penguins_mf %>%
+  mutate(sex_fr = recode(sex, "male" = "Mâle", "female" = "Femelle")) %>%
   ggplot(aes(x = sex_fr, y = body_mass_g, fill = sex_fr)) +
   geom_violin(alpha = 0.4, trim = FALSE) +
   geom_boxplot(width = 0.25, alpha = 0.8) +
@@ -251,8 +251,8 @@ round(chi2$residuals, 2)
 
 ```{r}
 # Visualisation du tableau croisé
-penguins |>
-  count(species, island) |>
+penguins %>%
+  count(species, island) %>%
   ggplot(aes(x = island, y = species, fill = n)) +
   geom_tile(color = "white", linewidth = 0.5) +
   geom_text(aes(label = n), size = 5, fontface = "bold") +
@@ -372,7 +372,7 @@ F-statistic: 1070 on 1 and 340 DF,  p-value: < 2.2e-16
 
 ```{r}
 # Présentation propre avec broom
-tidy(modele1, conf.int = TRUE) |>
+tidy(modele1, conf.int = TRUE) %>%
   mutate(across(where(is.numeric), ~ round(.x, 3)))
 ```
 
@@ -383,8 +383,8 @@ glance(modele1)
 
 ```{r}
 # Visualiser le modèle
-penguins |>
-  drop_na(flipper_length_mm, body_mass_g) |>
+penguins %>%
+  drop_na(flipper_length_mm, body_mass_g) %>%
   ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point(aes(color = species), alpha = 0.6, size = 2.5) +
   geom_smooth(method = "lm", color = "black", se = TRUE,
@@ -433,10 +433,10 @@ Les coefficients de `speciesChinstrap` et `speciesGentoo` mesurent la différenc
 ```{r}
 # Comparaison des deux modèles
 bind_rows(
-  glance(modele1) |> mutate(modele = "Modèle 1 : nageoires seulement"),
-  glance(modele2) |> mutate(modele = "Modèle 2 : nageoires + bec + espèce")
-) |>
-  select(modele, r.squared, adj.r.squared, AIC, sigma) |>
+  glance(modele1) %>% mutate(modele = "Modèle 1 : nageoires seulement"),
+  glance(modele2) %>% mutate(modele = "Modèle 2 : nageoires + bec + espèce")
+) %>%
+  select(modele, r.squared, adj.r.squared, AIC, sigma) %>%
   mutate(across(where(is.numeric), ~ round(.x, 3)))
 ```
 
@@ -470,7 +470,7 @@ plot(modele1)
 
 ```{r}
 # QQ-plot avec ggplot2
-augment(modele1) |>
+augment(modele1) %>%
   ggplot(aes(sample = .resid)) +
   stat_qq(alpha = 0.5) +
   stat_qq_line(color = "red", linewidth = 1) +
@@ -537,8 +537,8 @@ library(broom)
 # 1. Test t : bill_length_mm entre Adelie et Chinstrap
 # H₀ : longueur du bec identique dans les deux espèces
 # H₁ : longueur du bec différente
-adelie_chinstrap <- penguins |>
-  filter(species %in% c("Adelie", "Chinstrap")) |>
+adelie_chinstrap <- penguins %>%
+  filter(species %in% c("Adelie", "Chinstrap")) %>%
   drop_na(bill_length_mm)
 
 t_bec <- t.test(bill_length_mm ~ species, data = adelie_chinstrap)
@@ -567,9 +567,9 @@ cor.test(~ bill_length_mm + bill_depth_mm, data = penguins, use = "complete.obs"
 # → r négatif ! (bec long = moins profond globalement)
 
 # Par espèce (la vraie relation)
-penguins |>
-  drop_na(bill_length_mm, bill_depth_mm) |>
-  group_by(species) |>
+penguins %>%
+  drop_na(bill_length_mm, bill_depth_mm) %>%
+  group_by(species) %>%
   summarise(r = cor(bill_length_mm, bill_depth_mm), .groups = "drop")
 # → r positif dans chaque espèce : paradoxe de Simpson !
 
@@ -583,8 +583,8 @@ glance(mod1)
 # 5. Modèle multiple
 mod2 <- lm(flipper_length_mm ~ body_mass_g + species + sex, data = penguins)
 tidy(mod2)
-bind_rows(glance(mod1), glance(mod2)) |>
-  select(adj.r.squared, AIC) |>
+bind_rows(glance(mod1), glance(mod2)) %>%
+  select(adj.r.squared, AIC) %>%
   mutate(modele = c("M1", "M2"))
 # R² ajusté plus élevé et AIC plus faible pour M2 → meilleur
 

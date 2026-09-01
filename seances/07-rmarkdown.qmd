@@ -198,8 +198,8 @@ Un **chunk** est un bloc de code R inséré dans le document.
 library(ggplot2)
 library(gapminder)
 
-gapminder |>
-  dplyr::filter(year == 2007) |>
+gapminder %>%
+  dplyr::filter(year == 2007) %>%
   ggplot(aes(x = gdpPercap)) +
   geom_histogram(bins = 30, fill = "#3498db") +
   scale_x_log10() +
@@ -276,13 +276,13 @@ library(knitr)
 library(gapminder)
 library(tidyverse)
 
-gapminder |>
-  filter(year == 2007, continent == "Africa") |>
-  arrange(desc(lifeExp)) |>
-  head(10) |>
+gapminder %>%
+  filter(year == 2007, continent == "Africa") %>%
+  arrange(desc(lifeExp)) %>%
+  head(10) %>%
   select(Pays = country,
          `Esp. de vie` = lifeExp,
-         `PIB/hab.` = gdpPercap) |>
+         `PIB/hab.` = gdpPercap) %>%
   kable(
     caption = "Top 10 des pays africains par espérance de vie (2007)",
     digits  = 1,
@@ -295,24 +295,24 @@ gapminder |>
 ```r
 library(gt)
 
-gapminder |>
-  filter(year == 2007, continent == "Africa") |>
-  arrange(desc(lifeExp)) |>
-  head(10) |>
-  select(country, lifeExp, gdpPercap, pop) |>
-  gt() |>
+gapminder %>%
+  filter(year == 2007, continent == "Africa") %>%
+  arrange(desc(lifeExp)) %>%
+  head(10) %>%
+  select(country, lifeExp, gdpPercap, pop) %>%
+  gt() %>%
   tab_header(
     title    = "Top 10 des pays africains",
     subtitle = "Par espérance de vie, 2007"
-  ) |>
-  fmt_number(columns = gdpPercap, decimals = 0, sep_mark = " ") |>
-  fmt_number(columns = pop, decimals = 0, sep_mark = " ") |>
+  ) %>%
+  fmt_number(columns = gdpPercap, decimals = 0, sep_mark = " ") %>%
+  fmt_number(columns = pop, decimals = 0, sep_mark = " ") %>%
   cols_label(
     country   = "Pays",
     lifeExp   = "Esp. de vie",
     gdpPercap = "PIB/hab. (USD)",
     pop       = "Population"
-  ) |>
+  ) %>%
   tab_source_note("Source : Gapminder Foundation")
 ```
 
@@ -448,7 +448,7 @@ library(tidyverse)
 library(gapminder)
 library(knitr)
 
-afrique_2007 <- gapminder |>
+afrique_2007 <- gapminder %>%
   filter(continent == "Africa", year == 2007)
 ```
 
@@ -458,11 +458,11 @@ afrique_2007 <- gapminder |>
 
 ```{{r}}
 #| label: tableau-top10
-afrique_2007 |>
-  arrange(desc(lifeExp)) |>
-  head(10) |>
+afrique_2007 %>%
+  arrange(desc(lifeExp)) %>%
+  head(10) %>%
   select(Pays = country, `Esp. vie (ans)` = lifeExp,
-         `PIB/hab. (USD)` = gdpPercap) |>
+         `PIB/hab. (USD)` = gdpPercap) %>%
   kable(digits = 1)
 ```
 
@@ -473,8 +473,8 @@ afrique_2007 |>
 #| fig-cap: "Évolution de l'espérance de vie (1952–2007)"
 pays <- c("Kenya", "Nigeria", "Ethiopia", "South Africa", "Mauritius")
 
-gapminder |>
-  filter(country %in% pays) |>
+gapminder %>%
+  filter(country %in% pays) %>%
   ggplot(aes(x = year, y = lifeExp, color = country)) +
   geom_line(linewidth = 1) +
   geom_point() +

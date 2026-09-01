@@ -7,7 +7,7 @@ title: "Séance 2 - Introduction au tidyverse"
 À l'issue de cette séance, vous serez capable de :
 
 - Expliquer ce qu'est le tidyverse et la philosophie des données « tidy »
-- Utiliser le pipe `|>` pour enchaîner des opérations lisiblement
+- Utiliser le pipe `%>%` pour enchaîner des opérations lisiblement
 - Importer des fichiers CSV avec `readr`
 - Filtrer, sélectionner, transformer, trier et résumer un tableau avec `dplyr`
 - Restructurer un tableau entre format large et long avec `tidyr`
@@ -90,22 +90,22 @@ Le format large est pratique pour la saisie humaine, mais difficile à analyser 
 
 ---
 
-## Le pipe `|>` - enchaîner des opérations lisiblement
+## Le pipe `%>%` — enchaîner des opérations lisiblement
 
 Le **pipe** est l'une des innovations les plus importantes du tidyverse.
 Il se lit comme « *puis* » et permet d'écrire du code **de gauche à droite**,
 dans l'ordre naturel des opérations.
 
-**Principe :** `x |> f()` est équivalent à `f(x)`
+**Principe :** `x %>% f()` est équivalent à `f(x)`
 
 ```{r}
 # Sans pipe : lecture de droite à gauche, difficile à suivre
 round(mean(sqrt(c(4, 9, 16, 25, 36))), digits = 2)
 
 # Avec le pipe : lecture de gauche à droite, naturelle
-c(4, 9, 16, 25, 36) |>
-  sqrt() |>
-  mean() |>
+c(4, 9, 16, 25, 36) %>%
+  sqrt() %>%
+  mean() %>%
   round(digits = 2)
 ```
 
@@ -126,22 +126,45 @@ arrange(
 )
 
 # Avec le pipe (lisible comme une recette)
-gapminder |>
-  filter(continent == "Africa") |>
-  group_by(country) |>
-  summarise(pib_moy = mean(gdpPercap)) |>
+gapminder %>%
+  filter(continent == "Africa") %>%
+  group_by(country) %>%
+  summarise(pib_moy = mean(gdpPercap)) %>%
   arrange(desc(pib_moy))
 ```
 
+::: {.callout-tip}
+## Raccourci clavier
+
+`Ctrl + Shift + M` (Windows/Linux) ou `Cmd + Shift + M` (Mac) insère automatiquement `%>%` dans RStudio.
+
+> Pour que ce raccourci génère `%>%` et non `|>`, vérifiez dans RStudio :
+> **Tools → Global Options → Code → Use native pipe operator** → décochez la case.
+:::
+
+### Le pipe natif de R `|>` {#sec-pipe-natif}
+
+Depuis **R 4.1 (mai 2021)**, R dispose de son propre opérateur pipe, **sans avoir besoin du tidyverse**.
+
+```{r}
+# Le pipe natif fonctionne de la même façon
+c(4, 9, 16, 25) |> sqrt() |> mean() |> round(2)
+
+# Équivalent avec %>%
+c(4, 9, 16, 25) %>% sqrt() %>% mean() %>% round(2)
+```
+
 ::: {.callout-note}
-## Deux pipes en R
+## `%>%` vs `|>` — quelles différences ?
 
-- `|>` : le pipe **natif** de R, disponible depuis R 4.1 (2021). Recommandé.
-- `%>%` : le pipe du package `magrittr`, chargé avec le tidyverse. Très répandu dans les codes existants.
+| | `%>%` (magrittr) | `|>` (natif R ≥ 4.1) |
+|---|---|---|
+| **Disponibilité** | Requiert `library(magrittr)` ou `library(tidyverse)` | Intégré à R, aucun package |
+| **Placeholder** | `.` (ex : `x %>% f(., y)`) | `_` depuis R 4.2 (ex : `x |> f(y = _)`) |
+| **Vitesse** | Légèrement plus lent | Un peu plus rapide |
+| **Usage** | Très répandu dans les codes existants | De plus en plus adopté |
 
-Les deux fonctionnent de la même façon dans 95% des cas.
-Dans ce cours, nous utilisons `|>`.
-Raccourci RStudio : `Ctrl + Shift + M` (ou `Cmd + Shift + M` sur Mac).
+Dans ce cours, nous utilisons `%>%` (magrittr) car c'est le plus courant dans la documentation et les ressources en ligne. Vous rencontrerez `|>` dans des codes récents — les deux sont interchangeables dans la grande majorité des situations.
 :::
 
 ---
@@ -245,7 +268,7 @@ knitr::include_graphics("../images/dplyr.png")
 
 ```{r}
 # Données africaines pour 2007
-gapminder |>
+gapminder %>%
   filter(continent == "Africa", year == 2007)
 ```
 
@@ -272,7 +295,7 @@ Combiner plusieurs conditions :
 pays_oi <- c("Madagascar", "Mozambique", "Tanzania", "Kenya",
              "Comoros", "Mauritius", "Reunion")
 
-gapminder |>
+gapminder %>%
   filter(country %in% pays_oi,
          year == 2007,
          lifeExp > 65)
@@ -280,7 +303,7 @@ gapminder |>
 
 ```{r}
 # Pays très pauvres OU à très faible espérance de vie (2007)
-gapminder |>
+gapminder %>%
   filter(year == 2007,
          gdpPercap < 500 | lifeExp < 50)
 ```
@@ -293,13 +316,13 @@ gapminder |>
 
 ```{r}
 # Garder seulement certaines colonnes
-gapminder |>
+gapminder %>%
   select(country, year, lifeExp, gdpPercap)
 ```
 
 ```{r}
 # Renommer en sélectionnant
-gapminder |>
+gapminder %>%
   select(pays = country,
          annee = year,
          esperance_vie = lifeExp,
@@ -308,11 +331,11 @@ gapminder |>
 
 ```{r}
 # Supprimer une colonne avec -
-gapminder |>
+gapminder %>%
   select(-continent)
 
 # Supprimer plusieurs colonnes
-gapminder |>
+gapminder %>%
   select(-continent, -pop)
 ```
 
@@ -329,7 +352,7 @@ gapminder |>
 
 ```{r}
 # Sélectionner uniquement les colonnes numériques
-gapminder |>
+gapminder %>%
   select(country, year, where(is.numeric))
 ```
 
@@ -342,18 +365,18 @@ Les autres colonnes sont conservées.
 
 ```{r}
 # Calculer le PIB total (PIB/hab × population)
-gapminder |>
-  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) |>
-  select(country, year, pib_total_mrd) |>
-  filter(year == 2007) |>
-  arrange(desc(pib_total_mrd)) |>
+gapminder %>%
+  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) %>%
+  select(country, year, pib_total_mrd) %>%
+  filter(year == 2007) %>%
+  arrange(desc(pib_total_mrd)) %>%
   head(8)
 ```
 
 ```{r}
 # Créer plusieurs colonnes à la fois
-gapminder |>
-  filter(year == 2007) |>
+gapminder %>%
+  filter(year == 2007) %>%
   mutate(
     pib_total_mrd  = (gdpPercap * pop) / 1e9,
     pop_millions   = pop / 1e6,
@@ -364,7 +387,7 @@ gapminder |>
       gdpPercap < 12500             ~ "Revenu intermédiaire haut",
       TRUE                          ~ "Revenu élevé"     # Condition par défaut
     )
-  ) |>
+  ) %>%
   count(categorie_pib)
 ```
 
@@ -394,18 +417,18 @@ Par défaut, le tri est **croissant**. Utilisez `desc()` pour un tri **décroiss
 
 ```{r}
 # Les 10 pays africains avec la plus longue espérance de vie en 2007
-gapminder |>
-  filter(continent == "Africa", year == 2007) |>
-  arrange(desc(lifeExp)) |>
-  head(10) |>
+gapminder %>%
+  filter(continent == "Africa", year == 2007) %>%
+  arrange(desc(lifeExp)) %>%
+  head(10) %>%
   select(country, lifeExp, gdpPercap)
 ```
 
 ```{r}
 # Tri sur plusieurs colonnes (continent d'abord, puis PIB décroissant)
-gapminder |>
-  filter(year == 2007) |>
-  arrange(continent, desc(gdpPercap)) |>
+gapminder %>%
+  filter(year == 2007) %>%
+  arrange(continent, desc(gdpPercap)) %>%
   select(continent, country, gdpPercap)
 ```
 
@@ -418,8 +441,8 @@ Il est presque toujours utilisé **après `group_by()`**.
 
 ```{r}
 # Résumé global de l'espérance de vie en 2007
-gapminder |>
-  filter(year == 2007) |>
+gapminder %>%
+  filter(year == 2007) %>%
   summarise(
     nb_pays          = n(),                         # Compter les lignes
     esp_vie_moy      = mean(lifeExp),
@@ -452,27 +475,27 @@ Elle permet de calculer des statistiques **pour chaque groupe** d'observations.
 
 ```{r}
 # Statistiques par continent en 2007
-gapminder |>
-  filter(year == 2007) |>
-  group_by(continent) |>
+gapminder %>%
+  filter(year == 2007) %>%
+  group_by(continent) %>%
   summarise(
     nb_pays       = n(),
     pib_median    = round(median(gdpPercap), 0),
     esp_vie_moy   = round(mean(lifeExp), 1),
     pop_totale_M  = round(sum(pop) / 1e6, 0)
-  ) |>
+  ) %>%
   arrange(desc(pib_median))
 ```
 
 ```{r}
 # Évolution de l'espérance de vie médiane par décennie
-gapminder |>
-  mutate(decennie = floor(year / 10) * 10) |>
-  group_by(continent, decennie) |>
+gapminder %>%
+  mutate(decennie = floor(year / 10) * 10) %>%
+  group_by(continent, decennie) %>%
   summarise(
     esp_vie_med = round(median(lifeExp), 1),
     .groups     = "drop"    # Supprimer le groupement après summarise
-  ) |>
+  ) %>%
   filter(continent %in% c("Africa", "Asia", "Europe"))
 ```
 
@@ -485,8 +508,8 @@ des comportements inattendus dans les opérations suivantes.
 
 ```{r}
 # count() : raccourci pour group_by() + summarise(n = n())
-gapminder |>
-  filter(year == 2007) |>
+gapminder %>%
+  filter(year == 2007) %>%
   count(continent, sort = TRUE)
 ```
 
@@ -496,15 +519,15 @@ gapminder |>
 
 ```{r}
 # Analyse des pays d'Afrique de l'Est : top 5 en termes de PIB total en 2007
-gapminder |>
+gapminder %>%
   # 1. Filtrer l'Afrique pour 2007
-  filter(continent == "Africa", year == 2007) |>
+  filter(continent == "Africa", year == 2007) %>%
   # 2. Calculer le PIB total
-  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) |>
+  mutate(pib_total_mrd = (gdpPercap * pop) / 1e9) %>%
   # 3. Sélectionner les colonnes utiles
-  select(country, lifeExp, gdpPercap, pib_total_mrd) |>
+  select(country, lifeExp, gdpPercap, pib_total_mrd) %>%
   # 4. Trier par PIB total décroissant
-  arrange(desc(pib_total_mrd)) |>
+  arrange(desc(pib_total_mrd)) %>%
   # 5. Garder le top 5
   slice_head(n = 5)
 ```
@@ -528,10 +551,10 @@ info_climatique <- tibble(
 
 # left_join : on garde TOUS les pays de gapminder (table de gauche)
 # et on ajoute les infos climatiques quand elles existent
-gapminder |>
-  filter(year == 2007) |>
-  left_join(info_climatique, by = "country") |>
-  filter(!is.na(zone_climatique)) |>
+gapminder %>%
+  filter(year == 2007) %>%
+  left_join(info_climatique, by = "country") %>%
+  filter(!is.na(zone_climatique)) %>%
   select(country, lifeExp, gdpPercap, zone_climatique)
 ```
 
@@ -566,12 +589,12 @@ vanille_large <- tibble(
 vanille_large
 
 # Conversion en format long (tidy)
-vanille_long <- vanille_large |>
+vanille_long <- vanille_large %>%
   pivot_longer(
     cols      = `2020`:`2022`,   # Colonnes à pivoter
     names_to  = "annee",          # Nom de la nouvelle colonne "variable"
     values_to = "production_t"    # Nom de la nouvelle colonne "valeur"
-  ) |>
+  ) %>%
   mutate(annee = as.integer(annee))
 
 vanille_long
@@ -581,7 +604,7 @@ vanille_long
 
 ```{r}
 # L'opération inverse : reconstituer le tableau large
-vanille_long |>
+vanille_long %>%
   pivot_wider(
     names_from  = annee,
     values_from = production_t
@@ -596,7 +619,7 @@ observations <- tibble(
   id_obs = c("REU-2024-001", "MDG-2024-042", "COM-2023-017")
 )
 
-observations |>
+observations %>%
   separate(
     col  = id_obs,
     into = c("pays", "annee", "numero"),
@@ -610,13 +633,13 @@ observations |>
 
 ```{r}
 # Analyse complète : comment le développement a-t-il évolué en Afrique ?
-gapminder |>
-  filter(continent == "Africa") |>
+gapminder %>%
+  filter(continent == "Africa") %>%
   mutate(
     pib_total_mrd = (gdpPercap * pop) / 1e9,
     decennie      = paste0(floor(year / 10) * 10, "s")
-  ) |>
-  group_by(decennie) |>
+  ) %>%
+  group_by(decennie) %>%
   summarise(
     nb_pays         = n_distinct(country),
     esp_vie_moy     = round(mean(lifeExp), 1),
@@ -657,8 +680,8 @@ library(gapminder)
 library(tidyverse)
 
 # 1 à 6 : Analyse Asie 2007
-gapminder |>
-  filter(continent == "Asia", year == 2007) |>
+gapminder %>%
+  filter(continent == "Asia", year == 2007) %>%
   mutate(
     pib_total_mrd = (gdpPercap * pop) / 1e9,
     categorie = case_when(
@@ -666,21 +689,21 @@ gapminder |>
       gdpPercap >= 5000 & gdpPercap < 20000 ~ "5 000–20 000 USD",
       gdpPercap >= 20000             ~ "> 20 000 USD"
     )
-  ) |>
-  group_by(categorie) |>
+  ) %>%
+  group_by(categorie) %>%
   summarise(
     nb_pays       = n(),
     esp_vie_med   = round(median(lifeExp), 1),
     pib_hab_med   = round(median(gdpPercap), 0),
     .groups = "drop"
-  ) |>
+  ) %>%
   arrange(desc(pib_hab_med))
 
 # 7. Bonus : tableau pivot
-gapminder |>
-  mutate(decennie = paste0(floor(year / 10) * 10, "s")) |>
-  group_by(continent, decennie) |>
-  summarise(esp_vie_med = round(median(lifeExp), 1), .groups = "drop") |>
+gapminder %>%
+  mutate(decennie = paste0(floor(year / 10) * 10, "s")) %>%
+  group_by(continent, decennie) %>%
+  summarise(esp_vie_med = round(median(lifeExp), 1), .groups = "drop") %>%
   pivot_wider(names_from = decennie, values_from = esp_vie_med)
 ```
 :::

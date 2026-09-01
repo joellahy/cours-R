@@ -100,7 +100,7 @@ Apprenez ces raccourcis dès maintenant, ils vous feront gagner un temps consid�
 | Exécuter la ligne courante | `Ctrl + Entrée` | `Cmd + Entrée` |
 | Exécuter tout le script | `Ctrl + Shift + Entrée` | `Cmd + Shift + Entrée` |
 | Insérer `<-` (opérateur d'affectation) | `Alt + -` | `Option + -` |
-| Insérer le pipe `|>` | `Ctrl + Shift + M` | `Cmd + Shift + M` |
+| Insérer le pipe `%>%` | `Ctrl + Shift + M` | `Cmd + Shift + M` |
 | Commenter / décommenter une ligne | `Ctrl + Shift + C` | `Cmd + Shift + C` |
 | Indenter automatiquement | `Ctrl + I` | `Cmd + I` |
 | Autocomplétion | `Tab` | `Tab` |
