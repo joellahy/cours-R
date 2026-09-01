@@ -301,7 +301,7 @@ pour un usage ponctuel. L'API REST existe pour les intégrations automatisées.
 ### Résumé du pipeline
 
 ```{mermaid}
-#| echo: false
+%%| echo: false
 flowchart LR
     A[📄 adresses_messy.csv] --> B["🤖 Ollama local\nqwen2.5:0.5b\n(données privées)"]
     B --> C[📄 adresses_ban.csv]
@@ -353,7 +353,7 @@ Recommandation : essayez d'abord par vous-même, utilisez l'IA comme second reco
 ## Workflow recommandé
 
 ```{mermaid}
-#| echo: false
+%%| echo: false
 flowchart TD
     A[1 — Définir clairement la tâche] --> B[2 — Chercher dans la documentation]
     B --> C[3 — Essayer par vous-même]

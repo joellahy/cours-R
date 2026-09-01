@@ -91,7 +91,7 @@ Cela signifie seulement qu'on n'a pas assez de données pour le détecter.
 ### Choisir le bon test
 
 ```{mermaid}
-#| echo: false
+%%| echo: false
 flowchart TD
     Q[Quelle est votre question ?] --> A
     Q --> R
