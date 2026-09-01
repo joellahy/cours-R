@@ -38,11 +38,6 @@ book:
         - seances/03-tp1.qmd
         - seances/06-tp2.qmd
 
-    - part: "Statistiques avec R (RNET)"
-      chapters:
-        - seances/09a-stats-descriptives.qmd
-        - seances/09b-tests-regression.qmd
-
     - references.qmd
 
   navbar:
