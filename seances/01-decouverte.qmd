@@ -526,6 +526,31 @@ Les listes servent principalement à stocker les résultats de fonctions complex
 vous utiliserez surtout des **data frames** (ou des **tibbles** avec le tidyverse).
 :::
 
+### Récapitulatif — les structures de données en R
+
+```{mermaid}
+%%| echo: false
+flowchart TD
+    V["Vecteur\nséquence de valeurs du même type\nex : c(1, 2, 3) ou c('a', 'b')"]
+
+    M["Matrice\nvecteurs de même longueur\ndisposés en lignes et colonnes\n(même type)"]
+
+    D["Data frame / Tibble\nvecteurs de même longueur\ndisposés en colonnes\n(types différents autorisés)"]
+
+    L["Liste\nconteneur universel\npeut mélanger vecteurs, matrices,\ndata frames, autres listes…"]
+
+    V -->|plusieurs vecteurs de même type| M
+    V -->|plusieurs vecteurs, types variés| D
+    M --> L
+    D --> L
+    V --> L
+
+    style V fill:#e3f2fd,stroke:#1565c0
+    style M fill:#fce4ec,stroke:#c62828
+    style D fill:#e8f5e9,stroke:#388e3c
+    style L fill:#fff3e0,stroke:#e07b00
+```
+
 ---
 
 ## Gestion des valeurs manquantes (`NA`)
