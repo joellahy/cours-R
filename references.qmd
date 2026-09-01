@@ -89,19 +89,24 @@ title: "Ressources et références"
 
 ## Aide-mémoires (cheatsheets)
 
-Les aide-mémoires officiels de Posit sont une ressource indispensable :
+Les aide-mémoires officiels de Posit sont une ressource indispensable.
+Tous les fichiers sont disponibles sur
+[github.com/rstudio/cheatsheets](https://github.com/rstudio/cheatsheets) ;
+les liens ci-dessous pointent vers la version HTML interactive ou PDF hébergée sur
+[rstudio.github.io/cheatsheets](https://rstudio.github.io/cheatsheets/).
 
-| Package | Télécharger |
-|---------|-------------|
-| Base R | [PDF](https://iqss.github.io/dss-workshops/R/Rintro/base-r-cheat-sheet.pdf) |
-| RStudio IDE | [PDF](https://posit.co/wp-content/uploads/2022/10/rstudio-ide-1.pdf) |
-| `dplyr` | [PDF](https://posit.co/wp-content/uploads/2022/10/data-transformation-1.pdf) |
-| `tidyr` | [PDF](https://posit.co/wp-content/uploads/2022/10/tidyr.pdf) |
-| `ggplot2` | [PDF](https://posit.co/wp-content/uploads/2022/10/data-visualization-2.1.pdf) |
-| `stringr` | [PDF](https://posit.co/wp-content/uploads/2022/10/strings-1.pdf) |
-| `lubridate` | [PDF](https://posit.co/wp-content/uploads/2022/10/lubridate-2.1.pdf) |
-| `purrr` | [PDF](https://posit.co/wp-content/uploads/2022/10/purrr.pdf) |
-| Rmarkdown | [PDF](https://posit.co/wp-content/uploads/2022/10/rmarkdown-1.pdf) |
+| Package | HTML | PDF |
+|---------|------|-----|
+| Base R | [HTML](https://rstudio.github.io/cheatsheets/base-r.html) | [PDF](https://rstudio.github.io/cheatsheets/base-r.pdf) |
+| RStudio IDE | [HTML](https://rstudio.github.io/cheatsheets/rstudio-ide.html) | [PDF](https://rstudio.github.io/cheatsheets/rstudio-ide.pdf) |
+| `dplyr` | [HTML](https://rstudio.github.io/cheatsheets/data-transformation.html) | [PDF](https://rstudio.github.io/cheatsheets/data-transformation.pdf) |
+| `tidyr` | [HTML](https://rstudio.github.io/cheatsheets/tidyr.html) | [PDF](https://rstudio.github.io/cheatsheets/tidyr.pdf) |
+| `ggplot2` | [HTML](https://rstudio.github.io/cheatsheets/data-visualization.html) | [PDF](https://rstudio.github.io/cheatsheets/data-visualization.pdf) |
+| `stringr` | [HTML](https://rstudio.github.io/cheatsheets/strings.html) | [PDF](https://rstudio.github.io/cheatsheets/strings.pdf) |
+| `lubridate` | [HTML](https://rstudio.github.io/cheatsheets/lubridate.html) | [PDF](https://rstudio.github.io/cheatsheets/lubridate.pdf) |
+| `purrr` | [HTML](https://rstudio.github.io/cheatsheets/purrr.html) | [PDF](https://rstudio.github.io/cheatsheets/purrr.pdf) |
+| R Markdown | [HTML](https://rstudio.github.io/cheatsheets/rmarkdown.html) | [PDF](https://rstudio.github.io/cheatsheets/rmarkdown.pdf) |
+| Quarto | [HTML](https://rstudio.github.io/cheatsheets/quarto.html) | [PDF](https://rstudio.github.io/cheatsheets/quarto.pdf) |
 
 ---
 
