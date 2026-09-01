@@ -221,82 +221,57 @@ head(adresses_brutes, 5)
 
 #### Le prompt système
 
-On donne au modèle des instructions précises **une seule fois** (prompt système),
-puis on lui envoie les adresses **en lot** — plus rapide que de traiter chaque adresse séparément.
+On définit les instructions du modèle **une seule fois** dans un objet texte :
 
 ```{r}
 #| eval: false
-prompt_systeme <- "Tu es un outil expert en nettoyage d'adresses postales françaises.
-On va te fournir une liste d'adresses numérotées : '[1] Adresse', '[2] Adresse', etc.
-Ton unique tâche : renvoyer la liste nettoyée pour la géolocalisation (BAN).
-
-RÈGLES :
-1. Garde uniquement : numéro de rue, type de voie, nom de voie, code postal, commune.
-2. Supprime impérativement : appartement, étage, bâtiment, résidence, local, entreprise.
-3. Écris le type de voie en entier (Rue, Route, Chemin, Impasse, Avenue, Boulevard…).
-4. Conserve EXACTEMENT la numérotation '[1]', '[2]'… en début de chaque ligne.
-5. Réponds UNIQUEMENT par la liste. Aucun commentaire, aucune introduction."
+system_prompt <- "Tu es un outil expert en nettoyage de données géographiques françaises.
+Ta tâche est de nettoyer l'adresse fournie pour la rendre compatible BAN.
+RÈGLES STRICTES :
+1. Conserve uniquement : le numéro, le type de voie, le nom de la voie, le code postal et la commune.
+2. SUPPRIME impérativement : bâtiment, appartement, étage, 'Chez...', entreprise, BP, résidence.
+3. Réponds UNIQUEMENT avec l'adresse nettoyée sur une seule ligne. Aucun commentaire."
 ```
 
-#### La fonction de nettoyage par lot
+#### Nettoyage avec `rowwise()` et `mutate()`
+
+On utilise `rowwise()` pour que `chat()` soit appelé ligne par ligne,
+comme si on appliquait la fonction manuellement à chaque adresse :
 
 ```{r}
 #| eval: false
-nettoyer_adresses <- function(adresses, modele = "qwen2.5:0.5b", taille_lot = 10) {
+resultat <- adresses_brutes %>%
+  rowwise() %>%
+  mutate(adresse_nette = chat(
+    model   = "qwen2.5:0.5b",
+    message = list(
+      list(role = "system", content = system_prompt),
+      list(role = "user",   content = adresse_messy)
+    ),
+    output = "text"
+  )) %>%
+  ungroup()
 
-  # Découper le vecteur en lots de 10
-  lots <- split(adresses, ceiling(seq_along(adresses) / taille_lot))
-
-  resultats <- map(lots, function(lot) {
-
-    # Numéroter les adresses : "[1] 12 rue ...", "[2] 5 avenue ..."
-    texte_entree <- paste(paste0("[", seq_along(lot), "] ", lot), collapse = "\n")
-
-    # Envoyer au modèle local
-    reponse <- chat(
-      model    = modele,
-      messages = list(
-        list(role = "system", content = prompt_systeme),
-        list(role = "user",   content = texte_entree)
-      ),
-      output = "text"
-    )
-
-    # Extraire les lignes et supprimer la numérotation "[1] "
-    lignes <- str_split(reponse, "\n")[[1]]
-    lignes <- lignes[lignes != ""]
-    lignes_nettes <- str_remove(lignes, "^\\[\\d+\\]\\s*")
-
-    # Sécurité : si le modèle n'a pas renvoyé le bon nombre de lignes, on garde les brutes
-    if (length(lignes_nettes) != length(lot)) {
-      warning("Lot mal traité — conservation des adresses brutes pour ce lot.")
-      return(lot)
-    }
-
-    str_trim(lignes_nettes)
-  })
-
-  flatten_chr(resultats)
-}
+head(resultat, 5)
 ```
 
-#### Exécution et export
+::: {.callout-note}
+## `rowwise()` — traitement ligne par ligne
+
+`rowwise()` indique à dplyr de traiter chaque ligne indépendamment.
+Sans lui, `mutate()` essaierait d'appliquer `chat()` à toute la colonne d'un coup.
+`ungroup()` à la fin restaure le comportement normal du tableau.
+:::
+
+#### Export pour le géocodage
 
 ```{r}
 #| eval: false
-# Nettoyage (environ 2-3 minutes pour 100 adresses)
-adresses_nettes <- nettoyer_adresses(adresses_brutes$adresse_messy)
-
-# Assembler le résultat
-resultat <- tibble(
-  adresse_brute = adresses_brutes$adresse_messy,
-  adresse_nette = adresses_nettes
+# Exporter uniquement la colonne nettoyée
+write_csv(
+  resultat %>% select(adresse_nette),
+  "../data/adresses_ban.csv"
 )
-
-head(resultat, 8)
-
-# Exporter le fichier nettoyé
-write_csv(resultat %>% select(adresse_nette), "../data/adresses_ban.csv")
 ```
 
 ---
