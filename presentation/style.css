@@ -1,0 +1,175 @@
+
+.titre {
+  font-family: "Arial";
+  font-size: 88pt;
+  font-weight: bold;
+  text-align: justify;
+  margin-bottom: 0pt;
+}
+
+.sous-titre {
+  font-family: "Arial";
+  font-size: 40pt;
+}
+
+
+.reveal h2 {
+  font-family: Arial;
+  font-size: 48pt;
+}
+
+.reveal .fixed-h2 {
+  position: absolute;
+  font-family: Arial;
+  font-weight: bold;
+  font-size: 48pt;
+  transform: translateY(-21.5pt);
+  left: 5.3pt;
+}
+
+.reveal .fixed-h2 p {
+  margin-bottom: 0pt;
+}
+
+.reveal p {
+  font-family: Arial;
+  font-size: 28pt;
+  text-align: justify;
+}
+
+
+.reveal .footer {
+  left: 45%;
+  margin-bottom: 0%;
+  margin-top: 10%;
+}
+
+
+.reveal blockquote {
+  font-size: 22pt !important;
+  opacity: 0.95;
+  font-family: "Arial Narrow";
+  color: #333;
+  background-color: #f9f9f9;
+  border-left: 5px solid #007acc;
+  padding: 0.5em 1em;
+  margin: 1em 0;
+}
+
+
+.slide-title {
+  position: relative;
+  font-family: Arial;
+  font-size: 48pt;
+  font-weight: bold;
+  transform: translateY(-21.5pt);
+  left: 5.35pt;
+  margin: 0pt;
+  height: 2.35cm;
+}
+
+
+.linebreak-min {
+  height: -5pt;
+}
+
+
+.upper {
+  transform: translateY(-20cm);
+}
+
+
+.panel-tabset {
+  color: white;
+  border-color: white;
+}
+
+.tabset-titre {
+  color: #007acc;
+  font-size: 20pt;
+}
+
+.nav-link.active {
+  background-color: yellow;
+}
+
+.panel-tabset .nav-link {
+  margin-right: 10pt;
+}
+
+.panel-tabset .nav-tabs {
+  margin-bottom: 10pt;
+}
+
+
+.avertissement {
+  border-left: 5px solid #BD0000;
+  border-top: 1px solid grey;
+  border-bottom: 1px solid grey;
+  border-right: 1px solid grey;
+  border-radius:6px;
+  padding: 0pt 30pt;
+  margin: 20pt 0pt;
+}
+
+
+/* Scrollable tabset area */
+.reveal .panel-tabset.tabset-scroll .tab-content {
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.tabset-scroll img,
+.tabset-scroll svg,
+.tabset-scroll canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.tabset-scroll pre {
+  overflow: auto;
+}
+
+
+.callout-note p {
+  font-size: 25pt;
+}
+
+.callout-tip p {
+  font-size: 25pt;
+}
+
+.callout-warning p {
+  font-size: 25pt;
+}
+
+.callout-caution p {
+  font-size: 25pt;
+}
+
+.callout-important p {
+  font-size: 25pt;
+}
+
+
+.reveal pre code {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Fix code ligatures */
+code, pre, .sourceCode {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+/* Table styling */
+.reveal table {
+  font-size: 22pt;
+  font-family: Arial;
+}
+
+.reveal th {
+  background-color: #007acc;
+  color: white;
+}
