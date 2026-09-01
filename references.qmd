@@ -95,18 +95,18 @@ Tous les fichiers sont disponibles sur
 les liens ci-dessous pointent vers la version HTML interactive ou PDF hébergée sur
 [rstudio.github.io/cheatsheets](https://rstudio.github.io/cheatsheets/).
 
-| Package | HTML | PDF |
-|---------|------|-----|
-| Base R | [HTML](https://rstudio.github.io/cheatsheets/base-r.html) | [PDF](https://rstudio.github.io/cheatsheets/base-r.pdf) |
-| RStudio IDE | [HTML](https://rstudio.github.io/cheatsheets/rstudio-ide.html) | [PDF](https://rstudio.github.io/cheatsheets/rstudio-ide.pdf) |
-| `dplyr` | [HTML](https://rstudio.github.io/cheatsheets/data-transformation.html) | [PDF](https://rstudio.github.io/cheatsheets/data-transformation.pdf) |
-| `tidyr` | [HTML](https://rstudio.github.io/cheatsheets/tidyr.html) | [PDF](https://rstudio.github.io/cheatsheets/tidyr.pdf) |
-| `ggplot2` | [HTML](https://rstudio.github.io/cheatsheets/data-visualization.html) | [PDF](https://rstudio.github.io/cheatsheets/data-visualization.pdf) |
-| `stringr` | [HTML](https://rstudio.github.io/cheatsheets/strings.html) | [PDF](https://rstudio.github.io/cheatsheets/strings.pdf) |
-| `lubridate` | [HTML](https://rstudio.github.io/cheatsheets/lubridate.html) | [PDF](https://rstudio.github.io/cheatsheets/lubridate.pdf) |
-| `purrr` | [HTML](https://rstudio.github.io/cheatsheets/purrr.html) | [PDF](https://rstudio.github.io/cheatsheets/purrr.pdf) |
-| R Markdown | [HTML](https://rstudio.github.io/cheatsheets/rmarkdown.html) | [PDF](https://rstudio.github.io/cheatsheets/rmarkdown.pdf) |
-| Quarto | [HTML](https://rstudio.github.io/cheatsheets/quarto.html) | [PDF](https://rstudio.github.io/cheatsheets/quarto.pdf) |
+| Package | PDF |
+|---------|-----|
+| Base R | [PDF](https://rstudio.github.io/cheatsheets/base-r.pdf) |
+| RStudio IDE | [PDF](https://rstudio.github.io/cheatsheets/rstudio-ide.pdf) |
+| `dplyr` | [PDF](https://rstudio.github.io/cheatsheets/data-transformation.pdf) |
+| `tidyr` | [PDF](https://rstudio.github.io/cheatsheets/tidyr.pdf) |
+| `ggplot2` | [PDF](https://rstudio.github.io/cheatsheets/data-visualization.pdf) |
+| `stringr` | [PDF](https://rstudio.github.io/cheatsheets/strings.pdf) |
+| `lubridate` | [PDF](https://rstudio.github.io/cheatsheets/lubridate.pdf) |
+| `purrr` | [PDF](https://rstudio.github.io/cheatsheets/purrr.pdf) |
+| R Markdown | [PDF](https://rstudio.github.io/cheatsheets/rmarkdown.pdf) |
+| Quarto | [PDF](https://rstudio.github.io/cheatsheets/quarto.pdf) |
 
 ---
 
