@@ -531,13 +531,13 @@ vous utiliserez surtout des **data frames** (ou des **tibbles** avec le tidyvers
 ```{mermaid}
 %%| echo: false
 flowchart TD
-    V["Vecteur\nséquence de valeurs du même type\nex : c(1, 2, 3) ou c('a', 'b')"]
+    V["Vecteur<br/>séquence de valeurs du même type<br/>ex : c(1, 2, 3) ou c('a', 'b')"]
 
-    M["Matrice\nvecteurs de même longueur\ndisposés en lignes et colonnes\n(même type)"]
+    M["Matrice<br/>vecteurs de même longueur<br/>disposés en lignes et colonnes<br/>(même type)"]
 
-    D["Data frame / Tibble\nvecteurs de même longueur\ndisposés en colonnes\n(types différents autorisés)"]
+    D["Data frame / Tibble<br/>vecteurs de même longueur<br/>disposés en colonnes<br/>(types différents autorisés)"]
 
-    L["Liste\nconteneur universel\npeut mélanger vecteurs, matrices,\ndata frames, autres listes…"]
+    L["Liste<br/>conteneur universel<br/>peut mélanger vecteurs, matrices,<br/>data frames, autres listes…"]
 
     V -->|plusieurs vecteurs de même type| M
     V -->|plusieurs vecteurs, types variés| D
