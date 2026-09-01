@@ -164,71 +164,39 @@ Jusqu'ici, nous avons vu des IA accessibles via le web (ChatGPT, Claude…).
 Une alternative puissante existe : **faire tourner un modèle de langage directement sur votre machine**,
 sans connexion internet, sans compte, et sans envoyer vos données à un tiers.
 
-C'est exactement ce que permet **Ollama**.
+C'est exactement ce que permet **Ollama** — idéal pour traiter des données sensibles ou confidentielles.
 
 ---
 
-### Pourquoi un LLM local ?
-
-| | IA en ligne (ChatGPT, Claude…) | Ollama (local) |
-|---|---|---|
-| **Confidentialité** | Données envoyées au cloud | Données restent sur votre machine |
-| **Coût** | Gratuit limité / abonnement | Gratuit et illimité |
-| **Connexion** | Requise | Non requise |
-| **Qualité** | Modèles très puissants | Modèles plus petits, mais suffisants |
-| **Vitesse** | Dépend du réseau | Dépend de votre CPU/GPU |
-
-Le cas d'usage idéal d'Ollama en recherche : **traiter des données sensibles ou confidentielles**
-(adresses, données personnelles, données propriétaires) sans les envoyer dans le cloud.
-
----
-
-### Installation d'Ollama
+### Installation (à faire une seule fois)
 
 **Étape 1 — Installer Ollama**
 
 Téléchargez l'installeur depuis [ollama.com](https://ollama.com) (Windows, macOS ou Linux).
-Après installation, Ollama tourne en arrière-plan et expose une API locale sur `http://localhost:11434`.
+Après installation, Ollama tourne silencieusement en arrière-plan.
 
-**Étape 2 — Télécharger un petit modèle**
-
-Dans un terminal (pas dans R) :
+**Étape 2 — Télécharger un petit modèle** (dans un terminal, pas dans R)
 
 ```bash
-# Modèle léger (~500 Mo), idéal pour les machines sans GPU
 ollama pull qwen2.5:0.5b
-
-# Alternatives selon votre machine
-# ollama pull llama3.2:1b    (~1 Go, un peu plus performant)
-# ollama pull phi3.5          (~2 Go, très bon rapport taille/qualité)
 ```
 
-Pour vérifier que le modèle est bien installé :
+Ce modèle pèse environ 400 Mo et fonctionne sans carte graphique dédiée.
 
-```bash
-ollama list
-```
-
-**Étape 3 — Installer le package R `ollamar`**
+**Étape 3 — Installer le package R**
 
 ```r
 install.packages("ollamar")
 ```
 
----
-
-### Connexion à Ollama depuis R
+**Vérification :**
 
 ```{r}
 #| eval: false
 library(ollamar)
 
-# Tester la connexion (Ollama doit être lancé)
-test_connection()
-# Output attendu : Ollama local server running
-
-# Lister les modèles disponibles localement
-list_models()
+test_connection()   # doit afficher : Ollama local server running
+list_models()       # doit lister qwen2.5:0.5b
 ```
 
 ---
@@ -236,193 +204,121 @@ list_models()
 ### Application : nettoyage d'adresses réunionnaises
 
 Les adresses saisies manuellement sont rarement homogènes.
-Le fichier `adresses_messy.csv` contient 100 adresses réunionnaises réelles avec
-de nombreuses variations : abréviations (`r.`, `rte`, `chem.`, `imp.`),
-casse incohérente, séparateurs variés (`-`, `/`, `,`), codes postaux en fin ou
-entre parenthèses, etc.
+Le fichier `adresses_messy.csv` contient 100 adresses réunionnaises avec
+des abréviations (`r.`, `rte`, `chem.`), des casses incohérentes, des séparateurs
+variés (`-`, `/`, `,`), des mentions parasites (appartements, résidences, commerces…).
 
-L'objectif est de les normaliser en un format **Numéro + Type + Nom de voie + Code postal + Commune**,
-compatible avec l'API de géocodage.
+L'objectif : les normaliser pour les soumettre au géocodeur de la BAN.
 
 ```{r}
 #| eval: false
 library(tidyverse)
 library(ollamar)
 
-# Charger les adresses brutes
-adresses <- read_csv("../data/adresses_messy.csv")
-head(adresses, 5)
+adresses_brutes <- read_csv("../data/adresses_messy.csv")
+head(adresses_brutes, 5)
 ```
 
-#### Rédiger un prompt de nettoyage
+#### Le prompt système
+
+On donne au modèle des instructions précises **une seule fois** (prompt système),
+puis on lui envoie les adresses **en lot** — plus rapide que de traiter chaque adresse séparément.
 
 ```{r}
 #| eval: false
-prompt_nettoyage <- function(adresse_brute) {
-  paste0(
-    "Tu es un expert en normalisation d'adresses postales françaises.\n",
-    "Normalise l'adresse suivante en sortant UNIQUEMENT un objet JSON ",
-    "avec les champs : numero, type_voie, nom_voie, code_postal, commune.\n",
-    "Utilise le type de voie complet (Rue, Route, Chemin, Impasse, Avenue, ",
-    "Boulevard, Allée, Résidence, Domaine…).\n",
-    "Si un champ est absent, mets null.\n",
-    "Adresse : ", adresse_brute, "\n",
-    "Réponds uniquement avec le JSON, sans explication."
-  )
-}
+prompt_systeme <- "Tu es un outil expert en nettoyage d'adresses postales françaises.
+On va te fournir une liste d'adresses numérotées : '[1] Adresse', '[2] Adresse', etc.
+Ton unique tâche : renvoyer la liste nettoyée pour la géolocalisation (BAN).
 
-# Test sur une adresse
-test <- generate(
-  model  = "qwen2.5:0.5b",
-  prompt = prompt_nettoyage("71 chem. des Trois Mares - Bois d Olives - 97432 saint pierre"),
-  output = "text"
+RÈGLES :
+1. Garde uniquement : numéro de rue, type de voie, nom de voie, code postal, commune.
+2. Supprime impérativement : appartement, étage, bâtiment, résidence, local, entreprise.
+3. Écris le type de voie en entier (Rue, Route, Chemin, Impasse, Avenue, Boulevard…).
+4. Conserve EXACTEMENT la numérotation '[1]', '[2]'… en début de chaque ligne.
+5. Réponds UNIQUEMENT par la liste. Aucun commentaire, aucune introduction."
+```
+
+#### La fonction de nettoyage par lot
+
+```{r}
+#| eval: false
+nettoyer_adresses <- function(adresses, modele = "qwen2.5:0.5b", taille_lot = 10) {
+
+  # Découper le vecteur en lots de 10
+  lots <- split(adresses, ceiling(seq_along(adresses) / taille_lot))
+
+  resultats <- map(lots, function(lot) {
+
+    # Numéroter les adresses : "[1] 12 rue ...", "[2] 5 avenue ..."
+    texte_entree <- paste(paste0("[", seq_along(lot), "] ", lot), collapse = "\n")
+
+    # Envoyer au modèle local
+    reponse <- chat(
+      model    = modele,
+      messages = list(
+        list(role = "system", content = prompt_systeme),
+        list(role = "user",   content = texte_entree)
+      ),
+      output = "text"
+    )
+
+    # Extraire les lignes et supprimer la numérotation "[1] "
+    lignes <- str_split(reponse, "\n")[[1]]
+    lignes <- lignes[lignes != ""]
+    lignes_nettes <- str_remove(lignes, "^\\[\\d+\\]\\s*")
+
+    # Sécurité : si le modèle n'a pas renvoyé le bon nombre de lignes, on garde les brutes
+    if (length(lignes_nettes) != length(lot)) {
+      warning("Lot mal traité — conservation des adresses brutes pour ce lot.")
+      return(lot)
+    }
+
+    str_trim(lignes_nettes)
+  })
+
+  flatten_chr(resultats)
+}
+```
+
+#### Exécution et export
+
+```{r}
+#| eval: false
+# Nettoyage (environ 2-3 minutes pour 100 adresses)
+adresses_nettes <- nettoyer_adresses(adresses_brutes$adresse_messy)
+
+# Assembler le résultat
+resultat <- tibble(
+  adresse_brute = adresses_brutes$adresse_messy,
+  adresse_nette = adresses_nettes
 )
-cat(test)
-# Résultat attendu :
-# {"numero":"71","type_voie":"Chemin","nom_voie":"des Trois Mares",
-#  "code_postal":"97432","commune":"Saint-Pierre"}
-```
 
-#### Traiter toutes les adresses
+head(resultat, 8)
 
-```{r}
-#| eval: false
-library(jsonlite)
-
-nettoyer_adresse <- function(adresse_brute) {
-  reponse <- generate(
-    model  = "qwen2.5:0.5b",
-    prompt = prompt_nettoyage(adresse_brute),
-    output = "text"
-  )
-  # Extraire le JSON de la réponse
-  json_str <- str_extract(reponse, "\\{.*\\}")
-  if (is.na(json_str)) return(tibble(numero = NA, type_voie = NA,
-                                      nom_voie = NA, code_postal = NA,
-                                      commune = NA))
-  tryCatch(
-    fromJSON(json_str) %>% as_tibble(),
-    error = function(e) tibble(numero = NA, type_voie = NA,
-                               nom_voie = NA, code_postal = NA,
-                               commune = NA)
-  )
-}
-
-# Appliquer à toutes les adresses (peut prendre quelques minutes)
-adresses_propres <- adresses %>%
-  mutate(
-    resultat     = map(adresse_messy, nettoyer_adresse),
-    adresse_norm = map_chr(resultat, ~ {
-      r <- .x
-      paste(
-        coalesce(r$numero, ""), coalesce(r$type_voie, ""),
-        coalesce(r$nom_voie, ""), coalesce(r$code_postal, ""),
-        coalesce(r$commune, "")
-      ) %>% str_squish()
-    })
-  ) %>%
-  select(adresse_messy, adresse_norm)
-
-head(adresses_propres, 5)
+# Exporter le fichier nettoyé
+write_csv(resultat %>% select(adresse_nette), "../data/adresses_ban.csv")
 ```
 
 ---
 
-### Géocodage avec l'API BAN
+### Géocodage via le site de la BAN
 
-La **Base Adresse Nationale** (BAN) est la référence officielle des adresses en France.
-Son API de géocodage est gratuite, sans clé, et couvre La Réunion.
+Le fichier nettoyé est prêt. Pour obtenir les coordonnées GPS, rendez-vous sur le
+**géocodeur en masse de la BAN** :
 
-```{r}
-#| eval: false
-library(httr2)
+**[adresse.data.gouv.fr/tools/batch-geocodage](https://adresse.data.gouv.fr/tools/batch-geocodage)**
 
-geocoder_ban <- function(adresse) {
-  reponse <- request("https://api-adresse.data.gouv.fr/search/") %>%
-    req_url_query(q = adresse, limit = 1) %>%
-    req_perform() %>%
-    resp_body_json()
-
-  if (length(reponse$features) == 0) {
-    return(tibble(lon = NA_real_, lat = NA_real_,
-                  score = NA_real_, label_ban = NA_character_))
-  }
-
-  feat <- reponse$features[[1]]
-  tibble(
-    lon       = feat$geometry$coordinates[[1]],
-    lat       = feat$geometry$coordinates[[2]],
-    score     = feat$properties$score,
-    label_ban = feat$properties$label
-  )
-}
-
-# Test
-geocoder_ban("71 Chemin des Trois Mares 97432 Saint-Pierre")
-```
-
-#### Pipeline complet : données brutes → coordonnées GPS
-
-```{r}
-#| eval: false
-adresses_geo <- adresses_propres %>%
-  mutate(geo = map(adresse_norm, geocoder_ban)) %>%
-  unnest(geo)
-
-# Résultats
-adresses_geo %>%
-  select(adresse_messy, adresse_norm, lon, lat, score, label_ban) %>%
-  head(10)
-```
-
-```{r}
-#| eval: false
-# Qualité du géocodage
-adresses_geo %>%
-  summarise(
-    n_total     = n(),
-    n_geocodes  = sum(!is.na(lat)),
-    score_moyen = mean(score, na.rm = TRUE),
-    score_sup90 = mean(score > 0.9, na.rm = TRUE)
-  )
-```
-
-#### Visualisation sur une carte
-
-```{r}
-#| eval: false
-library(leaflet)
-
-adresses_geo %>%
-  filter(!is.na(lat)) %>%
-  leaflet() %>%
-  addTiles() %>%
-  addCircleMarkers(
-    lng   = ~lon,
-    lat   = ~lat,
-    popup = ~paste0("<b>", label_ban, "</b><br>",
-                    "Adresse brute : ", adresse_messy, "<br>",
-                    "Score BAN : ", round(score, 2)),
-    radius      = 6,
-    color       = "#e84e1b",
-    fillOpacity = 0.8
-  ) %>%
-  addProviderTiles("CartoDB.Positron")
-```
+1. Cliquez sur **"Choisir un fichier"** et sélectionnez `adresses_ban.csv`
+2. La BAN détecte automatiquement la colonne d'adresses
+3. Cliquez sur **"Lancer le géocodage"**
+4. Téléchargez le fichier résultat : il contient `latitude`, `longitude`, `result_score`…
 
 ::: {.callout-note}
-## Score de géocodage BAN
+## Pourquoi passer par le site plutôt que l'API ?
 
-La BAN renvoie un `score` entre 0 et 1 :
-
-| Score | Interprétation |
-|-------|---------------|
-| > 0.9 | Adresse trouvée avec grande confiance |
-| 0.7 – 0.9 | Adresse probable, à vérifier |
-| < 0.7 | Résultat incertain — vérification manuelle recommandée |
-
-Un score faible indique souvent que le nettoyage de l'adresse a été imparfait.
-Dans ce cas, retournez l'adresse brute directement à l'API — elle gère bien certaines variations.
+Le géocodeur en masse traite jusqu'à **50 000 adresses** en quelques secondes côté serveur,
+sans écrire une seule ligne de code supplémentaire. C'est la solution la plus simple
+pour un usage ponctuel. L'API REST existe pour les intégrations automatisées.
 :::
 
 ---
@@ -432,17 +328,14 @@ Dans ce cas, retournez l'adresse brute directement à l'API — elle gère bien 
 ```
 adresses_messy.csv
       ↓
-  Ollama (qwen2.5:0.5b)   ← modèle local, données privées
-  Nettoyage et normalisation
+  Ollama (qwen2.5:0.5b)        ← modèle local, données privées
+  chat() avec prompt en lot
       ↓
-  adresse_norm (chaîne standardisée)
+  adresses_ban.csv              ← adresses normalisées
       ↓
-  API BAN (api-adresse.data.gouv.fr)   ← service public, gratuit
-  Géocodage
+  adresse.data.gouv.fr          ← site BAN, gratuit, sans code
       ↓
-  lon / lat / score
-      ↓
-  Carte leaflet
+  latitude / longitude / score
 ```
 
 ---
