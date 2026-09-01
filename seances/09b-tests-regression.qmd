@@ -70,15 +70,15 @@ Le seuil conventionnel est **α = 0,05** (5%).
 ::: {.callout-warning}
 ## Pièges fréquents autour de la p-valeur
 
-❌ **"p < 0,05 signifie que l'effet est important"** : FAUX.
+**[FAUX]** **"p < 0,05 signifie que l'effet est important"**
 Une p-valeur faible indique que l'effet est *détectable*, pas qu'il est *grand*.
 Avec un très grand échantillon, on peut détecter des effets statistiquement significatifs
 mais biologiquement ou économiquement négligeables.
 
-❌ **"p ≥ 0,05 signifie qu'il n'y a pas d'effet"** : FAUX.
+**[FAUX]** **"p ≥ 0,05 signifie qu'il n'y a pas d'effet"**
 Cela signifie seulement qu'on n'a pas assez de données pour le détecter.
 
-✅ **Toujours accompagner la p-valeur d'une taille d'effet** : Cohen's d, R², eta² …
+**Bonne pratique :** Toujours accompagner la p-valeur d'une taille d'effet : Cohen's d, R², eta² …
 :::
 
 ### Les types d'erreurs

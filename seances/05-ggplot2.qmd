@@ -80,13 +80,13 @@ les **variables de vos données** et les **propriétés visuelles** du graphique
 
 ```r
 # Variable encodée dans aes() → couleur varie selon les données
-geom_point(aes(color = continent))   # Couleur différente par continent ✅
+geom_point(aes(color = continent))   # Couleur différente par continent
 
 # Valeur fixe hors de aes() → couleur uniforme pour tous les points
-geom_point(color = "blue")           # Tous les points en bleu ✅
+geom_point(color = "blue")           # Tous les points en bleu
 
 # Erreur classique : mettre une valeur fixe dans aes()
-geom_point(aes(color = "blue"))      # Crée une légende inutile ❌
+geom_point(aes(color = "blue"))      # Crée une légende inutile
 ```
 :::
 

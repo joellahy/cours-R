@@ -51,21 +51,21 @@ Les étudiants peuvent obtenir l'accès gratuit via le
 
 ### Ce que l'IA fait bien
 
-- ✅ Générer du code boilerplate (structure de base)
-- ✅ Proposer des solutions alternatives
-- ✅ Expliquer du code que vous ne comprenez pas
-- ✅ Identifier des erreurs syntaxiques
-- ✅ Convertir du code d'un format à un autre (ex: base R → tidyverse)
-- ✅ Suggérer des noms de fonctions ou de packages
-- ✅ Aider à rédiger de la documentation
+- Générer du code boilerplate (structure de base)
+- Proposer des solutions alternatives
+- Expliquer du code que vous ne comprenez pas
+- Identifier des erreurs syntaxiques
+- Convertir du code d'un format à un autre (ex: base R → tidyverse)
+- Suggérer des noms de fonctions ou de packages
+- Aider à rédiger de la documentation
 
 ### Ce que l'IA fait mal (ou mal parfois)
 
-- ❌ **Hallucinations** : inventer des fonctions qui n'existent pas
-- ❌ Connaître les packages récents (coupure de données d'entraînement)
-- ❌ Comprendre votre contexte métier spécifique sans description
-- ❌ Garantir l'exactitude statistique des analyses
-- ❌ Connaître vos données locales
+- **Hallucinations** : inventer des fonctions qui n'existent pas
+- Connaître les packages récents (coupure de données d'entraînement)
+- Comprendre votre contexte métier spécifique sans description
+- Garantir l'exactitude statistique des analyses
+- Connaître vos données locales
 
 ::: {.callout-warning}
 ## Règle d'or

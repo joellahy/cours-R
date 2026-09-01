@@ -559,7 +559,7 @@ x == NA     # Renvoie NA, pas TRUE !
 ```
 Pour tester si une valeur est `NA`, utilisez toujours `is.na()` :
 ```r
-is.na(x)    # Renvoie TRUE ✓
+is.na(x)    # Renvoie TRUE
 ```
 :::
 
@@ -613,12 +613,12 @@ Un bon code se lit facilement, se comprend rapidement et se corrige aisément.
 ### 1. Nommage des objets
 
 ```r
-# ✅ Recommandé : snake_case, noms explicites
+# Recommandé : snake_case, noms explicites
 pib_par_habitant <- 15000
 temperature_juillet <- 24.5
 donnees_fao_2022 <- read.csv("fao_2022.csv")
 
-# ❌ À éviter : noms peu explicites ou conventions incohérentes
+# À éviter : noms peu explicites ou conventions incohérentes
 x     <- 15000
 TempJ <- 24.5
 df1   <- read.csv("fao_2022.csv")
@@ -635,10 +635,10 @@ df1   <- read.csv("fao_2022.csv")
 Un commentaire commence par `#`. Il explique le **pourquoi**, pas le **quoi** :
 
 ```r
-# ✅ Bon commentaire : explique une décision de fond
+# Bon commentaire : explique une décision de fond
 pib_usd * 0.92   # Taux BCE janv. 2024 : 1 USD = 0.92 EUR
 
-# ❌ Commentaire inutile (dit ce que le code montre déjà)
+# Commentaire inutile (dit ce que le code montre déjà)
 x <- x * 0.92   # Multiplier x par 0.92
 ```
 
@@ -671,11 +671,11 @@ glimpse(temperatures)
 ### 4. Indentation et espaces
 
 ```r
-# ✅ Lisible : espaces autour des opérateurs, après les virgules
+# Lisible : espaces autour des opérateurs, après les virgules
 densite <- population / superficie
 iles_oi[iles_oi$independant == TRUE, ]
 
-# ❌ Difficile à lire
+# Difficile à lire
 densite<-population/superficie
 iles_oi[iles_oi$independant==TRUE,]
 ```
