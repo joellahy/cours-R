@@ -10,6 +10,8 @@ title: "Séance 8 - Améliorer sa productivité avec l'IA dans R"
 - Identifier les bonnes pratiques et les limites de l'IA en programmation
 - Déboguer du code avec l'aide de l'IA
 - Rédiger des prompts efficaces pour des tâches de data science
+- Installer et interroger un LLM local avec Ollama et le package `ollamar`
+- Mettre en place un pipeline de nettoyage d'adresses et de géocodage via l'API BAN
 :::
 
 ::: {.callout-warning}
@@ -156,59 +158,291 @@ gapminder %>%
 
 ---
 
-## Exemples d'usage productif de l'IA
+## IA locale avec Ollama — nettoyage d'adresses et géocodage
 
-### Cas 1 - Convertir du code base R en tidyverse
+Jusqu'ici, nous avons vu des IA accessibles via le web (ChatGPT, Claude…).
+Une alternative puissante existe : **faire tourner un modèle de langage directement sur votre machine**,
+sans connexion internet, sans compte, et sans envoyer vos données à un tiers.
 
-**Prompt :**
+C'est exactement ce que permet **Ollama**.
+
+---
+
+### Pourquoi un LLM local ?
+
+| | IA en ligne (ChatGPT, Claude…) | Ollama (local) |
+|---|---|---|
+| **Confidentialité** | Données envoyées au cloud | Données restent sur votre machine |
+| **Coût** | Gratuit limité / abonnement | Gratuit et illimité |
+| **Connexion** | Requise | Non requise |
+| **Qualité** | Modèles très puissants | Modèles plus petits, mais suffisants |
+| **Vitesse** | Dépend du réseau | Dépend de votre CPU/GPU |
+
+Le cas d'usage idéal d'Ollama en recherche : **traiter des données sensibles ou confidentielles**
+(adresses, données personnelles, données propriétaires) sans les envoyer dans le cloud.
+
+---
+
+### Installation d'Ollama
+
+**Étape 1 — Installer Ollama**
+
+Téléchargez l'installeur depuis [ollama.com](https://ollama.com) (Windows, macOS ou Linux).
+Après installation, Ollama tourne en arrière-plan et expose une API locale sur `http://localhost:11434`.
+
+**Étape 2 — Télécharger un petit modèle**
+
+Dans un terminal (pas dans R) :
+
+```bash
+# Modèle léger (~500 Mo), idéal pour les machines sans GPU
+ollama pull qwen2.5:0.5b
+
+# Alternatives selon votre machine
+# ollama pull llama3.2:1b    (~1 Go, un peu plus performant)
+# ollama pull phi3.5          (~2 Go, très bon rapport taille/qualité)
 ```
-Convertis ce code base R en tidyverse (dplyr/tidyr) :
 
-data_afr <- gapminder[gapminder$continent == "Africa" &
-                       gapminder$year == 2007, ]
-data_afr <- data_afr[order(data_afr$lifeExp, decreasing = TRUE), ]
-mean_pib <- mean(data_afr$gdpPercap)
+Pour vérifier que le modèle est bien installé :
+
+```bash
+ollama list
 ```
 
-**Résultat attendu de l'IA :**
+**Étape 3 — Installer le package R `ollamar`**
+
 ```r
-data_afr <- gapminder %>%
-  filter(continent == "Africa", year == 2007) %>%
-  arrange(desc(lifeExp))
-
-mean_pib <- data_afr %>%
-  summarise(mean_pib = mean(gdpPercap)) %>%
-  pull(mean_pib)
+install.packages("ollamar")
 ```
 
-### Cas 2 - Comprendre une fonction inconnue
+---
 
-**Prompt :**
+### Connexion à Ollama depuis R
+
+```{r}
+#| eval: false
+library(ollamar)
+
+# Tester la connexion (Ollama doit être lancé)
+test_connection()
+# Output attendu : Ollama local server running
+
+# Lister les modèles disponibles localement
+list_models()
 ```
-Explique-moi ce que fait cette ligne R et dans quel contexte l'utiliser :
 
-gapminder %>% group_by(continent) %>% group_map(~ lm(lifeExp ~ year, data = .x))
+---
+
+### Application : nettoyage d'adresses réunionnaises
+
+Les adresses saisies manuellement sont rarement homogènes.
+Le fichier `adresses_messy.csv` contient 100 adresses réunionnaises réelles avec
+de nombreuses variations : abréviations (`r.`, `rte`, `chem.`, `imp.`),
+casse incohérente, séparateurs variés (`-`, `/`, `,`), codes postaux en fin ou
+entre parenthèses, etc.
+
+L'objectif est de les normaliser en un format **Numéro + Type + Nom de voie + Code postal + Commune**,
+compatible avec l'API de géocodage.
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(ollamar)
+
+# Charger les adresses brutes
+adresses <- read_csv("../data/adresses_messy.csv")
+head(adresses, 5)
 ```
 
-### Cas 3 - Générer de la documentation
+#### Rédiger un prompt de nettoyage
 
-**Prompt :**
-```
-Écris un commentaire de documentation en français pour cette fonction R :
-
-calculer_rendement <- function(production, surface) {
-  if (surface <= 0) stop("La surface doit être positive")
-  (production / surface) * 1000
+```{r}
+#| eval: false
+prompt_nettoyage <- function(adresse_brute) {
+  paste0(
+    "Tu es un expert en normalisation d'adresses postales françaises.\n",
+    "Normalise l'adresse suivante en sortant UNIQUEMENT un objet JSON ",
+    "avec les champs : numero, type_voie, nom_voie, code_postal, commune.\n",
+    "Utilise le type de voie complet (Rue, Route, Chemin, Impasse, Avenue, ",
+    "Boulevard, Allée, Résidence, Domaine…).\n",
+    "Si un champ est absent, mets null.\n",
+    "Adresse : ", adresse_brute, "\n",
+    "Réponds uniquement avec le JSON, sans explication."
+  )
 }
+
+# Test sur une adresse
+test <- generate(
+  model  = "qwen2.5:0.5b",
+  prompt = prompt_nettoyage("71 chem. des Trois Mares - Bois d Olives - 97432 saint pierre"),
+  output = "text"
+)
+cat(test)
+# Résultat attendu :
+# {"numero":"71","type_voie":"Chemin","nom_voie":"des Trois Mares",
+#  "code_postal":"97432","commune":"Saint-Pierre"}
 ```
 
-### Cas 4 - Identifier un package adapté
+#### Traiter toutes les adresses
 
-**Prompt :**
+```{r}
+#| eval: false
+library(jsonlite)
+
+nettoyer_adresse <- function(adresse_brute) {
+  reponse <- generate(
+    model  = "qwen2.5:0.5b",
+    prompt = prompt_nettoyage(adresse_brute),
+    output = "text"
+  )
+  # Extraire le JSON de la réponse
+  json_str <- str_extract(reponse, "\\{.*\\}")
+  if (is.na(json_str)) return(tibble(numero = NA, type_voie = NA,
+                                      nom_voie = NA, code_postal = NA,
+                                      commune = NA))
+  tryCatch(
+    fromJSON(json_str) %>% as_tibble(),
+    error = function(e) tibble(numero = NA, type_voie = NA,
+                               nom_voie = NA, code_postal = NA,
+                               commune = NA)
+  )
+}
+
+# Appliquer à toutes les adresses (peut prendre quelques minutes)
+adresses_propres <- adresses %>%
+  mutate(
+    resultat     = map(adresse_messy, nettoyer_adresse),
+    adresse_norm = map_chr(resultat, ~ {
+      r <- .x
+      paste(
+        coalesce(r$numero, ""), coalesce(r$type_voie, ""),
+        coalesce(r$nom_voie, ""), coalesce(r$code_postal, ""),
+        coalesce(r$commune, "")
+      ) %>% str_squish()
+    })
+  ) %>%
+  select(adresse_messy, adresse_norm)
+
+head(adresses_propres, 5)
 ```
-Je veux créer des tableaux de résultats statistiques
-formatés en HTML ou PDF dans R.
-Quel(s) package(s) me recommandes-tu et pourquoi ?
+
+---
+
+### Géocodage avec l'API BAN
+
+La **Base Adresse Nationale** (BAN) est la référence officielle des adresses en France.
+Son API de géocodage est gratuite, sans clé, et couvre La Réunion.
+
+```{r}
+#| eval: false
+library(httr2)
+
+geocoder_ban <- function(adresse) {
+  reponse <- request("https://api-adresse.data.gouv.fr/search/") %>%
+    req_url_query(q = adresse, limit = 1) %>%
+    req_perform() %>%
+    resp_body_json()
+
+  if (length(reponse$features) == 0) {
+    return(tibble(lon = NA_real_, lat = NA_real_,
+                  score = NA_real_, label_ban = NA_character_))
+  }
+
+  feat <- reponse$features[[1]]
+  tibble(
+    lon       = feat$geometry$coordinates[[1]],
+    lat       = feat$geometry$coordinates[[2]],
+    score     = feat$properties$score,
+    label_ban = feat$properties$label
+  )
+}
+
+# Test
+geocoder_ban("71 Chemin des Trois Mares 97432 Saint-Pierre")
+```
+
+#### Pipeline complet : données brutes → coordonnées GPS
+
+```{r}
+#| eval: false
+adresses_geo <- adresses_propres %>%
+  mutate(geo = map(adresse_norm, geocoder_ban)) %>%
+  unnest(geo)
+
+# Résultats
+adresses_geo %>%
+  select(adresse_messy, adresse_norm, lon, lat, score, label_ban) %>%
+  head(10)
+```
+
+```{r}
+#| eval: false
+# Qualité du géocodage
+adresses_geo %>%
+  summarise(
+    n_total     = n(),
+    n_geocodes  = sum(!is.na(lat)),
+    score_moyen = mean(score, na.rm = TRUE),
+    score_sup90 = mean(score > 0.9, na.rm = TRUE)
+  )
+```
+
+#### Visualisation sur une carte
+
+```{r}
+#| eval: false
+library(leaflet)
+
+adresses_geo %>%
+  filter(!is.na(lat)) %>%
+  leaflet() %>%
+  addTiles() %>%
+  addCircleMarkers(
+    lng   = ~lon,
+    lat   = ~lat,
+    popup = ~paste0("<b>", label_ban, "</b><br>",
+                    "Adresse brute : ", adresse_messy, "<br>",
+                    "Score BAN : ", round(score, 2)),
+    radius      = 6,
+    color       = "#e84e1b",
+    fillOpacity = 0.8
+  ) %>%
+  addProviderTiles("CartoDB.Positron")
+```
+
+::: {.callout-note}
+## Score de géocodage BAN
+
+La BAN renvoie un `score` entre 0 et 1 :
+
+| Score | Interprétation |
+|-------|---------------|
+| > 0.9 | Adresse trouvée avec grande confiance |
+| 0.7 – 0.9 | Adresse probable, à vérifier |
+| < 0.7 | Résultat incertain — vérification manuelle recommandée |
+
+Un score faible indique souvent que le nettoyage de l'adresse a été imparfait.
+Dans ce cas, retournez l'adresse brute directement à l'API — elle gère bien certaines variations.
+:::
+
+---
+
+### Résumé du pipeline
+
+```
+adresses_messy.csv
+      ↓
+  Ollama (qwen2.5:0.5b)   ← modèle local, données privées
+  Nettoyage et normalisation
+      ↓
+  adresse_norm (chaîne standardisée)
+      ↓
+  API BAN (api-adresse.data.gouv.fr)   ← service public, gratuit
+  Géocodage
+      ↓
+  lon / lat / score
+      ↓
+  Carte leaflet
 ```
 
 ---
