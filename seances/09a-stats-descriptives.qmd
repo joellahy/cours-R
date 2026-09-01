@@ -50,6 +50,7 @@ Les statistiques descriptives permettent de :
 Le **type de variable** détermine les outils statistiques et graphiques à utiliser.
 
 ```{mermaid}
+#| echo: false
 flowchart TD
     V[Variables statistiques] --> Q[Quantitatives\nmesures numériques]
     V --> K[Qualitatives\ncatégories]
