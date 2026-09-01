@@ -6,11 +6,13 @@ title: "Séance 7 - Introduction à Rmarkdown et Quarto"
 ## Objectifs de la séance
 À l'issue de cette séance, vous serez capable de :
 
-- Comprendre la philosophie de la recherche reproductible
+- Comprendre la philosophie de la recherche reproductible (WYSIWYG vs WYSIWYW)
 - Créer un document Rmarkdown ou Quarto intégrant code, résultats et texte
-- Maîtriser la syntaxe Markdown de base
+- Maîtriser la syntaxe Markdown de base et les équations LaTeX
 - Configurer un document via l'en-tête YAML
-- Exporter un rapport en HTML et en PDF
+- Exporter un rapport en HTML et en PDF (TinyTeX, xelatex)
+- Mettre en forme des tableaux avec `flextable`
+- Gérer une bibliographie avec BibTeX
 :::
 
 ---
@@ -26,11 +28,33 @@ Ce workflow présente de nombreux problèmes :
 
 **Rmarkdown** et **Quarto** permettent d'écrire du texte et du code R dans le **même fichier**.
 À chaque compilation, le code est exécuté et les résultats sont intégrés automatiquement.
+Avec un seul fichier source, on obtient un document final reproductible — ce qui simplifie
+et fiabilise la rédaction de rapports et de publications.
 
 > *"An article about computational science in a scientific publication is not the scholarship itself,
 > it is merely advertising of the scholarship. The actual scholarship is the complete software
 > development environment and the complete set of instructions which generated the figures."*
-> - Buckheit & Donoho (1995)
+> — Buckheit & Donoho (1995)
+
+### WYSIWYG vs WYSIWYW
+
+Les logiciels comme **Word** fonctionnent en mode **WYSIWYG** (*What You See Is What You Get*) :
+la mise en forme est appliquée directement et le résultat est visible à l'écran en temps réel.
+
+Rmarkdown et Quarto fonctionnent différemment : vous écrivez un fichier texte brut
+contenant le contenu **et** les instructions de mise en page, puis vous le **compilez** pour
+obtenir le document final. C'est le mode **WYSIWYW** (*What You See Is What You Want*).
+
+```
+Fichier .qmd (texte + code)
+         ↓  Compilation (knitr + Pandoc)
+  Document final (HTML, PDF, Word…)
+```
+
+![Schéma du workflow Rmarkdown](https://bookdown.org/yihui/rmarkdown-cookbook/images/workflow.png)
+
+Le fichier source reste lisible, versionnable avec Git, et peut être recompilé
+à tout moment pour mettre à jour les résultats.
 
 ---
 
@@ -269,6 +293,54 @@ Contenu masqué par défaut.
 
 ## Tableaux dans les rapports
 
+Trois packages s'imposent pour mettre en forme des tableaux dans un document Quarto/Rmarkdown :
+
+| Package | Forces | Compatible |
+|---------|--------|------------|
+| **`flextable`** | Très complet, intuitif, styles fins | HTML, PDF, Word |
+| **`kableExtra`** | Simple, rapide | HTML, PDF |
+| **`gt`** | Développé par Posit, très beau en HTML | HTML, PDF |
+
+### Avec `flextable` (recommandé)
+
+`flextable` offre une syntaxe en pipeline et produit des tableaux de qualité publication
+dans les trois formats de sortie principaux.
+
+```r
+install.packages("flextable")
+```
+
+```r
+library(flextable)
+library(tidyverse)
+library(gapminder)
+
+gapminder %>%
+  filter(year == 2007, continent == "Africa") %>%
+  arrange(desc(lifeExp)) %>%
+  head(10) %>%
+  select(Pays = country,
+         `Esp. de vie` = lifeExp,
+         `PIB/hab. (USD)` = gdpPercap,
+         Population = pop) %>%
+  flextable() %>%
+  set_caption("Top 10 des pays africains par espérance de vie (2007)") %>%
+  colformat_num(j = "PIB/hab. (USD)", digits = 0, big.mark = " ") %>%
+  colformat_num(j = "Population",    digits = 0, big.mark = " ") %>%
+  colformat_num(j = "Esp. de vie",   digits = 1) %>%
+  bold(part = "header") %>%
+  bg(part = "header", bg = "#4a6fa5") %>%
+  color(part = "header", color = "white") %>%
+  autofit()
+```
+
+::: {.callout-tip}
+## Pourquoi `flextable` ?
+C'est le seul package qui génère des tableaux bien mis en forme aussi bien en **HTML**
+qu'en **PDF** (via LaTeX) et en **Word** (`.docx`) — très utile quand on partage
+des rapports avec des collègues qui travaillent sous Word.
+:::
+
 ### Avec `knitr::kable()`
 
 ```r
@@ -332,13 +404,92 @@ quarto::quarto_render("mon_rapport.qmd", output_format = "html")
 quarto::quarto_render("mon_rapport.qmd", output_format = "pdf")
 ```
 
-Pour la sortie PDF, il faut une distribution LaTeX installée :
+### Options pour la sortie HTML
+
+```yaml
+---
+title: "Mon rapport"
+format:
+  html:
+    toc: true           # table des matières
+    toc-depth: 3
+    toc-float: true     # TOC flottante (reste visible en scrollant)
+    theme: cosmo        # thème Bootstrap
+    code-fold: true     # code replié par défaut (cliquable)
+    code-copy: true     # bouton copier dans chaque chunk
+    number-sections: true
+---
+```
+
+### Sortie PDF — prérequis et options
+
+La sortie PDF nécessite une distribution LaTeX. La plus légère est **TinyTeX** :
 
 ```r
-# Installer TinyTeX (distribution LaTeX légère)
+# Installation unique
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
+
+Options YAML typiques pour un PDF de qualité :
+
+```yaml
+---
+title: "Mon rapport"
+format:
+  pdf:
+    pdf-engine: xelatex     # gère les accents et polices système
+    toc: true
+    number-sections: true
+    geometry: margin=2.5cm
+    fontsize: 11pt
+    mainfont: "Liberation Serif"
+lang: fr
+---
+```
+
+::: {.callout-note}
+## Pourquoi `xelatex` ?
+Le moteur `xelatex` (ou `lualatex`) gère nativement les accents, les caractères
+spéciaux et les polices installées sur votre système — évitant la plupart
+des erreurs de compilation liées aux caractères français.
+:::
+
+### Citations et bibliographie (BibTeX)
+
+Rmarkdown et Quarto gèrent les références bibliographiques via un fichier `.bib`.
+Chaque référence y est décrite sous forme structurée ; le document la cite automatiquement
+et génère la bibliographie finale dans le style choisi.
+
+**1. Créer un fichier `references.bib`** (dans le même dossier) :
+
+```bibtex
+@book{wickham2023r,
+  title     = {R for Data Science},
+  author    = {Wickham, Hadley and Çetinkaya-Rundel, Mine and Grolemund, Garrett},
+  year      = {2023},
+  edition   = {2},
+  publisher = {O'Reilly Media},
+  url       = {https://r4ds.hadley.nz}
+}
+```
+
+**2. Déclarer le fichier dans le YAML :**
+
+```yaml
+bibliography: references.bib
+csl: apa.csl        # style de citation (APA, Vancouver, etc.)
+```
+
+**3. Citer dans le texte :**
+
+```markdown
+Selon @wickham2023r, les données tidy facilitent l'analyse.
+Plusieurs travaux récents le confirment [@wickham2023r].
+```
+
+Les styles de citation (fichiers `.csl`) sont téléchargeables sur
+[zotero.org/styles](https://www.zotero.org/styles).
 
 ---
 
