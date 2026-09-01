@@ -300,17 +300,16 @@ pour un usage ponctuel. L'API REST existe pour les intégrations automatisées.
 
 ### Résumé du pipeline
 
-```
-adresses_messy.csv
-      ↓
-  Ollama (qwen2.5:0.5b)        ← modèle local, données privées
-  chat() avec prompt en lot
-      ↓
-  adresses_ban.csv              ← adresses normalisées
-      ↓
-  adresse.data.gouv.fr          ← site BAN, gratuit, sans code
-      ↓
-  latitude / longitude / score
+```{mermaid}
+flowchart LR
+    A[📄 adresses_messy.csv] --> B["🤖 Ollama local\nqwen2.5:0.5b\n(données privées)"]
+    B --> C[📄 adresses_ban.csv]
+    C --> D["🌐 Site BAN\nadresse.data.gouv.fr\n(gratuit, sans code)"]
+    D --> E["📍 latitude\nlongitude\nscore"]
+
+    style B fill:#fff3e0,stroke:#e07b00
+    style D fill:#e8f5e9,stroke:#388e3c
+    style E fill:#e3f2fd,stroke:#1565c0
 ```
 
 ---
@@ -352,20 +351,22 @@ Recommandation : essayez d'abord par vous-même, utilisez l'IA comme second reco
 
 ## Workflow recommandé
 
-```
-1. Définir clairement la tâche
-       ↓
-2. Chercher dans la documentation (? ou RStudio)
-       ↓
-3. Essayer par vous-même
-       ↓
-4. Si bloqué > Stack Overflow / Forum Posit
-       ↓
-5. Si toujours bloqué > IA avec un prompt précis
-       ↓
-6. Lire, comprendre et tester le code suggéré
-       ↓
-7. Adapter à votre contexte
+```{mermaid}
+flowchart TD
+    A[1 — Définir clairement la tâche] --> B[2 — Chercher dans la documentation]
+    B --> C[3 — Essayer par vous-même]
+    C --> D{Bloqué ?}
+    D -- Non --> G[7 — Adapter à votre contexte]
+    D -- Oui --> E[4 — Stack Overflow / Forum Posit]
+    E --> F{Toujours bloqué ?}
+    F -- Non --> G
+    F -- Oui --> H[5 — IA avec un prompt précis]
+    H --> I[6 — Lire, comprendre et tester]
+    I --> G
+
+    style A fill:#f0f4ff,stroke:#4a6fa5
+    style H fill:#fff3e0,stroke:#e07b00
+    style G fill:#e8f5e9,stroke:#388e3c
 ```
 
 ---

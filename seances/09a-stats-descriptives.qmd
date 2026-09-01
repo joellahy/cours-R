@@ -49,16 +49,23 @@ Les statistiques descriptives permettent de :
 
 Le **type de variable** détermine les outils statistiques et graphiques à utiliser.
 
-```
-Variables statistiques
-│
-├── Quantitatives (mesures numériques)
-│   ├── Continues : infiniment divisibles (taille, température, poids)
-│   └── Discrètes : valeurs entières (nb d'espèces, nb d'individus)
-│
-└── Qualitatives (catégories)
-    ├── Nominales : sans ordre (espèce, île, habitat)
-    └── Ordinales : avec ordre (LC < NT < VU < EN < CR)
+```{mermaid}
+flowchart TD
+    V[Variables statistiques] --> Q[Quantitatives\nmesures numériques]
+    V --> K[Qualitatives\ncatégories]
+
+    Q --> QC[Continues\ninfiniment divisibles\nex : taille, température, poids]
+    Q --> QD[Discrètes\nvaleurs entières\nex : nb d'espèces, nb d'individus]
+
+    K --> KN[Nominales\nsans ordre\nex : espèce, île, habitat]
+    K --> KO[Ordinales\navec ordre\nex : LC < NT < VU < EN < CR]
+
+    style Q fill:#e3f2fd,stroke:#1565c0
+    style K fill:#fce4ec,stroke:#c62828
+    style QC fill:#e8f5e9,stroke:#388e3c
+    style QD fill:#e8f5e9,stroke:#388e3c
+    style KN fill:#fff3e0,stroke:#e07b00
+    style KO fill:#fff3e0,stroke:#e07b00
 ```
 
 **Exemples dans notre domaine :**
