@@ -45,10 +45,19 @@ Rmarkdown et Quarto fonctionnent différemment : vous écrivez un fichier texte 
 contenant le contenu **et** les instructions de mise en page, puis vous le **compilez** pour
 obtenir le document final. C'est le mode **WYSIWYW** (*What You See Is What You Want*).
 
-```
-Fichier .qmd (texte + code)
-         ↓  Compilation (knitr + Pandoc)
-  Document final (HTML, PDF, Word…)
+```{mermaid}
+%%| echo: false
+flowchart LR
+    A["📝 Fichier .qmd<br/>(texte + code R)"] --> B["⚙️ Compilation<br/>knitr + Pandoc"]
+    B --> C["🌐 HTML"]
+    B --> D["📄 PDF"]
+    B --> E["📝 Word"]
+
+    style A fill:#e3f2fd,stroke:#1565c0
+    style B fill:#fff3e0,stroke:#e07b00
+    style C fill:#e8f5e9,stroke:#388e3c
+    style D fill:#e8f5e9,stroke:#388e3c
+    style E fill:#e8f5e9,stroke:#388e3c
 ```
 
 ![Schéma du workflow Rmarkdown](https://bookdown.org/yihui/rmarkdown-cookbook/images/workflow.png)
