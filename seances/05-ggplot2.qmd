@@ -1,5 +1,5 @@
 ---
-title: "Séance 5 - Visualisation avec ggplot2"
+title: "Visualisation avec ggplot2"
 ---
 
 ::: {.callout-tip}
