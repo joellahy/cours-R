@@ -20,23 +20,23 @@ book:
 
     - part: "Partie I — Fondamentaux de R"
       chapters:
-        - seances/01-decouverte.qmd
-        - seances/02-tidyverse.qmd
+        - decouverte.qmd
+        - tidyverse.qmd
 
     - part: "Partie II — Tidyverse avancé & Visualisation"
       chapters:
-        - seances/04-approfondissement.qmd
-        - seances/05-ggplot2.qmd
+        - approfondissement.qmd
+        - ggplot2.qmd
 
     - part: "Partie III — Communication & Productivité"
       chapters:
-        - seances/07-rmarkdown.qmd
-        - seances/08-ia-r.qmd
+        - rmarkdown.qmd
+        - ia-r.qmd
 
     - part: "Travaux Pratiques"
       chapters:
-        - seances/03-tp1.qmd
-        - seances/06-tp2.qmd
+        - tp1.qmd
+        - tp2.qmd
 
     - references.qmd
 
