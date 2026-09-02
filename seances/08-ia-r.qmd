@@ -1,5 +1,5 @@
 ---
-title: "Séance 8 - Améliorer sa productivité avec l'IA dans R"
+title: "Améliorer sa productivité avec l'IA dans R"
 ---
 
 ::: {.callout-tip}
