@@ -1,5 +1,5 @@
 ---
-title: "Séance 4 - Approfondissement du tidyverse"
+title: "Approfondissement du tidyverse"
 ---
 
 ::: {.callout-tip}
