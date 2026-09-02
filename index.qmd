@@ -40,8 +40,8 @@ en mobilisant les bonnes pratiques de programmation et les principaux packages d
 | 6 | **TP 2** - Visualisation | TP | 3h |
 | 7 | Introduction à Rmarkdown / Quarto | Cours | 3h |
 | 8 | Améliorer sa productivité avec l'IA | Cours | 3h |
-#| 9a | Statistiques descriptives *(RNET)* | Cours | 3h |
-#| 9b | Tests statistiques et régression *(RNET)* | Cours | 3h |
+<!--| 9a | Statistiques descriptives *(RNET)* | Cours | 3h |-->
+<!--| 9b | Tests statistiques et régression *(RNET)* | Cours | 3h |-->
 
 : Déroulé pédagogique {.striped .hover}
 
