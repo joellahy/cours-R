@@ -1,5 +1,5 @@
 ---
-title: "Séance 2 - Introduction au tidyverse"
+title: "Introduction au tidyverse"
 ---
 
 ::: {.callout-tip}
