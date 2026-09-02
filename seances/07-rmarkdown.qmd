@@ -1,5 +1,5 @@
 ---
-title: "Séance 7 - Introduction à Rmarkdown et Quarto"
+title: "Introduction à Rmarkdown et Quarto"
 ---
 
 ::: {.callout-tip}
